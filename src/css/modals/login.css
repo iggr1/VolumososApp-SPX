@@ -55,3 +55,26 @@
     display: flex;
     justify-content: center;
 }
+
+.btn-eye {
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--light-gray);
+    border-radius: 80rem;
+}
+
+.btn-eye svg {
+    stroke: var(--orange);
+    width: 50rem;
+    height: 50rem;
+}
+
+.input-with-append {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20rem;
+}

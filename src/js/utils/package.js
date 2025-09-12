@@ -1,14 +1,17 @@
 import { apiDel } from '../api.js';
+import { updateCounts } from './helper.js';
 
 export function verifyBrCode(brCode) {
-    const s = String(brCode || '').trim().toUpperCase();
-    return /^BR[A-Z0-9]{13}$/.test(s);
+  const s = String(brCode || '').trim().toUpperCase();
+  return /^BR[A-Z0-9]{13}$/.test(s);
 }
 
 export async function deletePackage({ brCode, palletId, all = false }) {
   const br = String(brCode || '').toUpperCase().trim();
   if (!br) throw new Error('brCode obrigatório');
   await apiDel('package', { brCode: br, pallet: palletId, all });
+
+  updateCounts();
 }
 
 export async function deletePackagesByBrCodes(brCodes = [], palletId, { all = false } = {}) {
@@ -36,6 +39,8 @@ export async function deletePackagesByBrCodes(brCodes = [], palletId, { all = fa
     }
   }
 
+  updateCounts();
+
   return { ok, total: uniq.length, failed, results };
 }
 
@@ -44,6 +49,8 @@ export async function deletePackagesByIndices(items = [], indices = [], palletId
   const brs = idxs
     .map(i => items[i] && (items[i].brCode || items[i].brcode))
     .filter(Boolean);
+
+  updateCounts();
   return deletePackagesByBrCodes(brs, palletId, { all });
 }
 
@@ -55,5 +62,8 @@ export function dropItemsByIndices(items = [], indices = []) {
     if (set.has(i)) removed++;
     else out.push(it);
   });
+
+  updateCounts();
+  
   return { items: out, removed };
 }

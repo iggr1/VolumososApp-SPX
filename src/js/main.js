@@ -32,6 +32,11 @@ const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
             onResult: (val) => {
                 inputEl.value = val;
                 inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+
+                const addBtn = document.querySelector('.btn-add');
+                if (addBtn) {
+                    addBtn.click();
+                }
             }
         });
         await scanner.start();

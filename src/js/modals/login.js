@@ -40,8 +40,14 @@ export default function render(_props = {}, api) {
 
     <div class="login-field">
       <div class="login-label">Senha</div>
-      <input id="login-pass" class="login-input" type="password"
-             placeholder="Digite a sua senha..." required />
+      <div class="input-with-append">
+        <input id="login-pass" class="login-input" type="password"
+               placeholder="Digite a sua senha..." required />
+        <button type="button" class="btn-eye" id="toggle-pass"
+                aria-label="Mostrar senha" aria-pressed="false">
+          <i data-lucide="eye" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
 
     <div class="login-actions">
@@ -51,6 +57,9 @@ export default function render(_props = {}, api) {
       </button>
     </div>
   `;
+
+  // Se o Lucide estiver carregado, (re)cria os ícones desse bloco também
+  try { window.lucide?.createIcons?.(); } catch { }
 
   const niceSelect = enhanceSelect(el, 'login-hub');
 
@@ -133,7 +142,7 @@ export default function render(_props = {}, api) {
       const submitButton = el.querySelector('#login-submit');
       const modal = document.querySelector('.modal');
       submitButton.classList.add('btn--loading');
-      modal.classList.add('loading');
+      modal?.classList?.add('loading');
 
       const code = el.querySelector('#login-hub').value;
       const username = el.querySelector('#login-user').value.trim();
@@ -141,7 +150,7 @@ export default function render(_props = {}, api) {
       if (!code || !username || !password) {
         el.querySelector('form')?.reportValidity?.();
         submitButton.classList.remove('btn--loading');
-        modal.classList.remove('loading');
+        modal?.classList?.remove('loading');
         return;
       }
 
@@ -153,12 +162,12 @@ export default function render(_props = {}, api) {
 
       if (!res) {
         submitButton.classList.remove('btn--loading');
-        modal.classList.remove('loading');
+        modal?.classList?.remove('loading');
         return;
       }
 
       submitButton.classList.remove('btn--loading');
-      modal.classList.remove('loading');
+      modal?.classList?.remove('loading');
 
       api.close('submit');
     } catch (err) {
@@ -168,6 +177,57 @@ export default function render(_props = {}, api) {
 
   el.querySelector('#login-submit').onclick = onSubmit;
   el.addEventListener('keydown', (e) => { if (e.key === 'Enter') onSubmit(); });
+
+  // ======= Olho da senha (toggle) =======
+  const passInput = el.querySelector('#login-pass');
+  const toggleBtn = el.querySelector('#toggle-pass');
+
+  function swapIcon(name) {
+    if (window.lucide?.icons?.[name]?.toSvg) {
+      toggleBtn.innerHTML = window.lucide.icons[name].toSvg({ 'aria-hidden': 'true' });
+    } else {
+      let i = toggleBtn.querySelector('[data-lucide]') || document.createElement('i');
+      i.setAttribute('aria-hidden', 'true');
+      i.setAttribute('data-lucide', name);
+      toggleBtn.innerHTML = '';
+      toggleBtn.appendChild(i);
+      try { window.lucide?.createIcons?.(); } catch { }
+    }
+  }
+
+  function setPasswordVisible(show) {
+    passInput.type = show ? 'text' : 'password';
+    toggleBtn.setAttribute('aria-pressed', String(show));
+    toggleBtn.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
+    swapIcon(show ? 'eye-off' : 'eye');
+  }
+
+  let lastSel = null;
+
+  // Evita perder o foco e captura a seleção/caret antes de trocar o type
+  toggleBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault(); // mantém o foco no input
+    lastSel = {
+      start: passInput.selectionStart,
+      end: passInput.selectionEnd,
+      dir: passInput.selectionDirection
+    };
+  });
+
+  toggleBtn.addEventListener('click', () => {
+    const willShow = passInput.type === 'password';
+    setPasswordVisible(willShow);
+
+    // Restaura a seleção/caret no próximo frame (mais confiável em Safari/iOS)
+    const s = lastSel?.start ?? passInput.value.length;
+    const e = lastSel?.end ?? s;
+    requestAnimationFrame(() => {
+      try { passInput.setSelectionRange(s, e, lastSel?.dir || 'none'); } catch { }
+    });
+  });
+
+  // Estado inicial
+  setPasswordVisible(false);
 
   return el;
 }

@@ -11,13 +11,10 @@ export function updateCounts() {
     const all_el = document.querySelector('.all-pallets-count');
     if (!all_el) return;
 
-    const queue = JSON.parse(localStorage.getItem('palletQueue')) || [];
-    const fallback = queue.length;
-
     (async () => {
         try {
             const res = await apiGet('pallets/count');
-            const c = toInt(res?.count, fallback);
+            const c = toInt(res?.count, 0);
             all_el.textContent = `${c} pallet${c === 1 ? '' : 's'}`;
         } catch (_) {
         }
