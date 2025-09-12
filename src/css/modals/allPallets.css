@@ -1,0 +1,93 @@
+/* --- All Pallets modal --- */
+.allpallets-modal {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 24rem;
+  min-height: 900rem;
+}
+
+/* grade de pallets (4 colunas) */
+.allpallets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18rem;
+  align-content: start;       /* joga para cima */
+  justify-items: center;
+  padding: 8rem 4rem 0;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dark-gray) var(--light-gray);
+}
+
+.allpallets-item {
+  width: 180rem;
+  height: 180rem;
+  border: 0;
+  border-radius: 30rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  font-size: 52rem;
+  font-weight: var(--text-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rem 0 rgba(0,0,0,.04);
+  cursor: pointer;
+  transition: transform .08s ease, background .12s ease;
+}
+.allpallets-item:hover { background: #e6e6e6; }
+.allpallets-item:active { transform: translateY(2rem); }
+
+/* skeleton ao carregar */
+.allpallets-grid--loading .allpallets-item,
+.skeleton {
+  width: 180rem;
+  height: 180rem;
+  border-radius: 30rem;
+  background: linear-gradient(90deg, #ececec 0%, #f5f5f5 50%, #ececec 100%);
+  background-size: 200% 100%;
+  animation: ap-skel 1s linear infinite;
+}
+@keyframes ap-skel { to { background-position: -200% 0; } }
+
+.allpallets-empty {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+  gap: 16rem;
+  padding: 40rem 0;
+  color: var(--dark-gray);
+}
+.allpallets-empty i {
+  width: 60rem;
+  height: 60rem;
+  stroke: var(--dark-gray);
+}
+
+/* rodapé com botão */
+.allpallets-footer {
+  display: grid;
+  padding-top: 6rem;
+}
+.allpallets-btn {
+  width: 100%;
+  height: 120rem;
+  border: 0;
+  border-radius: 85rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  text-transform: uppercase;
+  letter-spacing: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14rem;
+  cursor: pointer;
+}
+.allpallets-btn i { width: 34rem; height: 34rem; stroke: currentColor; }
+.allpallets-btn[disabled] { opacity: .6; cursor: not-allowed; }
+.allpallets-btn--danger { background: var(--red); color: var(--white); }

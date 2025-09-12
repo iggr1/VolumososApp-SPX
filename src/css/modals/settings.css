@@ -1,0 +1,155 @@
+.settings-modal {
+    display: grid;
+    gap: 28rem;
+}
+
+.settings-list {
+    display: grid;
+    gap: 36rem;
+}
+
+.setting-row {
+    display: grid;
+    justify-content: space-between;
+    grid-template-columns: 1fr auto;
+    gap: 24rem;
+    align-items: center;
+    height: 120rem;
+}
+
+.setting-label {
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    color: var(--darker-gray);
+}
+
+.setting-row {
+    position: relative;
+}
+
+.setting-control {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+}
+
+.setting-control .spinner {
+    display: none;
+}
+
+.setting-row[data-loading="true"] .spinner {
+    display: block;
+}
+
+.setting-control svg {
+    fill: var(--orange);
+}
+
+.setting-row[data-loading="true"] .stepper,
+.setting-row[data-loading="true"] .pill-range {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.stepper {
+    display: inline-flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 28rem;
+    background: var(--light-gray);
+    border-radius: 85rem;
+    height: 120rem;
+    width: 350rem;
+    padding: 0 32rem;
+}
+
+.stepper .step {
+    width: 60rem;
+    height: 60rem;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--darker-gray);
+    cursor: pointer;
+    font-size: 40rem;
+    line-height: 1;
+}
+
+.stepper .step-val {
+    min-width: 80rem;
+    text-align: center;
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    display: block;
+}
+
+/* ranges em pílula */
+.pill-range {
+    display: inline-flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 24rem;
+    background: var(--light-gray);
+    border-radius: 85rem;
+    height: 120rem;
+    width: 350rem;
+    padding: 0 32rem;
+}
+
+.pill-input {
+    width: 100rem;
+    text-align: center;
+    border: 0;
+    background: transparent;
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    color: var(--darker-gray);
+}
+
+.pill-input {
+    pointer-events: auto;
+}
+
+.pill-input.letter {
+    text-transform: uppercase;
+}
+
+.dash {
+    color: var(--dark-gray);
+    font-weight: var(--text-bold);
+}
+
+/* links estilo menu */
+.settings-button {
+    width: 100%;
+    height: 120rem;
+    border-radius: 85rem;
+    background: var(--light-gray);
+    color: var(--darker-gray);
+    display: flex;
+    align-items: center;
+    gap: 20rem;
+    padding: 0 40rem;
+    font-size: var(--text-medium);
+    cursor: pointer;
+}
+
+.settings-button:hover {
+    background: #dcdcdc;
+}
+
+.settings-button svg {
+    width: 60rem;
+    height: 60rem;
+    stroke: var(--orange);
+}
+
+.settings-button .chev {
+    margin-left: auto;
+}
+
+.settings-button:focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}

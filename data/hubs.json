@@ -1,0 +1,14 @@
+{
+  "hubs": [
+    {
+      "name": "LM HUB_SC_Chapecó_Eldorado",
+      "code": "LSC-05",
+      "server": "https://script.google.com/macros/s/AKfycbyA6TtVGbsoEiNRTLQHiROeq-k-kM0-eQU1gbSc8aTQP5TnxVH9DEkIGS8NzI4yrQfC/exec"
+    },
+    {
+      "name": "DEV-TEST",
+      "code": "DEV",
+      "server": "https://script.google.com/macros/s/AKfycbyA6TtVGbsoEiNRTLQHiROeq-k-kM0-eQU1gbSc8aTQP5TnxVH9DEkIGS8NzI4yrQfC/exec"
+    }
+  ]
+}

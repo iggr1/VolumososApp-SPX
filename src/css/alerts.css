@@ -1,0 +1,175 @@
+/* Container */
+.notification-container {
+  position: fixed;
+  top: 80px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 6;
+  width: clamp(280px, 38vw, 380px);
+  pointer-events: none;
+  flex-direction: column-reverse;
+}
+
+/* Card */
+.notification-alert {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background: #2f2f2f;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 100%;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  color-scheme: dark;
+  pointer-events: auto;
+
+  opacity: 0;
+  transform: translateX(100%) scale(0.1);
+  animation: slideIn 300ms ease-in-out forwards;
+  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+}
+
+.notification-alert.hidden {
+  animation: slideOut 300ms ease-in-out forwards;
+  position: absolute;
+  width: 100%;
+}
+
+.notification-alert { --h: auto; }
+
+.notification-alert.collapsing {
+  animation: none !important;
+  overflow: hidden;
+  max-height: var(--h);
+  transition:
+    max-height .28s ease,
+    margin     .28s ease,
+    padding    .28s ease,
+    opacity    .2s ease;
+}
+
+.notification-alert.collapsing.hidden {
+  max-height: 0;
+  margin-top: 0; margin-bottom: 0;
+  padding-top: 0; padding-bottom: 0;
+  opacity: 0;
+}
+
+/* Barra de progresso */
+.notification-alert::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 3px; width: 0;
+  background: var(--color, #4ea1ff);
+  animation: progress var(--progress-duration, 5s) linear forwards;
+}
+.notification-alert.paused::after { animation-play-state: paused; }
+@keyframes progress { from{width:0;} to{width:100%;} }
+
+/* Conteúdo */
+.notification-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  position: relative;
+}
+.notification-title i,
+.notification-title svg {
+  flex: 0 0 auto;
+}
+
+.notification-close {
+  position: absolute;
+  right: 0; top: 0;
+  transform: translate(8px,-8px);
+  width: 28px; height: 28px;
+  border: 0; border-radius: 50%;
+  background: transparent;
+  color: #fff; font: 700 18px/1 system-ui;
+  cursor: pointer;
+}
+.notification-close:focus-visible { outline: 3px solid var(--color); }
+
+.notification-message {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #fff;
+}
+
+.notification-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.notification-buttons button {
+  padding: 0 20px;
+  height: 35px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.notification-buttons button:hover { filter: brightness(1.1); }
+.notification-buttons button:focus-visible { outline: 3px solid var(--color); }
+
+/* Animações */
+@keyframes slideIn {
+  0% {opacity:0; transform:translateX(100%) scale(0.1);}
+  100% {opacity:1; transform:translateX(0) scale(1);}
+}
+@keyframes slideOut {
+  0% {opacity:1; transform:translateX(0) scale(1);}
+  100% {opacity:0; transform:translateX(100%) scale(0.1);}
+}
+
+/* Mobile */
+@media (max-width:768px) {
+  .notification-container {
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    align-items: center;
+    width: min(92vw, 420px);
+  }
+  .notification-alert {
+    transform: translateY(-100%) scale(0.8);
+    animation: slideDown 300ms ease-in-out forwards;
+  }
+  .notification-alert.hidden {
+    animation: slideUp 300ms ease-in-out forwards;
+  }
+  @keyframes slideDown {
+    0% {opacity:0; transform:translateY(-100%) scale(0.8);}
+    100% {opacity:1; transform:translateY(0) scale(1);}
+  }
+  @keyframes slideUp {
+    0% {opacity:1; transform:translateY(0) scale(1);}
+    100% {opacity:0; transform:translateY(-100%) scale(0.8);}
+  }
+}
+
+/* Motion safe */
+@media (prefers-reduced-motion: reduce) {
+  .notification-alert,
+  .notification-alert.hidden,
+  .notification-alert::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

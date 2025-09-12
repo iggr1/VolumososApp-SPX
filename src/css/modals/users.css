@@ -1,0 +1,112 @@
+/* src/css/modals/users.css */
+.users-modal {
+  display: grid;
+  gap: 24rem;
+}
+
+.users-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 16rem;
+  align-items: center;
+}
+
+.users-search {
+  height: 120rem;
+  border-radius: 85rem;
+  background: var(--light-gray);
+  border: 0;
+  padding: 0 32rem;
+  font-size: var(--text-medium);
+  color: var(--darker-gray);
+}
+
+.users-btn {
+  height: 120rem;
+  padding: 0 28rem;
+  border-radius: 85rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  display: inline-flex;
+  align-items: center;
+  gap: 10rem;
+  cursor: pointer;
+  border: 0;
+  font-size: var(--text-medium);
+}
+
+.users-btn--primary {
+  background: var(--orange);
+  color: var(--white);
+}
+
+.users-list {
+  display: grid;
+  gap: 25rem;
+}
+
+.user-row {
+  display: grid;
+  grid-template-columns: 84rem 1fr 24rem;
+  gap: 40rem;
+  align-items: center;
+  padding: 16rem 60rem 16rem 30rem;
+  border-radius: 80rem;
+  background: var(--light-gray);
+  cursor: pointer;
+  border: 0;
+  text-align: left;
+}
+
+.user-row:hover { background: #dcdcdc; }
+
+.user-avatar {
+  width: 100rem;
+  height: 100rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5rem solid var(--orange);
+}
+
+.user-main { display: grid; gap: 4rem; }
+
+.user-name {
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
+}
+
+.user-meta { display: flex; gap: 8rem; align-items: center; }
+
+.role-badge {
+  padding: 2rem 20rem;
+  border-radius: 999rem;
+  font-size: var(--text-small);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  background: var(--dark-gray);
+  color: var(--white);
+}
+
+.role-badge.is-admin { background: var(--orange); }
+.role-badge.is-user { background: var(--dark-gray); }
+
+.users-empty {
+  display: grid;
+  place-items: center;
+  gap: 8rem;
+  padding: 40rem 0;
+  color: var(--dark-gray);
+}
+
+.users-empty i { width: 28rem; height: 28rem; }
+
+.users-skel { display: grid; gap: 12rem; }
+.sk-row {
+  height: 116rem;
+  border-radius: 60rem;
+  background: linear-gradient(90deg, #e6e6e6 0%, #f0f0f0 40%, #e6e6e6 80%);
+  background-size: 200% 100%;
+  animation: sk 1.2s infinite linear;
+}
+@keyframes sk { 0%{background-position:0 0} 100%{background-position:-200% 0} }

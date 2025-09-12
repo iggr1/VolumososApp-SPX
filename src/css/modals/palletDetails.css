@@ -1,0 +1,205 @@
+/* ===========================
+   Pallet atual (modal)
+   =========================== */
+
+.pallet-modal {
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* badge | tabela | footer */
+  gap: 28rem;
+  min-height: 60vh;
+}
+
+/* badge "PALLET ATUAL" */
+.pallet-head {
+  display: grid;
+  place-items: center;
+}
+.pallet-badge {
+  min-height: 56rem;
+  padding: 20rem 30rem;
+  border-radius: 999rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+}
+
+/* ===========================
+   Tabela
+   =========================== */
+.pallet-table {
+  --col-check: 90rem;
+  --col-route: 220rem;
+  /* grid de colunas muda conforme modo seleção */
+  --grid: 1fr var(--col-route);
+  border-radius: 28rem;
+  overflow: hidden;            /* arredondamento do header + body */
+  background: var(--white);
+  box-shadow: 0 2rem 0 rgba(0,0,0,.03);
+}
+
+/* quando existe coluna de checagem */
+.pallet-table.is-selecting { --grid: var(--col-check) 1fr var(--col-route); }
+
+.pallet-thead,
+.pallet-tbody .tr {
+  display: grid;
+  grid-template-columns: var(--grid);
+  align-items: center;
+}
+
+/* HEADER fixo */
+.pallet-thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 120rem;
+  background: var(--orange);
+  color: var(--white);
+  font-weight: var(--text-bold);
+}
+
+.pallet-thead .th {
+  padding: 0 50rem;            /* pedido: 50rem nas laterais */
+  display: flex;
+  align-items: center;
+}
+.pallet-thead .th-check { justify-content: center; }
+
+/* BODY com scroll */
+.pallet-tbody {
+  max-height: 50vh;            /* toma o espaço e cria scroll no corpo */
+  overflow-y: auto;
+  background: var(--white);
+}
+
+/* LINHAS */
+.pallet-tbody .tr {
+  min-height: 120rem;
+  border-bottom: 1px solid #eee;
+}
+.pallet-tbody .tr:last-child { border-bottom: 0; }
+
+/* zebra */
+.pallet-tbody .tr:nth-child(even) { background: #fafafa; }
+
+/* células */
+.pallet-tbody .td {
+  padding: 0 50rem;            /* pedido: 50rem nas laterais */
+  display: flex;
+  align-items: center;
+  color: var(--darker-gray);
+  font-size: var(--text-medium);
+}
+.pallet-tbody .td-check { justify-content: center; }
+.pallet-tbody .td-route { justify-content: flex-start; }
+
+/* realce quando em modo seleção */
+.pallet-table.is-selecting .tr { cursor: pointer; }
+.pallet-table.is-selecting .tr:hover { background: #f3f3f3; }
+
+/* estado vazio */
+.pallet-empty {
+  display: grid;
+  place-items: center;
+  gap: 12rem;
+  padding: 40rem 0;
+  color: var(--dark-gray);
+}
+.pallet-empty i {
+  width: 64rem;
+  height: 64rem;
+  stroke: var(--dark-gray);
+}
+
+/* ===========================
+   Checkbox estilizado (.pchk)
+   =========================== */
+.pchk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+.pchk input {
+  appearance: none;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.pchk span {
+  width: 38rem;
+  height: 38rem;
+  border-radius: 8rem;
+  border: 3rem solid #d5d5d5;
+  background: #fff;
+  display: inline-block;
+  position: relative;
+}
+.pchk input:checked + span {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+.pchk input:checked + span::after {
+  content: "";
+  position: absolute;
+  left: 8rem;
+  top: 3rem;
+  width: 12rem;
+  height: 20rem;
+  border: 4rem solid #fff;
+  border-top: 0;
+  border-left: 0;
+  transform: rotate(45deg);
+}
+
+/* ===========================
+   Rodapé (botões fixos)
+   =========================== */
+.pallet-footer {
+  position: sticky;  /* fixa no final do modal-body */
+  bottom: 0;
+  background:
+    linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,.92) 24%, rgba(255,255,255,0));
+  padding-top: 18rem;
+  display: grid;
+  gap: 16rem;
+  grid-template-columns: 1fr; /* empilha em telas estreitas */
+}
+
+/* em telas um pouco maiores, dois botões lado a lado */
+@media (min-width: 420px) {
+  .pallet-footer {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.pallet-btn {
+  height: 120rem;
+  border: 0;
+  border-radius: 85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14rem;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--white);
+  background: var(--light-gray);
+  cursor: pointer;
+}
+.pallet-btn i {
+  width: 34rem;
+  height: 34rem;
+  stroke: currentColor;
+}
+
+.pallet-btn--primary { background: var(--orange); }
+.pallet-btn--danger  { background: var(--red); }
+
+.pallet-btn[disabled] {
+  background: #dcdcdc;
+  color: #9e9e9e;
+  cursor: not-allowed;
+}

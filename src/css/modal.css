@@ -1,0 +1,275 @@
+:root {
+    --modal-z: 999999;
+
+    --white: #ffffff;
+    --black: #000000;
+    --orange: #ef4c29;
+    --red: #e22323;
+    --green: #008259;
+    --gray: #b0b0b0;
+    --light-gray: #e0e0e0;
+    --dark-gray: #707070;
+    --darker-gray: #202020;
+}
+
+/* Root + backdrop */
+.modal-root {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.modal-root.show {
+    pointer-events: auto;
+}
+
+.modal-root .modal-wrap {
+    pointer-events: none;
+}
+
+.modal-root.show .modal-wrap {
+    pointer-events: auto;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .55);
+    backdrop-filter: blur(2rem);
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+
+.modal-root.show .modal-backdrop {
+    opacity: 1;
+}
+
+/* Wrapper centralizador */
+.modal-wrap {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 40rem;
+    pointer-events: auto;
+}
+
+/* Janela */
+.modal {
+    width: min(96vw, 1100rem);
+    max-height: 90dvh;
+    background: var(--white);
+    color: var(--black);
+    border: 1rem solid var(--light-gray);
+    border-radius: 80rem;
+    box-shadow: 0 40rem 140rem rgba(0, 0, 0, .35);
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+
+    opacity: 0;
+    transform: translateY(40rem) scale(.98);
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.modal--sm {
+    width: min(94vw, 900rem);
+}
+
+/* ~315px */
+.modal--lg {
+    width: min(94vw, 1600rem);
+}
+
+/* ~560px */
+.modal.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.modal.loading {
+    pointer-events: none;
+    cursor: wait;
+}
+
+/* Header */
+.modal-header {
+    display: grid;
+    grid-template-columns: 80rem 1fr 80rem;
+    align-items: center;
+    gap: 20rem;
+    padding: 30rem 30rem;
+    background: var(--white);
+}
+
+.modal-title {
+    text-align: center;
+    font-size: var(--text-large);
+    font-weight: var(--text-bold);
+    color: var(--orange);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botões do header */
+.modal-btn {
+    width: 80rem;
+    height: 80rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    color: var(--dark-gray);
+    cursor: pointer;
+}
+
+.modal-btn svg {
+    width: 70%;
+    height: 70%;
+    stroke: currentColor;
+}
+
+.modal-btn:focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 6rem;
+    border-radius: 60rem;
+}
+
+/* Mantém espaço quando “oculto” para não quebrar o grid */
+.modal-btn[data-ghost="true"] {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Corpo */
+.modal-body {
+    padding: 40rem;
+    overflow: auto;
+    font-size: var(--text-medium);
+    font-weight: var(--text-normal);
+    color: var(--black);
+    background: var(--white);
+}
+
+/* Utilidades opcionais */
+.modal-body .row {
+    display: flex;
+    gap: 24rem;
+    align-items: center;
+}
+
+.modal-body .actions {
+    display: flex;
+    gap: 20rem;
+    justify-content: flex-end;
+    margin-top: 30rem;
+}
+
+.modal-body .btn.secondary {
+    background: var(--light-gray);
+    color: var(--black);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .modal,
+    .modal-backdrop {
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+/* --- Nice Select --- */
+.ui-select {
+    position: relative;
+    width: 100%;
+}
+
+.ui-select-btn {
+    width: 100%;
+    height: 120rem;
+    border-radius: 85rem;
+    background: var(--light-gray);
+    padding: 0 50rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: var(--text-medium);
+    color: var(--dark-gray);
+    cursor: pointer;
+}
+
+.ui-select[data-disabled="true"] .ui-select-btn {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.ui-select::after {
+    content: "";
+    position: absolute;
+    right: 50rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 16rem;
+    height: 16rem;
+    border-right: 4rem solid var(--orange);
+    border-bottom: 4rem solid var(--orange);
+    pointer-events: none;
+}
+
+.ui-select-list {
+    position: absolute;
+    z-index: calc(var(--modal-z) + 1);
+    left: 0;
+    right: 0;
+    top: 0;
+    background: #e0e0e0;
+    border: 1rem solid var(--light-gray);
+    border-radius: 60rem;
+    box-shadow: 0 20rem 60rem rgba(0, 0, 0, .15);
+    max-height: 420rem;
+    overflow: auto;
+    padding: 20rem;
+    display: none;
+}
+
+.ui-select[aria-expanded="true"] .ui-select-list {
+    display: block;
+}
+
+.ui-option {
+    list-style: none;
+    padding: 24rem 32rem;
+    border-radius: 80rem;
+    color: var(--darker-gray);
+    cursor: pointer;
+}
+
+.ui-option[aria-selected="true"] {
+    background: var(--light-gray);
+    color: var(--orange);
+}
+
+.ui-option:hover {
+    background: var(--light-gray);
+}
+
+.ui-option:focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
+/* esconder select nativo mas manter no form */
+.select-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}

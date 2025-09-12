@@ -1,0 +1,68 @@
+/* src/css/modals/profile.css */
+
+.profile-modal {
+  display: grid;
+  gap: 28rem;
+}
+
+/* reaproveita a grid do settings */
+.profile-modal .settings-list {
+  display: grid;
+  gap: 24rem;
+}
+
+.profile-modal .setting-row {
+  display: grid;
+  justify-content: space-between;
+  grid-template-columns: 1fr auto;
+  gap: 24rem;
+  align-items: center;
+  min-height: 120rem;
+}
+
+.profile-modal .setting-label {
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
+}
+
+.profile-modal .setting-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* inputs em formato de pílula */
+.profile-modal .pill-input {
+  width: 350rem;               /* mesmo width dos controles do settings */
+  height: 120rem;
+  border: 0;
+  border-radius: 85rem;
+  background: var(--light-gray);
+  padding: 0 32rem;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
+}
+
+.profile-modal .pill-input::placeholder {
+  color: var(--dark-gray);
+}
+
+.profile-modal .pill-input:focus-visible {
+  outline: 6rem solid var(--orange);
+  outline-offset: 4rem;
+}
+
+/* estado desabilitado para usuário comum no campo de nome */
+.profile-modal .pill-input:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* responsivo */
+@media (max-width: 480px) {
+  .profile-modal .pill-input {
+    width: 100%;
+  }
+}
