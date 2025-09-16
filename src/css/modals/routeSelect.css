@@ -3,8 +3,17 @@
    =========================== */
 
 .route-select-modal {
-    display: grid;
+    display: flex;
     gap: 40rem;
+    height: 100%;
+    max-height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+@supports (height: 100dvh) {
+    .route-select-modal { max-height: 100dvh; }
 }
 
 /* topo: título já vem do header do modal */
@@ -65,8 +74,14 @@
     gap: 22rem;
     row-gap: 32rem;
     padding: 2rem 6rem 0;
-    height: 1100rem;
+
+    /* make the keyboard area the ONLY scrollable region */
+    block-size: 100%;
+    min-block-size: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+
     align-content: start;
     grid-auto-rows: max-content;
     flex-direction: row;
@@ -89,6 +104,7 @@
     cursor: pointer;
     transition: transform .08s ease, background .12s ease, box-shadow .12s ease;
     box-shadow: 0 2rem 0 rgba(0, 0, 0, .04);
+    touch-action: manipulation;
 }
 
 .route-key:hover {
@@ -119,6 +135,13 @@
 .route-footer {
     margin-top: 4rem;
     display: grid;
+
+    /* keep the button visible; respect mobile safe areas */
+    position: sticky;
+    bottom: 0;
+    background: var(--white);
+    padding-bottom: max(16rem, env(safe-area-inset-bottom));
+    z-index: 2;
 }
 
 .route-btn {
@@ -137,6 +160,7 @@
     background: var(--orange);
     color: var(--white);
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 .route-btn i {
