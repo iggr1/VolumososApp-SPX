@@ -51,7 +51,6 @@ export default function render(props = {}, api) {
   }
 
   function template() {
-    const routeStr = displayRoute(state.letter, state.numberStr);
     const canAdd = isValidRoute(state.letter, state.numberStr, ranges);
 
     return `
@@ -65,21 +64,13 @@ export default function render(props = {}, api) {
       </div>
 
       <div class="route-kbd">
-        ${state.step === 'letter' ? letterKeys() : numberKeys()}
-      </div>
-
-      <div class="route-footer">
-        <button class="route-btn route-btn--primary" id="route-add" ${canAdd ? '' : 'disabled'}>
-          <i data-lucide="forklift" aria-hidden="true"></i>
-          <span>ADICIONAR PACOTE</span>
-        </button>
+        ${state.step === 'letter' ? letterKeys() : numberKeys(canAdd)}
       </div>
     `;
   }
 
   function letterKeys() {
     const letters = lettersFromRange(ranges.letterFrom, ranges.letterTo);
-    // grid em 3 colunas; apenas gera os botões necessários
     return letters
       .map(
         (L) => `<button class="route-key" data-k="${L}" aria-label="Letra ${L}">${L}</button>`
@@ -87,10 +78,10 @@ export default function render(props = {}, api) {
       .join('');
   }
 
-  function numberKeys() {
-    // keypad 1..9 / 0 + backspace
-    const nums = ['1','2','3','4','5','6','7','8','9','0'];
-    const grid = `
+  function numberKeys(canAdd) {
+    // Layout final da última linha: [Backspace] [0] [Adicionar]
+    // -> Sem spacer, para ocupar as 3 colunas naturalmente
+    return `
       <button class="route-key" data-k="1">1</button>
       <button class="route-key" data-k="2">2</button>
       <button class="route-key" data-k="3">3</button>
@@ -100,50 +91,62 @@ export default function render(props = {}, api) {
       <button class="route-key" data-k="7">7</button>
       <button class="route-key" data-k="8">8</button>
       <button class="route-key" data-k="9">9</button>
-      <div class="route-key route-key--spacer" aria-hidden="true"></div>
-      <button class="route-key" data-k="0">0</button>
+
       <button class="route-key route-key--icon" data-act="backspace" aria-label="Apagar">
         <i data-lucide="delete"></i>
       </button>
+      <button class="route-key" data-k="0">0</button>
+      <button
+        class="route-key route-key--icon route-key--add"
+        data-act="add"
+        aria-label="Adicionar pacote" ${canAdd ? '' : 'disabled'}>
+        <i data-lucide="package-plus"></i>
+      </button>
     `;
-    return grid;
   }
 
   function bind() {
-    // clique nas teclas
     el.querySelector('.route-kbd')?.addEventListener('click', onKeyClick);
-    // adicionar
-    el.querySelector('#route-add')?.addEventListener('click', onAddClick);
+
+    // Enter confirma quando estiver no passo de número e válido
+    el.addEventListener('keydown', (ev) => {
+      if (state.step === 'number' && (ev.key === 'Enter' || ev.key === 'NumpadEnter')) {
+        const canAdd = isValidRoute(state.letter, state.numberStr, ranges);
+        if (canAdd) onAddClick();
+      }
+    });
   }
 
   function onKeyClick(e) {
     const btn = e.target.closest('.route-key');
-    if (!btn) return;
+    if (!btn || btn.disabled) return;
 
     if (state.step === 'letter') {
       const L = btn.dataset.k;
       if (!L) return;
       state.letter = L;
-      // avança para números
       state.step = 'number';
       paint();
       return;
     }
 
-    // step number
-    if (btn.dataset.act === 'backspace') {
+    // passo de número
+    const act = btn.dataset.act;
+    if (act === 'backspace') {
       state.numberStr = state.numberStr.slice(0, -1);
       paint();
       return;
     }
+    if (act === 'add') {
+      onAddClick();
+      return;
+    }
+
     const k = btn.dataset.k;
     if (!k) return;
 
-    // concatena e checa range dinamicamente (não deixa passar do máximo)
-    const next = (state.numberStr + k).replace(/^0+(?=\d)/, ''); // evita zeros à esquerda
+    const next = (state.numberStr + k).replace(/^0+(?=\d)/, '');
     if (!withinTypingRange(next, ranges.numMin, ranges.numMax)) {
-      // permitir que o usuário continue digitando e só valide no fim? aqui já bloqueamos
-      // para seguir o layout/UX do keypad, apenas ignoramos fora de range
       return;
     }
     state.numberStr = next;
@@ -193,7 +196,6 @@ function readRanges() {
   const [lfRaw, ltRaw] = letterRange.split('-');
   let letterFrom = toLetter(lfRaw, 'A');
   let letterTo   = toLetter(ltRaw, letterFrom);
-  // normaliza caso venham invertidas
   if (letterFrom.charCodeAt(0) > letterTo.charCodeAt(0)) {
     const t = letterFrom; letterFrom = letterTo; letterTo = t;
   }
@@ -217,12 +219,9 @@ function withinTypingRange(str, min, max) {
   if (!str) return true;
   const n = Number(str);
   if (!Number.isFinite(n)) return false;
-  // não permitir mais dígitos do que o máximo possui
   const maxLen = String(max).length;
   if (str.length > maxLen) return false;
-  // se ainda não formou um número completo, aceitar prefixos que possam resultar válidos
-  // regra simples: n <= max e (str sem digitos -> ok)
-  return n <= max;
+  return n <= max; // prefix válido enquanto não exceder o máximo
 }
 
 function isValidRoute(letter, numberStr, ranges) {
@@ -258,4 +257,3 @@ function escapeHtml(v) {
   d.textContent = String(v ?? '');
   return d.innerHTML;
 }
-

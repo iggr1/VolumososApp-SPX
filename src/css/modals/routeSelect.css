@@ -13,7 +13,9 @@
 }
 
 @supports (height: 100dvh) {
-    .route-select-modal { max-height: 100dvh; }
+    .route-select-modal {
+        max-height: 100dvh;
+    }
 }
 
 /* topo: título já vem do header do modal */
@@ -129,6 +131,26 @@
     width: 80rem;
     height: 80rem;
     stroke: var(--orange);
+}
+
+.route-key--primary,
+.route-key[data-act="add"] {
+    background: var(--orange) !important;
+    color: var(--white) !important;
+}
+
+.route-key--add svg {
+    stroke: var(--white);
+}
+
+.route-key[data-act="add"][disabled] {
+    background: #ffffff !important;
+    color: #9e9e9e !important;
+    cursor: not-allowed;
+}
+
+.route-key[data-act="add"][disabled] svg {
+    stroke: var(--dark-gray);
 }
 
 /* rodapé / CTA -------------------------------------------- */
