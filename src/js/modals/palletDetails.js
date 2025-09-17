@@ -17,19 +17,16 @@ export default function render(props = {}, _api) {
 
   const el = document.createElement('div');
   el.id = 'pallet-view-root';
-  el.className = 'pallet-modal'; // reutiliza o CSS do currentPallet
+  el.className = 'pallet-modal';
 
   const palletId = Number(props.pallet || 0);
   let items = Array.isArray(props.items) ? props.items.slice() : [];
 
-  // estado de seleção (igual currentPallet)
   let selecting = false;
   let selected = new Set();
   let longPressTimer = null;
 
   injectNoSelectCSS();
-
-
   paint();
 
   if (window.lucide?.createIcons) {
@@ -37,7 +34,35 @@ export default function render(props = {}, _api) {
   }
   return el;
 
+  function snapshotScroll() {
+    const body = el.querySelector('.pallet-tbody');
+    const table = el.querySelector('.pallet-table');
+    return {
+      bodyTop: body?.scrollTop || 0,
+      bodyLeft: body?.scrollLeft || 0,
+      tableTop: table?.scrollTop || 0,
+      tableLeft: table?.scrollLeft || 0
+    };
+  }
+
+  function restoreScroll(snap) {
+    requestAnimationFrame(() => {
+      const body = el.querySelector('.pallet-tbody');
+      const table = el.querySelector('.pallet-table');
+      if (body) {
+        body.scrollTop = snap.bodyTop;
+        body.scrollLeft = snap.bodyLeft;
+      }
+      if (table) {
+        table.scrollTop = snap.tableTop;
+        table.scrollLeft = snap.tableLeft;
+      }
+    });
+  }
+
   function paint() {
+    const snap = snapshotScroll();
+
     el.innerHTML = `
       <div class="pallet-head">
         <div class="pallet-badge">PALLET ${palletId || ''}</div>
@@ -69,7 +94,12 @@ export default function render(props = {}, _api) {
     `;
 
     bind();
-    if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+
+    if (window.lucide?.createIcons) {
+      lucide.createIcons({ attrs: { width: 22, height: 22 } });
+    }
+
+    restoreScroll(snap);
   }
 
   function rowTpl(row, i) {
@@ -99,32 +129,60 @@ export default function render(props = {}, _api) {
 
   function bind() {
     const tbody = el.querySelector('.pallet-tbody');
-
     const table = el.querySelector('.pallet-table');
+
     if (table) {
       table.addEventListener('selectstart', (e) => e.preventDefault(), { passive: false });
       table.addEventListener('dragstart', (e) => e.preventDefault(), { passive: false });
     }
 
-    // long-press p/ entrar em modo seleção
+    // Long-press para entrar no modo seleção (ignora cliques no checkbox)
     tbody.addEventListener('pointerdown', onPressStart);
     tbody.addEventListener('pointerup', onPressEnd);
     tbody.addEventListener('pointercancel', onPressEnd);
     tbody.addEventListener('pointerleave', onPressEnd);
+
+    // Clique na linha (ignora cliques em checkbox/label)
     tbody.addEventListener('click', onRowClick);
 
-    // header "selecionar tudo"
+    // Clique/troca no checkbox da linha — controla seleção sem brigar com onRowClick
+    tbody.addEventListener('change', (e) => {
+      const cb = e.target;
+      if (!(cb instanceof HTMLInputElement)) return;
+      if (!cb.matches('input[type="checkbox"][data-i]')) return;
+
+      const idx = Number(cb.dataset.i);
+      if (Number.isNaN(idx)) return;
+
+      if (cb.checked) selected.add(idx);
+      else selected.delete(idx);
+
+      // Se zerou seleção, sai do modo selecting
+      if (selected.size === 0) selecting = false;
+
+      paint();
+    });
+
+    // Previne que o clique no label/checkbox borbulhe e dispare o handler da linha
+    tbody.addEventListener('click', (e) => {
+      if (e.target.closest('.pchk')) {
+        e.stopPropagation();
+      }
+    });
+
+    // Header "selecionar tudo"
     el.querySelector('#chk-all')?.addEventListener('change', (e) => {
       if (e.target.checked) selected = new Set(items.map((_, i) => i));
       else selected.clear();
       paint();
     });
 
-    // excluir
+    // Excluir
     el.querySelector('#pallet-del')?.addEventListener('click', onDelete);
   }
 
   function onPressStart(e) {
+    if (e.target.closest('.pchk')) return; // não iniciar long-press em cima do checkbox
     const row = e.target.closest('.tr');
     if (!row) return;
     const idx = Number(row.dataset.i);
@@ -138,11 +196,12 @@ export default function render(props = {}, _api) {
   function onPressEnd() { clearTimeout(longPressTimer); }
 
   function onRowClick(e) {
+    if (e.target.closest('.pchk')) return; // clique já tratado no 'change'
     const row = e.target.closest('.tr');
     if (!row) return;
     const idx = Number(row.dataset.i);
-
     if (!selecting) return;
+
     if (selected.has(idx)) selected.delete(idx);
     else selected.add(idx);
 
@@ -192,14 +251,13 @@ function injectNoSelectCSS() {
   const style = document.createElement('style');
   style.id = 'pallet-no-select-style';
   style.textContent = `
-    /* nada de seleção dentro da tabela do modal de pallet */
     .pallet-modal .pallet-table,
     .pallet-modal .pallet-table * {
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
       user-select: none;
-      -webkit-touch-callout: none; /* iOS: desativa menu de copiar/colar */
+      -webkit-touch-callout: none;
     }
   `;
   document.head.appendChild(style);

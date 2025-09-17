@@ -7,10 +7,10 @@ const $ = (selector) => document.querySelector(selector);
 export function setUserInfo(username, token, avatarImg) {
   const hubLabel = sessionStorage.getItem('hubLabel');
 
-  if (username && token && avatarImg) {
+  if (username && token ) {
     $('.username').textContent = username;
     $('.hub').textContent = hubLabel;
-    $('.avatar img').src = avatarImg ? `./src/assets/img/profile-images/${avatarImg}.jpg` : './assets/img/profile-images/0.jpg';
+    $('.avatar img').src = avatarImg ? `./src/assets/img/profile-images/${avatarImg}.jpg` : './src/assets/img/profile-images/0.jpg';
     sessionStorage.setItem('authToken', token);
     return;
   }
