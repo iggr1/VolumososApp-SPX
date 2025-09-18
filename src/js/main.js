@@ -33,7 +33,7 @@ const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
                 inputEl.value = val;
                 inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
-                if (isModalOpenOnScreen()) {
+                if (!isModalOpenOnScreen()) {
                     const addBtn = document.querySelector('.btn-add');
                     if (addBtn) {
                         addBtn.click();
