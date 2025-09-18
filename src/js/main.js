@@ -20,37 +20,37 @@ const inputEl = $('.panel .input input');
 const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
 
 (async () => {
-    try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        await camera.enumerate();
-        await camera.start(0);
+  try {
+    await navigator.mediaDevices.getUserMedia({ video: true });
+    await camera.enumerate();
+    await camera.start(0);
 
-        const scanner = new QrScanner({
-            video: camera.getVideo(),
-            camEl,
-            scanEl,
-            onResult: (val) => {
-                inputEl.value = val;
-                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    const scanner = new QrScanner({
+      video: camera.getVideo(),
+      camEl,
+      scanEl,
+      onResult: (val) => {
+        if (!isModalOpenOnScreen()) {
+          inputEl.value = val;
+          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
-                if (!isModalOpenOnScreen()) {
-                    const addBtn = document.querySelector('.btn-add');
-                    if (addBtn) {
-                        addBtn.click();
-                    }
-                }
-            }
-        });
-        await scanner.start();
+          const addBtn = document.querySelector('.btn-add');
+          if (addBtn) {
+            addBtn.click();
+          }
+        }
+      }
+    });
+    await scanner.start();
 
-        addEventListener('beforeunload', () => {
-            scanner.stop();
-            camera.stop();
-        });
-    } catch (err) {
-        console.error(err);
-        camEl.querySelector('.label').textContent = 'Permita acesso à câmera para ler QR';
-    }
+    addEventListener('beforeunload', () => {
+      scanner.stop();
+      camera.stop();
+    });
+  } catch (err) {
+    console.error(err);
+    camEl.querySelector('.label').textContent = 'Permita acesso à câmera para ler QR';
+  }
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
