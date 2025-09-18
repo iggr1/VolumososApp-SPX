@@ -4,9 +4,15 @@ export class QrScanner {
     this.camEl = camEl;
     this.scanEl = scanEl;
     this.onResult = onResult;
+
     this.ticking = false;
-    this.lastValue = '';
     this.lastTick = 0;
+
+    // dedupe com TTL
+    this.lastValue = '';
+    this.lastValueAt = 0;
+    this.lastValueTTL = 5000;   // 5s
+    this.lastValueTimer = null;
 
     this.off = document.createElement('canvas');
     this.ctx = this.off.getContext('2d', { willReadFrequently: true });
@@ -14,6 +20,26 @@ export class QrScanner {
 
     this.detector = null;
     this.mode = 'none';
+  }
+
+  setTTL(ms) { this.lastValueTTL = Math.max(0, +ms || 0); }
+
+  clearLastValue() {
+    this.lastValue = '';
+    this.lastValueAt = 0;
+    if (this.lastValueTimer) {
+      clearTimeout(this.lastValueTimer);
+      this.lastValueTimer = null;
+    }
+  }
+
+  _remember(val, tNow) {
+    if (val === this.lastValue && (tNow - this.lastValueAt) < this.lastValueTTL) return false;
+    this.lastValue = val;
+    this.lastValueAt = tNow;
+    if (this.lastValueTimer) clearTimeout(this.lastValueTimer);
+    this.lastValueTimer = setTimeout(() => this.clearLastValue(), this.lastValueTTL);
+    return true;
   }
 
   async ensureDetector() {
@@ -66,6 +92,7 @@ export class QrScanner {
       try {
         if (!this.lastTick || (tNow - this.lastTick) > 120) {
           this.lastTick = tNow;
+
           const { sx, sy, sw, sh } = this.getCropRect();
 
           if (this.mode === 'native') {
@@ -73,10 +100,7 @@ export class QrScanner {
             const codes = await this.detector.detect(bmp);
             bmp.close?.();
             const val = codes?.[0]?.rawValue || codes?.[0]?.rawValueText || null;
-            if (val && val !== this.lastValue) {
-              this.lastValue = val;
-              this.onResult?.(val);
-            }
+            if (val && this._remember(val, tNow)) this.onResult?.(val);
           } else {
             this.off.width = Math.min(800, Math.max(320, Math.round(sh)));
             this.off.height = this.off.width;
@@ -89,17 +113,21 @@ export class QrScanner {
 
             const res = await this.detector.decodeFromCanvas(this.off).catch(() => null);
             const val = res?.getText?.();
-            if (val && val !== this.lastValue) {
-              this.lastValue = val;
-              this.onResult?.(val);
-            }
+            if (val && this._remember(val, tNow)) this.onResult?.(val);
           }
         }
-      } catch { }
+      } catch {
+        // ignora erros transitórios por frame
+      }
+
       requestAnimationFrame(loop);
     };
+
     requestAnimationFrame(loop);
   }
 
-  stop() { this.ticking = false; }
+  stop() {
+    this.ticking = false;
+    this.clearLastValue();
+  }
 }
