@@ -18,6 +18,7 @@ const selectLabel = $('.cam-select span');
 const inputEl = $('.panel .input input');
 
 const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
+let scanLock = false;
 
 (async () => {
   try {
@@ -30,15 +31,14 @@ const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
       camEl,
       scanEl,
       onResult: (val) => {
-        if (!isModalOpenOnScreen()) {
-          inputEl.value = val;
-          inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        if (scanLock || isModalOpenOnScreen()) return;
+        scanLock = true;
 
-          const addBtn = document.querySelector('.btn-add');
-          if (addBtn) {
-            addBtn.click();
-          }
-        }
+        inputEl.value = val;
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        document.querySelector('.btn-add')?.click();
+
+        setTimeout(() => { scanLock = false; }, 500); // debounce
       }
     });
     await scanner.start();
