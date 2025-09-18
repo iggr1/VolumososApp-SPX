@@ -1,13 +1,14 @@
 import { showAlert } from './alerts.js';
 import { openModal } from '../modal.js';
 import { startGetConfigLoop } from '../app.js';
+import { updateCounts } from './helper.js';
 
 const $ = (selector) => document.querySelector(selector);
 
 export function setUserInfo(username, token, avatarImg) {
   const hubLabel = sessionStorage.getItem('hubLabel');
 
-  if (username && token ) {
+  if (username && token) {
     $('.username').textContent = username;
     $('.hub').textContent = hubLabel;
     $('.avatar img').src = avatarImg ? `./src/assets/img/profile-images/${avatarImg}.jpg` : './src/assets/img/profile-images/0.jpg';
@@ -49,6 +50,7 @@ export async function verifyUserSession() {
   if (isValid) {
     console.log('Sessão válida', userData);
     setUserInfo(userData?.username, token, userData?.avatar_id);
+    updateCounts();
 
     showAlert({
       type: 'success',
@@ -149,6 +151,7 @@ export async function loginRequest({ username, password, baseUrl }) {
   console.log('loginRequest', data);
 
   setUserInfo(data.username, data.token, data.avatar_id);
+  updateCounts();
 
   return true;
 }
@@ -195,5 +198,5 @@ export async function fetchUserRole() {
 }
 
 export function clearUserSession() {
-    sessionStorage.removeItem('authToken');
+  sessionStorage.removeItem('authToken');
 }

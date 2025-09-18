@@ -25,3 +25,12 @@ function toInt(v, d = 0) {
     const n = parseInt(v, 10);
     return Number.isFinite(n) ? n : d;
 }
+
+export function isModalOpenOnScreen() {
+  const el = document.querySelector('body > div.modal-root.show');
+  if (!el) return false;
+  const cs = getComputedStyle(el);
+  if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth;
+}

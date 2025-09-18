@@ -135,12 +135,11 @@
 
 .route-key--primary,
 .route-key[data-act="add"] {
-    background: var(--orange) !important;
-    color: var(--white) !important;
+    background: var(--white) !important;
 }
 
 .route-key--add svg {
-    stroke: var(--white);
+    stroke: var(--orange);
 }
 
 .route-key[data-act="add"][disabled] {

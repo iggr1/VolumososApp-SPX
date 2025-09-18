@@ -6,7 +6,7 @@ import { openModal } from './modal.js';
 import { verifyBrCode } from './utils/package.js';
 import { verifyAlreadyInLocalPallet } from './utils/pallet.js';
 import { showAlert } from './utils/alerts.js';
-import { updateCounts } from './utils/helper.js';
+import { isModalOpenOnScreen } from './utils/helper.js';
 
 setupTypography();
 
@@ -33,9 +33,11 @@ const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
                 inputEl.value = val;
                 inputEl.dispatchEvent(new Event('input', { bubbles: true }));
 
-                const addBtn = document.querySelector('.btn-add');
-                if (addBtn) {
-                    addBtn.click();
+                if (isModalOpenOnScreen()) {
+                    const addBtn = document.querySelector('.btn-add');
+                    if (addBtn) {
+                        addBtn.click();
+                    }
                 }
             }
         });
@@ -53,7 +55,6 @@ const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
 
 document.addEventListener("DOMContentLoaded", () => {
   verifyUserSession();
-  updateCounts();
 });
 
 document.addEventListener('click', (e) => {
