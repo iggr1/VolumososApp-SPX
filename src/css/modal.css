@@ -58,7 +58,7 @@
 /* Janela */
 .modal {
     width: min(96vw, 1100rem);
-    max-height: 90dvh;
+    max-height: 95dvh;
     background: var(--white);
     color: var(--black);
     border: 1rem solid var(--light-gray);

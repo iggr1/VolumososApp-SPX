@@ -4,7 +4,8 @@
 
 .pallet-modal {
   display: grid;
-  grid-template-rows: auto 1fr auto; /* badge | tabela | footer */
+  grid-template-rows: auto 1fr auto;
+  /* badge | tabela | footer */
   gap: 28rem;
   min-height: 60vh;
 }
@@ -14,6 +15,7 @@
   display: grid;
   place-items: center;
 }
+
 .pallet-badge {
   min-height: 56rem;
   padding: 20rem 30rem;
@@ -30,16 +32,17 @@
 .pallet-table {
   --col-check: 90rem;
   --col-route: 220rem;
-  /* grid de colunas muda conforme modo seleção */
   --grid: 1fr var(--col-route);
+  /* muda com .is-selecting */
   border-radius: 28rem;
-  overflow: hidden;            /* arredondamento do header + body */
+  overflow: hidden;
   background: var(--white);
-  box-shadow: 0 2rem 0 rgba(0,0,0,.03);
+  box-shadow: 0 2rem 0 rgba(0, 0, 0, .03);
 }
 
-/* quando existe coluna de checagem */
-.pallet-table.is-selecting { --grid: var(--col-check) 1fr var(--col-route); }
+.pallet-table.is-selecting {
+  --grid: var(--col-check) 1fr var(--col-route);
+}
 
 .pallet-thead,
 .pallet-tbody .tr {
@@ -48,7 +51,6 @@
   align-items: center;
 }
 
-/* HEADER fixo */
 .pallet-thead {
   position: sticky;
   top: 0;
@@ -60,15 +62,18 @@
 }
 
 .pallet-thead .th {
-  padding: 0 50rem;            /* pedido: 50rem nas laterais */
+  padding: 0 50rem;
   display: flex;
   align-items: center;
 }
-.pallet-thead .th-check { justify-content: center; }
+
+.pallet-thead .th-check {
+  justify-content: center;
+}
 
 /* BODY com scroll */
 .pallet-tbody {
-  max-height: 50vh;            /* toma o espaço e cria scroll no corpo */
+  max-height: 50vh;
   overflow-y: auto;
   background: var(--white);
 }
@@ -78,27 +83,44 @@
   min-height: 120rem;
   border-bottom: 1px solid #eee;
 }
-.pallet-tbody .tr:last-child { border-bottom: 0; }
 
-/* zebra */
-.pallet-tbody .tr:nth-child(even) { background: #fafafa; }
+.pallet-tbody .tr:last-child {
+  border-bottom: 0;
+}
+
+.pallet-tbody .tr:nth-child(even) {
+  background: #fafafa;
+}
 
 /* células */
 .pallet-tbody .td {
-  padding: 0 50rem;            /* pedido: 50rem nas laterais */
+  padding: 0 50rem;
   display: flex;
   align-items: center;
   color: var(--darker-gray);
   font-size: var(--text-medium);
 }
-.pallet-tbody .td-check { justify-content: center; }
-.pallet-tbody .td-route { justify-content: flex-start; }
+
+.pallet-tbody .td-check {
+  justify-content: center;
+}
+
+.pallet-tbody .td-route {
+  justify-content: flex-start;
+}
 
 /* realce quando em modo seleção */
-.pallet-table.is-selecting .tr { cursor: pointer; }
-.pallet-table.is-selecting .tr:hover { background: #f3f3f3; }
+.pallet-table.is-selecting .tr {
+  cursor: pointer;
+}
 
-/* estado vazio */
+.pallet-table.is-selecting .tr:hover {
+  background: #f3f3f3;
+}
+
+/* ===========================
+   Estado vazio
+   =========================== */
 .pallet-empty {
   display: grid;
   place-items: center;
@@ -106,6 +128,7 @@
   padding: 40rem 0;
   color: var(--dark-gray);
 }
+
 .pallet-empty i {
   width: 64rem;
   height: 64rem;
@@ -122,12 +145,14 @@
   cursor: pointer;
   user-select: none;
 }
+
 .pchk input {
   appearance: none;
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
+
 .pchk span {
   width: 38rem;
   height: 38rem;
@@ -137,11 +162,13 @@
   display: inline-block;
   position: relative;
 }
-.pchk input:checked + span {
+
+.pchk input:checked+span {
   background: var(--orange);
   border-color: var(--orange);
 }
-.pchk input:checked + span::after {
+
+.pchk input:checked+span::after {
   content: "";
   position: absolute;
   left: 8rem;
@@ -158,25 +185,34 @@
    Rodapé (botões fixos)
    =========================== */
 .pallet-footer {
-  position: sticky;  /* fixa no final do modal-body */
+  position: sticky;
   bottom: 0;
-  background:
-    linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,.92) 24%, rgba(255,255,255,0));
+  background: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, .92) 24%, rgba(255, 255, 255, 0));
   padding-top: 18rem;
   display: grid;
-  gap: 16rem;
-  grid-template-columns: 1fr; /* empilha em telas estreitas */
+  gap: 30rem;
+  grid-template-columns: 1fr;
 }
 
-/* em telas um pouco maiores, dois botões lado a lado */
+.pallet-footer-actions {
+  width: 100%;
+  display: flex;
+  gap: 30rem;
+  align-items: center;
+}
+
 @media (min-width: 420px) {
   .pallet-footer {
     grid-template-columns: 1fr 1fr;
   }
 }
 
+/* ===========================
+   Botões (cores por estado)
+   =========================== */
 .pallet-btn {
   height: 120rem;
+  width: 100%;
   border: 0;
   border-radius: 85rem;
   display: inline-flex;
@@ -187,19 +223,63 @@
   font-weight: var(--text-bold);
   color: var(--white);
   background: var(--light-gray);
+  /* default */
   cursor: pointer;
 }
-.pallet-btn i {
-  width: 34rem;
-  height: 34rem;
-  stroke: currentColor;
+
+.pallet-btn--primary {
+  background: var(--orange);
+  color: var(--white);
 }
 
-.pallet-btn--primary { background: var(--orange); }
-.pallet-btn--danger  { background: var(--red); }
+.pallet-btn--danger {
+  background: var(--red);
+  color: var(--white);
+}
 
 .pallet-btn[disabled] {
-  background: #dcdcdc;
-  color: #9e9e9e;
-  cursor: not-allowed;
+  background: #dcdcdc !important;
+  color: #9e9e9e !important;
+  cursor: not-allowed !important;
+}
+
+/* ===========================
+   Botão redondo (enviar existente)
+   =========================== */
+.pallet-icon-btn {
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 999rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border, #ddd);
+  background: var(--orange);
+  cursor: pointer;
+  padding: 0;
+  color: var(--white);
+}
+
+.pallet-icon-btn svg {
+  width: 60rem;
+  height: 60rem;
+  stroke: var(--white);
+}
+
+.pallet-icon-btn[disabled] {
+  background: #dcdcdc !important;
+  border-color: #dcdcdc !important;
+  color: #9e9e9e !important;
+  cursor: not-allowed !important;
+}
+
+.pallet-icon-btn[disabled] svg {
+  stroke: #9e9e9e !important;
+}
+
+/* ========= (opcional) responsividade mínima ========= */
+@media (max-width: 419px) {
+  .pallet-footer-actions {
+    justify-content: flex-end;
+  }
 }

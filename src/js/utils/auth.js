@@ -199,4 +199,6 @@ export async function fetchUserRole() {
 
 export function clearUserSession() {
   sessionStorage.removeItem('authToken');
+
+  setUserInfo(null, null, null);
 }
