@@ -44,7 +44,6 @@ export class CameraController {
     this.devices = all.filter(d => d.kind === 'videoinput');
     if (!this.devices.length) throw new Error('Sem câmera disponível');
 
-    // Restaura índice pela última câmera usada, se existir:
     const lastId = this.getLastDeviceId();
     if (lastId) {
       const idx = this.devices.findIndex(d => d.deviceId === lastId);
@@ -70,17 +69,91 @@ export class CameraController {
   hideSelector() { this.selector.classList.remove('show'); }
 
   async start(index = this.currentIdx) {
-    this.currentIdx = index;
+    // (1) Se necessário, re-enumera dispositivos
+    if (!this.devices.length) {
+      try { await this.enumerate(); }
+      catch (e) { throw e; }
+    }
+
+    // Atualiza índice desejado
+    if (typeof index === 'number') this.currentIdx = index;
+
+    // Fecha stream anterior
     this.stop();
 
-    const id = this.devices[index]?.deviceId;
-    const constraints = {
+    // Pré-constraints
+    const preferId = this.devices[this.currentIdx]?.deviceId || null;
+    const envConstraints = {
       video: {
-        ...(id ? { deviceId: { exact: id } } : { facingMode: 'environment' }),
+        facingMode: 'environment',
         width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
       }
     };
 
+    const byIdConstraints = (id) => ({
+      video: {
+        deviceId: { exact: id },
+        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
+      }
+    });
+
+    let lastErr = null;
+
+    // Tentativa A: abrir pelo deviceId selecionado
+    if (preferId) {
+      try {
+        await this._open(byIdConstraints(preferId));
+        this._afterOpen(preferId);
+        return;
+      } catch (e) {
+        lastErr = e;
+        if (this._isHardDeviceError(e)) {
+          console.warn('[Camera] Falha ao abrir ID preferido, tentando fallback...', e.name, e.message);
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    // Tentativa B: sem deviceId, pedindo a "traseira" (environment)
+    try {
+      await this._open(envConstraints);
+      const usedId = this._getUsedDeviceId();
+      this._afterOpen(usedId);
+      return;
+    } catch (e) {
+      lastErr = e;
+      if (!this._isHardDeviceError(e)) throw e;
+      console.warn('[Camera] Fallback environment falhou, tentando outras câmeras...', e.name, e.message);
+    }
+
+    // Tentativa C: iterar por todos os devices conhecidos
+    for (let i = 0; i < this.devices.length; i++) {
+      const dev = this.devices[i];
+      if (!dev?.deviceId) continue;
+      try {
+        await this._open(byIdConstraints(dev.deviceId));
+        this.currentIdx = i;
+        this._afterOpen(dev.deviceId);
+        return;
+      } catch (e) {
+        lastErr = e;
+        if (!this._isHardDeviceError(e)) throw e;
+      }
+    }
+
+    // Nada deu certo
+    const friendly = (lastErr && lastErr.name) ? lastErr.name : 'NotReadableError';
+    console.warn(
+      '[Camera] Não foi possível iniciar nenhuma câmera.',
+      'Feche outros apps/abas que usam a câmera (Zoom/Meet/WhatsApp),',
+      'verifique permissões do navegador/SO e tente novamente.'
+    );
+    throw new Error(`Falha ao iniciar câmera (${friendly}).`);
+  }
+
+  async _open(constraints) {
+    this.stop();
     this.stream = await navigator.mediaDevices.getUserMedia(constraints);
     this.video.srcObject = this.stream;
     await this.video.play();
@@ -92,34 +165,44 @@ export class CameraController {
       if (caps.focusMode?.includes?.('continuous')) adv.push({ focusMode: 'continuous' });
       if (typeof caps.focusDistance?.max === 'number') adv.push({ focusDistance: caps.focusDistance.max });
       if (adv.length) await track.applyConstraints({ advanced: adv });
+    } catch { /* ignore */ }
+  }
 
-      // Salva o deviceId efetivamente usado (mais confiável via settings)
-      const usedId = track.getSettings?.().deviceId || id || null;
-      if (usedId) {
-        this.saveLastDeviceId(usedId);
-        // Atualiza currentIdx se a lista mudar de ordem em outro momento
-        const idx = this.devices.findIndex(d => d.deviceId === usedId);
-        if (idx >= 0) this.currentIdx = idx;
-      }
-    } catch { /* silencioso */ }
+  _getUsedDeviceId() {
+    try {
+      const [track] = this.stream?.getVideoTracks?.() || [];
+      return track?.getSettings?.().deviceId || null;
+    } catch { return null; }
+  }
 
+  _afterOpen(usedId) {
+    if (usedId) {
+      this.saveLastDeviceId(usedId);
+      const idx = this.devices.findIndex(d => d.deviceId === usedId);
+      if (idx >= 0) this.currentIdx = idx;
+    }
     this.selectLabel.textContent = this.devices[this.currentIdx]?.label || `Câmera ${this.currentIdx + 1}`;
+  }
+
+  _isHardDeviceError(e) {
+    // Erros típicos de hardware/ocupado/constraints
+    return ['NotReadableError','OverconstrainedError','NotFoundError'].includes(e?.name);
   }
 
   stop() {
     if (this.stream) {
-      this.stream.getTracks().forEach(t => t.stop());
+      try { this.stream.getTracks().forEach(t => t.stop()); } catch {}
       this.stream = null;
+      this.video.srcObject = null;
     }
   }
 
-  // Persistência da última câmera
   getLastDeviceId() {
     try { return localStorage.getItem(CameraController.STORAGE_KEY) || ''; }
     catch { return ''; }
   }
   saveLastDeviceId(deviceId) {
     try { localStorage.setItem(CameraController.STORAGE_KEY, deviceId); }
-    catch { /* storage indisponível */ }
+    catch {}
   }
 }
