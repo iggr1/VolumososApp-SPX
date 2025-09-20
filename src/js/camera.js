@@ -234,6 +234,7 @@ export class CameraController {
     catch { return ''; }
   }
   saveLastDeviceId(deviceId) {
+    console.log('Salvando última câmera usada:', deviceId);
     try { localStorage.setItem(CameraController.STORAGE_KEY, deviceId); }
     catch {}
   }
