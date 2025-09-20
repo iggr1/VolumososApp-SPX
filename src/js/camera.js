@@ -40,14 +40,29 @@ export class CameraController {
   }
 
   async enumerate() {
-    const all = await navigator.mediaDevices.enumerateDevices();
+    let all = await navigator.mediaDevices.enumerateDevices();
     this.devices = all.filter(d => d.kind === 'videoinput');
     if (!this.devices.length) throw new Error('Sem câmera disponível');
+
+    // Se labels vierem vazias (comum antes de permissão), dá um prime rápido:
+    const hasLabels = this.devices.some(d => d.label && d.label.trim());
+    if (!hasLabels) {
+      try {
+        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        tmp.getTracks().forEach(t => t.stop());
+        all = await navigator.mediaDevices.enumerateDevices();
+        this.devices = all.filter(d => d.kind === 'videoinput');
+      } catch {} // se falhar, segue sem labels
+    }
 
     const lastId = this.getLastDeviceId();
     if (lastId) {
       const idx = this.devices.findIndex(d => d.deviceId === lastId);
       if (idx >= 0) this.currentIdx = idx;
+    } else {
+      // Se não tem última, preferir traseira por heurística
+      const idxEnv = this.findByLabelFacing('environment');
+      if (idxEnv >= 0) this.currentIdx = idxEnv;
     }
   }
 
@@ -69,87 +84,100 @@ export class CameraController {
   hideSelector() { this.selector.classList.remove('show'); }
 
   async start(index = this.currentIdx) {
-    // (1) Se necessário, re-enumera dispositivos
-    if (!this.devices.length) {
-      try { await this.enumerate(); }
-      catch (e) { throw e; }
-    }
-
-    // Atualiza índice desejado
+    if (!this.devices.length) await this.enumerate();
     if (typeof index === 'number') this.currentIdx = index;
 
-    // Fecha stream anterior
     this.stop();
 
-    // Pré-constraints
-    const preferId = this.devices[this.currentIdx]?.deviceId || null;
-    const envConstraints = {
+    const byId = (id) => ({
+      video: {
+        deviceId: { exact: id },
+        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
+      }
+    });
+    const envExact = {
+      video: {
+        facingMode: { exact: 'environment' },
+        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
+      }
+    };
+    const envIdeal = {
       video: {
         facingMode: 'environment',
         width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
       }
     };
 
-    const byIdConstraints = (id) => ({
-      video: {
-        deviceId: { exact: id },
-        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
-      }
-    });
+    let usedId = null;
 
-    let lastErr = null;
-
-    // Tentativa A: abrir pelo deviceId selecionado
+    // 1) Tenta o último/selecionado por deviceId
+    const preferId = this.devices[this.currentIdx]?.deviceId;
     if (preferId) {
       try {
-        await this._open(byIdConstraints(preferId));
-        this._afterOpen(preferId);
+        await this._open(byId(preferId));
+        usedId = this._getUsedDeviceId() || preferId;
+        this._finalizeAfterOpen(usedId);
         return;
       } catch (e) {
-        lastErr = e;
-        if (this._isHardDeviceError(e)) {
-          console.warn('[Camera] Falha ao abrir ID preferido, tentando fallback...', e.name, e.message);
-        } else {
-          throw e;
-        }
+        // segue para fallback
       }
     }
 
-    // Tentativa B: sem deviceId, pedindo a "traseira" (environment)
+    // 2) Força environment (exact). iOS/Android respeitam melhor isso.
     try {
-      await this._open(envConstraints);
-      const usedId = this._getUsedDeviceId();
-      this._afterOpen(usedId);
+      await this._open(envExact);
+      usedId = this._getUsedDeviceId();
+      if (usedId) {
+        const idx = this.devices.findIndex(d => d.deviceId === usedId);
+        if (idx >= 0) this.currentIdx = idx;
+      } else {
+        // Se não retornou usedId, tenta mapear por label pro índice
+        const idxEnv = this.findByLabelFacing('environment');
+        if (idxEnv >= 0) this.currentIdx = idxEnv;
+      }
+      this._finalizeAfterOpen(usedId);
       return;
     } catch (e) {
-      lastErr = e;
-      if (!this._isHardDeviceError(e)) throw e;
-      console.warn('[Camera] Fallback environment falhou, tentando outras câmeras...', e.name, e.message);
+      // segue para próximo fallback
     }
 
-    // Tentativa C: iterar por todos os devices conhecidos
-    for (let i = 0; i < this.devices.length; i++) {
-      const dev = this.devices[i];
-      if (!dev?.deviceId) continue;
-      try {
-        await this._open(byIdConstraints(dev.deviceId));
-        this.currentIdx = i;
-        this._afterOpen(dev.deviceId);
-        return;
-      } catch (e) {
-        lastErr = e;
-        if (!this._isHardDeviceError(e)) throw e;
+    // 3) Tenta environment (ideal)
+    try {
+      await this._open(envIdeal);
+      usedId = this._getUsedDeviceId();
+      if (usedId) {
+        const idx = this.devices.findIndex(d => d.deviceId === usedId);
+        if (idx >= 0) this.currentIdx = idx;
+      } else {
+        const idxEnv = this.findByLabelFacing('environment');
+        if (idxEnv >= 0) this.currentIdx = idxEnv;
       }
+      this._finalizeAfterOpen(usedId);
+      return;
+    } catch (e) {
+      // segue
     }
 
-    // Nada deu certo
-    const friendly = (lastErr && lastErr.name) ? lastErr.name : 'NotReadableError';
-    console.warn(
-      '[Camera] Não foi possível iniciar nenhuma câmera.',
-      'Feche outros apps/abas que usam a câmera (Zoom/Meet/WhatsApp),',
-      'verifique permissões do navegador/SO e tente novamente.'
-    );
-    throw new Error(`Falha ao iniciar câmera (${friendly}).`);
+    // 4) Heurística por label: tenta abrir explicitamente o que parece "traseira"
+    const idxByLabel = this.findByLabelFacing('environment');
+    if (idxByLabel >= 0) {
+      try {
+        await this._open(byId(this.devices[idxByLabel].deviceId));
+        this.currentIdx = idxByLabel;
+        usedId = this._getUsedDeviceId();
+        this._finalizeAfterOpen(usedId);
+        return;
+      } catch (e) { /* segue */ }
+    }
+
+    // 5) Último recurso: abre a primeira disponível
+    await this._open({ video: true });
+    usedId = this._getUsedDeviceId();
+    if (usedId) {
+      const idx = this.devices.findIndex(d => d.deviceId === usedId);
+      if (idx >= 0) this.currentIdx = idx;
+    }
+    this._finalizeAfterOpen(usedId);
   }
 
   async _open(constraints) {
@@ -165,7 +193,7 @@ export class CameraController {
       if (caps.focusMode?.includes?.('continuous')) adv.push({ focusMode: 'continuous' });
       if (typeof caps.focusDistance?.max === 'number') adv.push({ focusDistance: caps.focusDistance.max });
       if (adv.length) await track.applyConstraints({ advanced: adv });
-    } catch { /* ignore */ }
+    } catch {}
   }
 
   _getUsedDeviceId() {
@@ -175,18 +203,22 @@ export class CameraController {
     } catch { return null; }
   }
 
-  _afterOpen(usedId) {
-    if (usedId) {
-      this.saveLastDeviceId(usedId);
-      const idx = this.devices.findIndex(d => d.deviceId === usedId);
-      if (idx >= 0) this.currentIdx = idx;
-    }
+  _finalizeAfterOpen(usedId) {
+    if (usedId) this.saveLastDeviceId(usedId);
     this.selectLabel.textContent = this.devices[this.currentIdx]?.label || `Câmera ${this.currentIdx + 1}`;
+
+    // Se a label indicar traseira, desliga espelho; senão, mantém:
+    const label = (this.devices[this.currentIdx]?.label || '').toLowerCase();
+    const looksBack = /(back|rear|traseir|environment|world)/i.test(label);
+    this.mirrored = !looksBack;
+    this.video.classList.toggle('mirror', this.mirrored);
   }
 
-  _isHardDeviceError(e) {
-    // Erros típicos de hardware/ocupado/constraints
-    return ['NotReadableError','OverconstrainedError','NotFoundError'].includes(e?.name);
+  findByLabelFacing(kind /* 'environment' | 'user' */) {
+    const re = kind === 'environment'
+      ? /(back|rear|traseir|environment|world)/i
+      : /(front|user|frontal|face)/i;
+    return this.devices.findIndex(d => re.test(String(d.label || '')));
   }
 
   stop() {
