@@ -25,14 +25,19 @@ export default function render(props = {}, _api) {
   let selecting = false;
   let selected = new Set();
   let longPressTimer = null;
+  let loading = false; // <<< novo estado
 
-  injectNoSelectCSS();
   paint();
 
   if (window.lucide?.createIcons) {
     lucide.createIcons({ attrs: { width: 22, height: 22 } });
   }
   return el;
+
+  function setLoading(v, label = 'Excluindo') {
+    loading = !!v;
+    paint(label);
+  }
 
   function snapshotScroll() {
     const body = el.querySelector('.pallet-tbody');
@@ -60,8 +65,11 @@ export default function render(props = {}, _api) {
     });
   }
 
-  function paint() {
+  function paint(loadingLabel = 'Excluindo…') {
     const snap = snapshotScroll();
+
+    el.className = `pallet-modal${loading ? ' is-loading' : ''}`;
+    const canDel = canDelete() && !loading;
 
     el.innerHTML = `
       <div class="pallet-head">
@@ -72,7 +80,7 @@ export default function render(props = {}, _api) {
         <div class="pallet-thead">
           ${selecting ? `<div class="th th-check">
               <label class="pchk">
-                <input id="chk-all" type="checkbox" ${selected.size && selected.size === items.length ? 'checked' : ''}/>
+                <input id="chk-all" type="checkbox" ${selected.size && selected.size === items.length ? 'checked' : ''} ${loading ? 'disabled' : ''}/>
                 <span aria-hidden="true"></span>
               </label>
             </div>` : ''}
@@ -83,12 +91,19 @@ export default function render(props = {}, _api) {
         <div class="pallet-tbody">
           ${items.length ? items.map(rowTpl).join('') : emptyTpl()}
         </div>
+
+        ${loading ? `
+          <div class="pallet-loading-overlay" aria-busy="true" aria-live="polite">
+            <div class="spinner" role="status" aria-label="${esc(loadingLabel)}"></div>
+            <span class="loading-text">${esc(loadingLabel)}</span>
+          </div>
+        ` : ''}
       </div>
 
       <div class="pallet-footer">
-        <button id="pallet-del" class="pallet-btn ${canDelete() ? 'pallet-btn--danger' : ''}" ${canDelete() ? '' : 'disabled'}>
-          <i data-lucide="x-circle"></i>
-          <span>EXCLUIR SELECIONADOS</span>
+        <button id="pallet-del" class="pallet-btn ${canDel ? 'pallet-btn--danger' : ''}" ${canDel ? '' : 'disabled'}>
+          ${loading ? `<span class="btn-spinner"></span>` : `<i data-lucide="x-circle"></i>`}
+          <span>${loading ? esc(loadingLabel) : 'EXCLUIR SELECIONADOS'}</span>
         </button>
       </div>
     `;
@@ -108,7 +123,7 @@ export default function render(props = {}, _api) {
       <div class="tr" data-i="${i}">
         ${selecting ? `<div class="td td-check">
           <label class="pchk">
-            <input type="checkbox" data-i="${i}" ${checked}/>
+            <input type="checkbox" data-i="${i}" ${checked} ${loading ? 'disabled' : ''}/>
             <span aria-hidden="true"></span>
           </label>
         </div>` : ''}
@@ -135,6 +150,7 @@ export default function render(props = {}, _api) {
       table.addEventListener('selectstart', (e) => e.preventDefault(), { passive: false });
       table.addEventListener('dragstart', (e) => e.preventDefault(), { passive: false });
     }
+    if (loading) return; // enquanto carregando, não liga handlers de interação
 
     // Long-press para entrar no modo seleção (ignora cliques no checkbox)
     tbody.addEventListener('pointerdown', onPressStart);
@@ -145,7 +161,7 @@ export default function render(props = {}, _api) {
     // Clique na linha (ignora cliques em checkbox/label)
     tbody.addEventListener('click', onRowClick);
 
-    // Clique/troca no checkbox da linha — controla seleção sem brigar com onRowClick
+    // Clique/troca no checkbox da linha
     tbody.addEventListener('change', (e) => {
       const cb = e.target;
       if (!(cb instanceof HTMLInputElement)) return;
@@ -157,17 +173,13 @@ export default function render(props = {}, _api) {
       if (cb.checked) selected.add(idx);
       else selected.delete(idx);
 
-      // Se zerou seleção, sai do modo selecting
       if (selected.size === 0) selecting = false;
-
       paint();
     });
 
-    // Previne que o clique no label/checkbox borbulhe e dispare o handler da linha
+    // Previne bubbling do label/checkbox
     tbody.addEventListener('click', (e) => {
-      if (e.target.closest('.pchk')) {
-        e.stopPropagation();
-      }
+      if (e.target.closest('.pchk')) e.stopPropagation();
     });
 
     // Header "selecionar tudo"
@@ -182,7 +194,7 @@ export default function render(props = {}, _api) {
   }
 
   function onPressStart(e) {
-    if (e.target.closest('.pchk')) return; // não iniciar long-press em cima do checkbox
+    if (e.target.closest('.pchk')) return;
     const row = e.target.closest('.tr');
     if (!row) return;
     const idx = Number(row.dataset.i);
@@ -196,7 +208,7 @@ export default function render(props = {}, _api) {
   function onPressEnd() { clearTimeout(longPressTimer); }
 
   function onRowClick(e) {
-    if (e.target.closest('.pchk')) return; // clique já tratado no 'change'
+    if (e.target.closest('.pchk')) return;
     const row = e.target.closest('.tr');
     if (!row) return;
     const idx = Number(row.dataset.i);
@@ -222,13 +234,17 @@ export default function render(props = {}, _api) {
     });
     if (!ok) return;
 
+    setLoading(true, 'Excluindo…');
+
     try {
       const result = await deletePackagesByIndices(items, selected, palletId);
+
       const { items: nextItems } = dropItemsByIndices(items, Array.from(selected).sort((a, b) => a - b));
       items = nextItems;
       selected.clear();
       selecting = false;
 
+      setLoading(false);
       paint();
 
       const msg =
@@ -238,27 +254,11 @@ export default function render(props = {}, _api) {
 
       await showAlert({ type: result.failed.length ? 'warning' : 'success', title: 'Excluir', message: msg, durationMs: 1500 });
     } catch (e) {
+      setLoading(false);
       await showAlert({ type: 'error', title: 'Erro', message: e?.message || 'Falha ao excluir.' });
     }
   }
 
   function canDelete() { return selecting && selected.size > 0; }
   function esc(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
-}
-
-function injectNoSelectCSS() {
-  if (document.getElementById('pallet-no-select-style')) return;
-  const style = document.createElement('style');
-  style.id = 'pallet-no-select-style';
-  style.textContent = `
-    .pallet-modal .pallet-table,
-    .pallet-modal .pallet-table * {
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-    }
-  `;
-  document.head.appendChild(style);
 }

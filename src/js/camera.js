@@ -1,6 +1,4 @@
 export class CameraController {
-  static STORAGE_KEY = 'camera:lastDeviceId';
-
   constructor({ camEl, selectBtn, flipBtn, selectLabel }) {
     this.camEl = camEl;
     this.selectBtn = selectBtn;
@@ -16,7 +14,8 @@ export class CameraController {
     this.selector.className = 'cam-selector';
     camEl.appendChild(this.selector);
 
-    this.devices = [];
+    this.allDevices = [];
+    this.working = [];      // { deviceId, label, facing } apenas as que funcionam
     this.currentIdx = 0;
     this.stream = null;
     this.mirrored = false;
@@ -41,40 +40,93 @@ export class CameraController {
 
   async enumerate() {
     let all = await navigator.mediaDevices.enumerateDevices();
-    this.devices = all.filter(d => d.kind === 'videoinput');
-    if (!this.devices.length) throw new Error('Sem câmera disponível');
+    this.allDevices = all.filter(d => d.kind === 'videoinput');
+    if (!this.allDevices.length) throw new Error('Sem câmera disponível');
 
-    // Se labels vierem vazias (comum antes de permissão), dá um prime rápido:
-    const hasLabels = this.devices.some(d => d.label && d.label.trim());
+    const hasLabels = this.allDevices.some(d => d.label && d.label.trim());
     if (!hasLabels) {
       try {
         const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         tmp.getTracks().forEach(t => t.stop());
         all = await navigator.mediaDevices.enumerateDevices();
-        this.devices = all.filter(d => d.kind === 'videoinput');
-      } catch {} // se falhar, segue sem labels
+        this.allDevices = all.filter(d => d.kind === 'videoinput');
+      } catch {}
     }
 
-    const lastId = this.getLastDeviceId();
-    if (lastId) {
-      const idx = this.devices.findIndex(d => d.deviceId === lastId);
-      if (idx >= 0) this.currentIdx = idx;
-    } else {
-      // Se não tem última, preferir traseira por heurística
-      const idxEnv = this.findByLabelFacing('environment');
-      if (idxEnv >= 0) this.currentIdx = idxEnv;
+    await this._probeWorkingDevices(); // preenche this.working apenas com câmeras que abrem
+  }
+
+  async _probeWorkingDevices() {
+    this.working = [];
+    // ordem: heurística para traseiras primeiro, depois não-frontais, depois o resto
+    const looksBack  = (s) => /(back|rear|traseir|environment|world|wide)/i.test(String(s||''));
+    const looksFront = (s) => /(front|user|frontal|face|selfie)/i.test(String(s||''));
+
+    const envFirst   = this.allDevices.filter(d => looksBack(d.label));
+    const notFront   = this.allDevices.filter(d => !looksBack(d.label) && !looksFront(d.label));
+    const theRest    = this.allDevices.filter(d => !envFirst.includes(d) && !notFront.includes(d));
+
+    const ordered = [...envFirst, ...notFront, ...theRest];
+
+    for (const dev of ordered) {
+      const ok = await this._testOpen(dev.deviceId);
+      if (ok) this.working.push(ok); // ok = { deviceId, label, facing }
     }
+
+    // se nada funcionou, tenta abrir genérico (sem deviceId) só para ter uma
+    if (this.working.length === 0) {
+      const tryGen = await this._testOpen(null, true);
+      if (tryGen) this.working.push(tryGen);
+    }
+    if (this.working.length === 0) throw new Error('Nenhuma câmera funcional foi encontrada');
+  }
+
+  async _testOpen(deviceId, generic = false) {
+    const constraints = generic
+      ? { video: { facingMode: { exact: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } }
+      : {
+          video: deviceId
+            ? { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
+            : { facingMode: { exact: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } }
+        };
+
+    let stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const [track] = stream.getVideoTracks();
+      const settings = track?.getSettings?.() || {};
+      const usedId = settings.deviceId || deviceId || '';
+      const facing = String(settings.facingMode || '').toLowerCase() || this._guessFacingByLabel(this._labelOf(usedId));
+      const label  = this._labelOf(usedId);
+      return { deviceId: usedId, label, facing }; // válido
+    } catch {
+      return null;
+    } finally {
+      try { stream?.getTracks?.().forEach(t => t.stop()); } catch {}
+    }
+  }
+
+  _labelOf(deviceId) {
+    const d = this.allDevices.find(x => x.deviceId === deviceId);
+    return d?.label || '';
+  }
+
+  _guessFacingByLabel(label) {
+    const s = String(label || '').toLowerCase();
+    if (/(back|rear|traseir|environment|world|wide)/i.test(s)) return 'environment';
+    if (/(front|user|frontal|face|selfie)/i.test(s)) return 'user';
+    return 'unknown';
   }
 
   buildSelector() {
     this.selector.innerHTML = '';
-    this.devices.forEach((d, i) => {
+    this.working.forEach((d, i) => {
       const li = document.createElement('li');
-      li.textContent = d.label || `Câmera ${i + 1}`;
+      li.textContent = this._friendlyName(d, i);
       if (i === this.currentIdx) li.classList.add('active');
       li.addEventListener('click', async (e) => {
         e.stopPropagation();
-        await this.start(i);
+        await this.start(i, { preferBack: false }); // se o usuário escolheu, respeita
         this.hideSelector();
       });
       this.selector.appendChild(li);
@@ -83,105 +135,42 @@ export class CameraController {
   showSelector() { this.buildSelector(); this.selector.classList.add('show'); }
   hideSelector() { this.selector.classList.remove('show'); }
 
-  async start(index = this.currentIdx) {
-    if (!this.devices.length) await this.enumerate();
-    if (typeof index === 'number') this.currentIdx = index;
-
-    this.stop();
-
-    const byId = (id) => ({
-      video: {
-        deviceId: { exact: id },
-        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
-      }
-    });
-    const envExact = {
-      video: {
-        facingMode: { exact: 'environment' },
-        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
-      }
-    };
-    const envIdeal = {
-      video: {
-        facingMode: 'environment',
-        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
-      }
-    };
-
-    let usedId = null;
-
-    // 1) Tenta o último/selecionado por deviceId
-    const preferId = this.devices[this.currentIdx]?.deviceId;
-    if (preferId) {
-      try {
-        await this._open(byId(preferId));
-        usedId = this._getUsedDeviceId() || preferId;
-        this._finalizeAfterOpen(usedId);
-        return;
-      } catch (e) {
-        // segue para fallback
-      }
+  _friendlyName(d, idx) {
+    if ((d.facing || '').toLowerCase() === 'environment' || /(back|rear|traseir|environment|world|wide)/i.test(d.label)) {
+      return 'Traseira';
     }
-
-    // 2) Força environment (exact). iOS/Android respeitam melhor isso.
-    try {
-      await this._open(envExact);
-      usedId = this._getUsedDeviceId();
-      if (usedId) {
-        const idx = this.devices.findIndex(d => d.deviceId === usedId);
-        if (idx >= 0) this.currentIdx = idx;
-      } else {
-        // Se não retornou usedId, tenta mapear por label pro índice
-        const idxEnv = this.findByLabelFacing('environment');
-        if (idxEnv >= 0) this.currentIdx = idxEnv;
-      }
-      this._finalizeAfterOpen(usedId);
-      return;
-    } catch (e) {
-      // segue para próximo fallback
+    if ((d.facing || '').toLowerCase() === 'user' || /(front|user|frontal|face|selfie)/i.test(d.label)) {
+      return 'Frontal';
     }
-
-    // 3) Tenta environment (ideal)
-    try {
-      await this._open(envIdeal);
-      usedId = this._getUsedDeviceId();
-      if (usedId) {
-        const idx = this.devices.findIndex(d => d.deviceId === usedId);
-        if (idx >= 0) this.currentIdx = idx;
-      } else {
-        const idxEnv = this.findByLabelFacing('environment');
-        if (idxEnv >= 0) this.currentIdx = idxEnv;
-      }
-      this._finalizeAfterOpen(usedId);
-      return;
-    } catch (e) {
-      // segue
-    }
-
-    // 4) Heurística por label: tenta abrir explicitamente o que parece "traseira"
-    const idxByLabel = this.findByLabelFacing('environment');
-    if (idxByLabel >= 0) {
-      try {
-        await this._open(byId(this.devices[idxByLabel].deviceId));
-        this.currentIdx = idxByLabel;
-        usedId = this._getUsedDeviceId();
-        this._finalizeAfterOpen(usedId);
-        return;
-      } catch (e) { /* segue */ }
-    }
-
-    // 5) Último recurso: abre a primeira disponível
-    await this._open({ video: true });
-    usedId = this._getUsedDeviceId();
-    if (usedId) {
-      const idx = this.devices.findIndex(d => d.deviceId === usedId);
-      if (idx >= 0) this.currentIdx = idx;
-    }
-    this._finalizeAfterOpen(usedId);
+    return `Câmera ${idx + 1}`;
   }
 
-  async _open(constraints) {
+  async start(index = undefined, { preferBack = true } = {}) {
+    if (!this.working.length) await this.enumerate();
+
+    let targetIdx = 0;
+
+    if (typeof index === 'number') {
+      targetIdx = Math.max(0, Math.min(index, this.working.length - 1));
+    } else if (preferBack) {
+      const iBack = this.working.findIndex(d =>
+        (d.facing || '').toLowerCase() === 'environment' ||
+        /(back|rear|traseir|environment|world|wide)/i.test(d.label)
+      );
+      targetIdx = iBack >= 0 ? iBack : 0;
+    }
+
+    this.currentIdx = targetIdx;
     this.stop();
+
+    const dev = this.working[this.currentIdx];
+    const constraints = {
+      video: {
+        deviceId: { exact: dev.deviceId },
+        width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 }
+      }
+    };
+
     this.stream = await navigator.mediaDevices.getUserMedia(constraints);
     this.video.srcObject = this.stream;
     await this.video.play();
@@ -194,31 +183,14 @@ export class CameraController {
       if (typeof caps.focusDistance?.max === 'number') adv.push({ focusDistance: caps.focusDistance.max });
       if (adv.length) await track.applyConstraints({ advanced: adv });
     } catch {}
-  }
 
-  _getUsedDeviceId() {
-    try {
-      const [track] = this.stream?.getVideoTracks?.() || [];
-      return track?.getSettings?.().deviceId || null;
-    } catch { return null; }
-  }
-
-  _finalizeAfterOpen(usedId) {
-    if (usedId) this.saveLastDeviceId(usedId);
-    this.selectLabel.textContent = this.devices[this.currentIdx]?.label || `Câmera ${this.currentIdx + 1}`;
-
-    // Se a label indicar traseira, desliga espelho; senão, mantém:
-    const label = (this.devices[this.currentIdx]?.label || '').toLowerCase();
-    const looksBack = /(back|rear|traseir|environment|world)/i.test(label);
-    this.mirrored = !looksBack;
+    // espelhamento: só em frontal
+    const isBack = (dev.facing || '').toLowerCase() === 'environment' ||
+                   /(back|rear|traseir|environment|world|wide)/i.test(dev.label);
+    this.mirrored = !isBack;
     this.video.classList.toggle('mirror', this.mirrored);
-  }
 
-  findByLabelFacing(kind /* 'environment' | 'user' */) {
-    const re = kind === 'environment'
-      ? /(back|rear|traseir|environment|world)/i
-      : /(front|user|frontal|face)/i;
-    return this.devices.findIndex(d => re.test(String(d.label || '')));
+    this.selectLabel.textContent = this._friendlyName(dev, this.currentIdx);
   }
 
   stop() {
@@ -227,15 +199,5 @@ export class CameraController {
       this.stream = null;
       this.video.srcObject = null;
     }
-  }
-
-  getLastDeviceId() {
-    try { return localStorage.getItem(CameraController.STORAGE_KEY) || ''; }
-    catch { return ''; }
-  }
-  saveLastDeviceId(deviceId) {
-    console.log('Salvando última câmera usada:', deviceId);
-    try { localStorage.setItem(CameraController.STORAGE_KEY, deviceId); }
-    catch {}
   }
 }
