@@ -166,3 +166,9 @@ document.addEventListener('click', (e) => {
     type: 'routeSelect'
   });
 });
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.btn-info');
+  if (!btn) return;
+  openModal({ type: 'about' });
+});
