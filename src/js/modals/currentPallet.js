@@ -14,7 +14,7 @@ export const meta = {
 
 const LS_KEY = 'currentPallet';
 
-export default function render(_props = {}, api) {
+export default function render(_props = {}, modalApi) {
   const el = document.createElement('div');
   el.id = 'pallet-root';
   el.className = 'pallet-modal';
@@ -236,10 +236,6 @@ export default function render(_props = {}, api) {
       selecting = false;
       items = [];
       saveItems(items);
-
-      updateCounts();
-
-      // desabilita botões após limpar
       refreshButtons();
       paint();
 
@@ -260,7 +256,10 @@ export default function render(_props = {}, api) {
         message: e?.message || 'Erro inesperado.',
         durationMs: 2000
       });
+
     }
+
+    modalApi.close({ instant: true, bypassBefore: false });
   }
 
   // enviar para PALLET EXISTENTE
@@ -298,8 +297,6 @@ export default function render(_props = {}, api) {
       items = [];
       saveItems(items);
 
-      updateCounts();
-
       // desabilita botões após limpar
       refreshButtons();
       paint();
@@ -322,6 +319,8 @@ export default function render(_props = {}, api) {
         durationMs: 2000
       });
     }
+
+    modalApi.close({ instant: true, bypassBefore: false });
   }
 
   // ---- helpers ------------------------------------------------------------

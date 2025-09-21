@@ -93,6 +93,24 @@ document.addEventListener('click', (e) => {
   const brCodeInput = document.querySelector('.brcode-input');
   const brCode = brCodeInput ? brCodeInput.value : '';
 
+  const items = JSON.parse(localStorage.getItem('currentPallet')) || [];
+  const packagesCount = Array.isArray(items) ? items.length : 0;
+  const maxPackages = Number(localStorage.getItem('maxPackages') || '15');
+
+  if (packagesCount && Array.isArray(items) && items.length >= maxPackages) {
+
+    showAlert({
+      type: 'error',
+      title: 'Limite de pacotes atingido',
+      message: `Você não pode adicionar mais de ${maxPackages} pacotes a um pallet.`,
+      buttons: [],
+      durationMs: 4000,
+      dismissible: true,
+      collapseDelayMs: 150,
+    });
+    return;
+  }
+
   if (!brCode) {
     showAlert({
       type: 'info',
@@ -108,7 +126,7 @@ document.addEventListener('click', (e) => {
 
   if (!verifyBrCode(brCode)) {
     showAlert({
-      type: 'warning',
+      type: 'error',
       title: 'Código BR inválido',
       message: 'O código BR deve ter 15 caracteres e começar com "BR".',
       buttons: [],

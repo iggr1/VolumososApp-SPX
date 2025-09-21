@@ -48,7 +48,6 @@ export async function verifyUserSession() {
   const isValid = !!token && Number.isFinite(authExpires) && (now + skewMs) < authExpires;
 
   if (isValid) {
-    console.log('Sessão válida', userData);
     setUserInfo(userData?.username, token, userData?.avatar_id);
     updateCounts();
 
@@ -63,7 +62,6 @@ export async function verifyUserSession() {
     });
 
   } else {
-    console.log('Sessão inválida', userData);
     sessionStorage.removeItem('authToken');
   }
 
@@ -148,7 +146,6 @@ export async function loginRequest({ username, password, baseUrl }) {
 
     return null;
   }
-  console.log('loginRequest', data);
 
   setUserInfo(data.username, data.token, data.avatar_id);
   updateCounts();

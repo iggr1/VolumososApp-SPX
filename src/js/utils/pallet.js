@@ -1,5 +1,3 @@
-// helpers/pallets.js
-
 import { apiGet, apiPost } from '../api.js';
 import { updateCounts } from './helper.js';
 import { showAlert } from './alerts.js';
@@ -38,17 +36,10 @@ export function sendToLocalPallet(packageToAdd) {
 const QUEUE_KEY = 'palletQueue';
 let processing = false;
 
-/**
- * Enfileira o pallet atual para envio.
- * options:
- *  - targetPallet: number -> se fornecido, envia para ESTE pallet existente
- *  - mode: 'existing' | ''  (se targetPallet > 0, forçamos 'existing')
- */
 export function addIntoQueue(options = {}) {
     const packages = safeGetLS('currentPallet', []);
     if (!Array.isArray(packages) || packages.length === 0) return;
 
-    // normaliza minimamente (server também normaliza)
     const norm = packages
         .map(p => ({
             brCode: String(p.brCode || p.brcode || '').trim().toUpperCase(),

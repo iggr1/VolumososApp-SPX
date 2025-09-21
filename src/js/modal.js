@@ -234,6 +234,8 @@ export function open(options = {}) {
   }
 
   async function close(reason = 'manual', opts = {}){
+    // opts: { instant = false, bypassBefore = false }
+
     if (!dialog.isConnected) return;
     if (!opts.bypassBefore) {
       const ok = await runBeforeClose(reason); // <- pega Esc/Close/Backdrop
