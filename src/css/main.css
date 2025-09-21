@@ -183,8 +183,6 @@ body {
     flex-direction: column;
     align-items: center;
     background-color: var(--black);
-    padding: 50rem;
-    gap: 50rem;
     position: relative;
     overflow: hidden;
 }
@@ -195,8 +193,9 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 30rem;
     position: relative;
+    margin: 20rem 0;
+    justify-content: center;
 }
 
 .cam .cam-controls .label {
@@ -216,14 +215,16 @@ body {
 }
 
 .cam .cam-controls .scan {
-    height: 100%;
+    height: 95%;
     border: 5rem solid var(--light-gray);
     border-radius: 85rem;
     position: relative;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     aspect-ratio: 1 / 1;
+    padding: 20rem;
 }
 
 .cam .cam-controls .scan .line {
@@ -407,6 +408,14 @@ body {
     padding: 50rem;
 }
 
+.panel .btn-current-pallet .local-wrap span,
+.panel .btn-all-pallets .all-wrap span {
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    color: var(--white);
+    text-align: left;
+}
+
 .panel .local-wrap,
 .panel .all-wrap {
     width: 100%;
@@ -439,6 +448,7 @@ body {
     width: 80rem;
     height: 80rem;
     stroke: var(--white);
+    flex-shrink: 0;
 }
 
 .panel .btn-current-pallet span,
