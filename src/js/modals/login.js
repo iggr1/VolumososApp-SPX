@@ -51,7 +51,7 @@ export default function render(_props = {}, api) {
     </div>
 
     <div class="login-actions">
-      <button type="button" class="btn btn--orange" id="login-submit">
+      <button type="button" class="login-btn btn--orange" id="login-submit">
         <i data-lucide="log-in" aria-hidden="true"></i>
         <span>ENTRAR</span>
       </button>
@@ -141,7 +141,7 @@ export default function render(_props = {}, api) {
     try {
       const submitButton = el.querySelector('#login-submit');
       const modal = document.querySelector('.modal');
-      submitButton.classList.add('btn--loading');
+      submitButton.classList.add('login-btn--loading');
       modal?.classList?.add('loading');
 
       const code = el.querySelector('#login-hub').value;
@@ -149,7 +149,7 @@ export default function render(_props = {}, api) {
       const password = el.querySelector('#login-pass').value;
       if (!code || !username || !password) {
         el.querySelector('form')?.reportValidity?.();
-        submitButton.classList.remove('btn--loading');
+        submitButton.classList.remove('login-btn--loading');
         modal?.classList?.remove('loading');
         return;
       }
@@ -161,12 +161,12 @@ export default function render(_props = {}, api) {
       const res = await loginRequest({ username, password, baseUrl });
 
       if (!res) {
-        submitButton.classList.remove('btn--loading');
+        submitButton.classList.remove('login-btn--loading');
         modal?.classList?.remove('loading');
         return;
       }
 
-      submitButton.classList.remove('btn--loading');
+      submitButton.classList.remove('login-btn--loading');
       modal?.classList?.remove('loading');
 
       api.close('submit');
