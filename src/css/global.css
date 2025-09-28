@@ -23,3 +23,78 @@
     --text-normal: 400;
     --text-bold: 700;
 }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20rem;
+    width: 100%;
+    height: 120rem;
+    border-radius: 85rem;
+    color: var(--white);
+    cursor: pointer;
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    letter-spacing: 2rem;
+    text-transform: uppercase;
+    margin-top: 50rem;
+    background: var(--btn-bg, var(--orange));
+    transition: background .15s ease;
+}
+
+.btn:hover {
+    background: var(--btn-bg-hover, var(--btn-bg));
+}
+
+.btn:focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
+.btn--orange {
+    --btn-bg: var(--orange);
+    --btn-bg-hover: var(--dark-orange);
+}
+
+.btn--green {
+    --btn-bg: var(--green);
+    --btn-bg-hover: var(--dark-green);
+}
+
+.btn--red {
+    --btn-bg: var(--red);
+    --btn-bg-hover: var(--dark-red);
+}
+
+.btn svg {
+    width: 50rem;
+    height: 50rem;
+    stroke: var(--white);
+}
+
+/* some com o svg e coloca um spinner no lugar do svg */
+
+.btn--loading svg {
+    display: none;
+}
+
+.btn--loading::before {
+    content: '';
+    width: 30rem;
+    height: 30rem;
+    border: 5rem solid var(--white);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
