@@ -38,7 +38,6 @@
     font-weight: var(--text-bold);
     letter-spacing: 2rem;
     text-transform: uppercase;
-    margin-top: 50rem;
     background: var(--btn-bg, var(--orange));
     transition: background .15s ease;
 }
