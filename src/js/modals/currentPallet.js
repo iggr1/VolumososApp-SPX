@@ -118,6 +118,13 @@ export default function render(_props = {}, modalApi) {
 
   // ---- events -------------------------------------------------------------
   function bindEvents() {
+    const table = el.querySelector('.pallet-table');
+    if (table) {
+      const prevent = (e) => e.preventDefault();
+      table.addEventListener('selectstart', prevent, { passive: false });
+      table.addEventListener('dragstart', prevent, { passive: false });
+    }
+
     const tbody = el.querySelector('.pallet-tbody');
     const delBtn = el.querySelector('#pallet-del');
     const finBtn = el.querySelector('#pallet-finish');
@@ -129,10 +136,10 @@ export default function render(_props = {}, modalApi) {
     tbody.addEventListener('pointercancel', onPressEnd);
     tbody.addEventListener('pointerleave', onPressEnd);
 
-    // Clique em linha (toggle seleção quando ativo)
+    // Clique em linha (toggle quando ativo)
     tbody.addEventListener('click', onRowClick);
 
-    // Clique/Change diretamente nos checkboxes
+    // Checkboxes
     tbody.addEventListener('change', (e) => {
       const cb = e.target.closest('input[type="checkbox"][data-i]');
       if (!cb) return;
@@ -142,7 +149,7 @@ export default function render(_props = {}, modalApi) {
       paint();
     });
 
-    // Header "selecionar tudo"
+    // Header “selecionar tudo”
     el.querySelector('#chk-all')?.addEventListener('change', (e) => {
       if (e.target.checked) selected = new Set(items.map((_, i) => i));
       else selected.clear();

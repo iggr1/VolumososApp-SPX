@@ -283,3 +283,9 @@
     justify-content: flex-end;
   }
 }
+
+.pallet-table {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
