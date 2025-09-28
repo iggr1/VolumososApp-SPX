@@ -93,6 +93,7 @@
     font-size: var(--text-medium);
     font-weight: var(--text-bold);
     letter-spacing: 2rem;
+    margin-top: 50rem;
     text-transform: uppercase;
     background: var(--btn-bg, var(--orange));
     transition: background .15s ease;
