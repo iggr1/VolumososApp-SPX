@@ -2,10 +2,10 @@ let BASE = null;
 
 export function setBase(url) {
   BASE = url;
-  sessionStorage.setItem('hubServer', url);
+  localStorage.setItem('hubServer', url);
 }
 export function getBase() {
-  return BASE || sessionStorage.getItem('hubServer') || '';
+  return BASE || localStorage.getItem('hubServer') || '';
 }
 
 export class ApiError extends Error {
@@ -26,7 +26,7 @@ export async function apiRequest(method, path, payload) {
   const fetchMethod = needsOverride ? 'POST' : m;
   if (needsOverride) url.searchParams.set('_method', m);
 
-  const token = sessionStorage.getItem('authToken');
+  const token = localStorage.getItem('authToken');
   const isGetLike = fetchMethod === 'GET' || fetchMethod === 'HEAD';
 
   const opts = { method: fetchMethod, headers: {}, body: undefined };

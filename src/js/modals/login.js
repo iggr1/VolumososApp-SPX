@@ -76,7 +76,7 @@ export default function render(_props = {}, api) {
     const cfg = await loadHubsConfig();
     buildHubIndex(cfg);
     populateSelect(cfg);
-    const saved = sessionStorage.getItem('hubCode');
+    const saved = localStorage.getItem('hubCode');
     if (saved && hubIndex.has(saved)) {
       el.querySelector('#login-hub').value = saved;
       niceSelect.pick(saved, hubIndex.get(saved).label);
@@ -133,13 +133,13 @@ export default function render(_props = {}, api) {
   function resolveHub(code) { return hubIndex.get(code) || null; }
 
   function saveHubLocal(hub) {
-    sessionStorage.setItem('hubCode', hub.code);
-    sessionStorage.setItem('hubServer', hub.server);
-    sessionStorage.setItem('hubLabel', hub.label);
+    localStorage.setItem('hubCode', hub.code);
+    localStorage.setItem('hubServer', hub.server);
+    localStorage.setItem('hubLabel', hub.label);
   }
 
   function baseUrl() {
-    const s = sessionStorage.getItem('hubServer');
+    const s = localStorage.getItem('hubServer');
     if (!s) throw new Error('Selecione um HUB válido');
     return s;
   }

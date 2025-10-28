@@ -6,26 +6,33 @@ import { apiPost } from '../api.js';
 
 const $ = (selector) => document.querySelector(selector);
 
+// --- agora lê dados do localStorage em vez de localStorage
 export function setUserInfo(username, token, avatarImg) {
-  const hubLabel = sessionStorage.getItem('hubLabel');
+  const hubLabel = localStorage.getItem('hubLabel');
 
   if (username && token) {
     $('.username').textContent = username;
     $('.hub').textContent = hubLabel;
-    $('.avatar img').src = avatarImg ? `./src/assets/img/profile-images/${avatarImg}.jpg` : './src/assets/img/profile-images/0.jpg';
-    sessionStorage.setItem('authToken', token);
+    $('.avatar img').src = avatarImg
+      ? `./src/assets/img/profile-images/${avatarImg}.jpg`
+      : './src/assets/img/profile-images/0.jpg';
+
+    // salva token persistente
+    localStorage.setItem('authToken', token);
     return;
   }
 
   if (avatarImg) {
-    $('.avatar img').src = avatarImg ? `./src/assets/img/profile-images/${avatarImg}.jpg` : './assets/img/profile-images/0.jpg';
+    $('.avatar img').src = avatarImg
+      ? `./src/assets/img/profile-images/${avatarImg}.jpg`
+      : './assets/img/profile-images/0.jpg';
     return;
   }
 }
 
 export async function verifyUserSession() {
-  const token = sessionStorage.getItem('authToken');
-  const hubServer = sessionStorage.getItem('hubServer');
+  const token = localStorage.getItem('authToken');
+  const hubServer = localStorage.getItem('hubServer');
 
   if (!hubServer) {
     showAlert({
@@ -57,7 +64,10 @@ export async function verifyUserSession() {
   const now = Date.now();
   const skewMs = 30 * 1000;
 
-  const isValid = !!token && Number.isFinite(authExpires) && (now + skewMs) < authExpires;
+  const isValid =
+    !!token &&
+    Number.isFinite(authExpires) &&
+    (now + skewMs) < authExpires;
 
   if (isValid) {
     setUserInfo(userData?.username, token, userData?.avatar_id);
@@ -74,7 +84,7 @@ export async function verifyUserSession() {
     });
 
   } else {
-    sessionStorage.removeItem('authToken');
+    localStorage.removeItem('authToken');
   }
 
   if (!isValid) {
@@ -87,8 +97,8 @@ export async function verifyUserSession() {
 }
 
 export async function fetchUserData() {
-  const url = new URL(sessionStorage.getItem('hubServer'));
-  const token = sessionStorage.getItem('authToken');
+  const url = new URL(localStorage.getItem('hubServer'));
+  const token = localStorage.getItem('authToken');
 
   url.searchParams.set('path', 'user');
   url.searchParams.set('token', token);
@@ -159,6 +169,7 @@ export async function loginRequest({ username, password, baseUrl }) {
     return null;
   }
 
+  // salva o token já no localStorage via setUserInfo
   setUserInfo(data.username, data.token, data.avatar_id);
   updateCounts();
 
@@ -166,8 +177,8 @@ export async function loginRequest({ username, password, baseUrl }) {
 }
 
 export async function fetchUserRole() {
-  const url = new URL(sessionStorage.getItem('hubServer'));
-  const token = sessionStorage.getItem('authToken');
+  const url = new URL(localStorage.getItem('hubServer'));
+  const token = localStorage.getItem('authToken');
 
   url.searchParams.set('path', 'user/role');
   url.searchParams.set('token', token);
@@ -207,7 +218,7 @@ export async function fetchUserRole() {
 }
 
 export function clearUserSession() {
-  sessionStorage.removeItem('authToken');
+  localStorage.removeItem('authToken');
 
   setUserInfo(null, null, null);
 }
@@ -215,4 +226,3 @@ export function clearUserSession() {
 export function publicRegisterUser(u) {
   return apiPost('auth/register', u);
 }
-

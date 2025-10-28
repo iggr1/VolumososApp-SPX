@@ -292,7 +292,7 @@ export default function render(_props = {}, api) {
             saveHubLocal(hub);
 
             // já loga o usuário na sessão
-            sessionStorage.setItem('authToken', data.token);
+            localStorage.setItem('authToken', data.token);
 
             cleanup();
             api.close('registered'); // fecha modal só aqui, pq deu certo
@@ -390,7 +390,7 @@ export default function render(_props = {}, api) {
         populateSelect(cfg);
 
         // tenta usar HUB já guardado na sessão
-        const saved = sessionStorage.getItem('hubCode');
+        const saved = localStorage.getItem('hubCode');
         if (saved && hubIndex.has(saved)) {
             el.querySelector('#reg-hub').value = saved;
             niceSelect.pick(saved, hubIndex.get(saved).label);
@@ -452,9 +452,9 @@ export default function render(_props = {}, api) {
     }
 
     function saveHubLocal(hub) {
-        sessionStorage.setItem('hubCode', hub.code);
-        sessionStorage.setItem('hubServer', hub.server);
-        sessionStorage.setItem('hubLabel', hub.label);
+        localStorage.setItem('hubCode', hub.code);
+        localStorage.setItem('hubServer', hub.server);
+        localStorage.setItem('hubLabel', hub.label);
     }
 
     return el;

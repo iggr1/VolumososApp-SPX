@@ -167,7 +167,7 @@ export default function render(props = {}, api) {
       brCode,
       route: `${state.letter}-${parseInt(state.numberStr, 10)}`,
       datetime: new Date().toISOString(),
-      userToken: sessionStorage.getItem('authToken')
+      userToken: localStorage.getItem('authToken')
     };
 
     sendToLocalPallet(packageToAdd);
