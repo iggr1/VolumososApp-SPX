@@ -101,7 +101,6 @@ body {
 /* header */
 .header {
     width: 100%;
-    /* height: 100%; */
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -117,6 +116,18 @@ body {
     flex-direction: row;
     align-items: center;
     gap: 50rem;
+    max-width: 85%;
+}
+
+.header .user .user-info {
+    max-width: calc(100% - 190rem);
+}
+
+.header .user .user-info span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .header .avatar {
@@ -128,6 +139,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .header .avatar img {
@@ -167,6 +179,7 @@ body {
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    max-width: 15%;
 }
 
 .btn-menu svg {

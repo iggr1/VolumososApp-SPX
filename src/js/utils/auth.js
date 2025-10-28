@@ -2,6 +2,7 @@ import { showAlert } from './alerts.js';
 import { openModal } from '../modal.js';
 import { startGetConfigLoop } from '../app.js';
 import { updateCounts } from './helper.js';
+import { apiPost } from '../api.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -24,6 +25,17 @@ export function setUserInfo(username, token, avatarImg) {
 
 export async function verifyUserSession() {
   const token = sessionStorage.getItem('authToken');
+  const hubServer = sessionStorage.getItem('hubServer');
+
+  if (!hubServer) {
+    showAlert({
+      type: 'warning',
+      title: 'HUB não configurado',
+      message: 'Faça o login/autenticação para acessar.',
+    });
+    openModal({ type: 'login' });
+    return;
+  }
 
   if (!token) {
     showAlert({
@@ -199,3 +211,8 @@ export function clearUserSession() {
 
   setUserInfo(null, null, null);
 }
+
+export function publicRegisterUser(u) {
+  return apiPost('auth/register', u);
+}
+

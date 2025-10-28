@@ -1,0 +1,240 @@
+/* ====== CONTAINER DO MODAL DE REGISTRO ====== */
+
+.register-form {
+    display: grid;
+    gap: 50rem;
+}
+
+/* Cada bloco de campo (label + input) */
+.register-field {
+    display: grid;
+    gap: 12rem;
+}
+
+/* Garante que campos marcados com [hidden] realmente somem visualmente */
+.register-field[hidden] {
+    display: none !important;
+}
+
+.register-label {
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    color: var(--darker-gray);
+}
+
+/* ====== INPUTS GERAIS ====== */
+
+.register-input {
+    width: 100%;
+    height: 120rem;
+    border-radius: 85rem;
+    background: var(--light-gray);
+    padding: 0 50rem;
+    font-size: var(--text-medium);
+    font-weight: var(--text-normal);
+    color: var(--dark-gray);
+    appearance: none;
+    border: 0;
+    outline: 0;
+}
+
+.register-input::placeholder {
+    color: var(--dark-gray);
+}
+
+/* mensagenzinha abaixo do campo (regras de Ops/e-mail, hint do nome final etc.) */
+.register-hint {
+    font-size: var(--text-small, 0.9em);
+    font-weight: var(--text-normal);
+    color: var(--dark-gray);
+    line-height: 1.4;
+}
+
+/* ====== LINHA DE INPUT COM BOTÃO "OLHO" (senha / repetir senha) ====== */
+
+.register-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20rem;
+}
+
+/* botão para mostrar/ocultar senha */
+.register-eye-btn {
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--light-gray);
+    border-radius: 80rem;
+    border: 0;
+    cursor: pointer;
+}
+
+.register-eye-btn svg {
+    stroke: var(--orange);
+    width: 50rem;
+    height: 50rem;
+}
+
+/* ====== DROPDOWN DE HUB ====== */
+/* Estrutura gerada no HTML:
+   <div class="login-select-wrap">
+     <select class="register-input select-hidden">
+     <div class="ui-select">...</div>
+   </div>
+*/
+
+.login-select-wrap {
+    position: relative;
+}
+
+/* Escondemos o <select> real, usamos o custom (.ui-select) pra UI */
+.select-hidden {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+/* Componente visual do select customizado */
+.ui-select {
+    position: relative;
+    width: 100%;
+}
+
+.ui-select-btn {
+    width: 100%;
+    height: 120rem;
+    border-radius: 85rem;
+    background: var(--light-gray);
+    padding: 0 50rem;
+    font-size: var(--text-medium);
+    font-weight: var(--text-normal);
+    color: var(--dark-gray);
+    text-align: left;
+    border: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20rem;
+    cursor: pointer;
+    outline: 0;
+}
+
+/* Estado aberto: deixa um outline laranja estilo foco acessível */
+.ui-select[aria-expanded="true"] .ui-select-btn {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
+/* A lista suspensa dos hubs */
+.ui-select-list {
+    position: absolute;
+    top: calc(100% + 20rem);
+    left: 0;
+    right: 0;
+    max-height: 400rem;
+    overflow-y: auto;
+    background: var(--white);
+    border-radius: 30rem;
+    box-shadow: 0 30rem 80rem rgba(0,0,0,0.15);
+    padding: 20rem 0;
+    z-index: 1000;
+    display: none;
+}
+
+/* Mostra a lista quando aria-expanded="true" */
+.ui-select[aria-expanded="true"] .ui-select-list {
+    display: block;
+}
+
+/* Cada opção dentro da lista */
+.ui-option {
+    font-size: var(--text-medium);
+    font-weight: var(--text-normal);
+    color: var(--dark-gray);
+    padding: 30rem 40rem;
+    cursor: pointer;
+    outline: 0;
+}
+
+/* Hover / selecionado / foco teclado */
+.ui-option[aria-selected="true"],
+.ui-option:hover,
+.ui-option:focus {
+    background: var(--light-gray);
+    color: var(--darker-gray);
+}
+
+/* ====== AÇÕES (botão CRIAR CONTA) ====== */
+
+.register-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 50rem;
+}
+
+.register-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20rem;
+    width: 100%;
+    height: 120rem;
+    border-radius: 85rem;
+    color: var(--white);
+    cursor: pointer;
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    letter-spacing: 2rem;
+    text-transform: uppercase;
+    background: var(--btn-bg, var(--orange));
+    border: 0;
+    transition: background .15s ease;
+}
+
+.register-btn:focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
+.register-btn--orange {
+    --btn-bg: var(--orange);
+    --btn-bg-hover: var(--dark-orange);
+}
+
+.register-btn--orange:hover {
+    background: var(--btn-bg-hover);
+}
+
+/* Estado de loading do botão:
+   - esconde ícone SVG interno
+   - mostra spinner animado
+*/
+.register-btn--loading svg {
+    display: none;
+}
+
+.register-btn--loading::before {
+    content: '';
+    width: 30rem;
+    height: 30rem;
+    border: 5rem solid var(--white);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin-register 0.6s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin-register {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
