@@ -90,7 +90,7 @@ export default function render(_props = {}, api) {
     <div class="register-actions">
         <button type="button" class="register-btn register-btn--orange" id="reg-submit">
             <i data-lucide="user-plus" aria-hidden="true"></i>
-            <span>CRIAR CONTA</span>
+            <span>Criar Conta</span>
         </button>
     </div>
     `;

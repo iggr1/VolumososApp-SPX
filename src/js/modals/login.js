@@ -58,7 +58,7 @@ export default function render(_props = {}, api) {
 
       <span>ou</span>
 
-      <button type="button" class="register-btn btn--orange" id="register-create">
+      <button type="button" class="register-create-btn btn--orange" id="register-create">
         <i data-lucide="user-round-plus" aria-hidden="true"></i>
         <span>Cadastrar-se</span>
       </button>

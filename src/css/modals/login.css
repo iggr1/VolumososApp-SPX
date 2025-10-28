@@ -95,13 +95,13 @@
     color: var(--white);
     cursor: pointer;
     font-size: var(--text-medium);
-    font-weight: var(--text-bold);
+    font-weight: var(--text-normal);
     letter-spacing: 2rem;
     transition: background .15s ease;
     background-color: var(--btn-bg, var(--orange));
 }
 
-.register-btn {
+.register-create-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -119,12 +119,12 @@
     background-color: var(--btn-bg, var(--light-gray));
 }
 
-.login-btn:focus-visible, .register-btn:focus-visible {
+.login-btn:focus-visible, .register-create-btn:focus-visible {
     outline: 6rem solid var(--orange);
     outline-offset: 4rem;
 }
 
-.login-btn--orange, .register-btn--orange {
+.login-btn--orange, .register-create-btn--orange {
     --btn-bg: var(--orange);
     --btn-bg-hover: var(--dark-orange);
 }
@@ -133,7 +133,7 @@
     color: var(--white);
 }
 
-.register-btn svg {
+.register-create-btn svg {
     color: var(--orange);
 }
 
@@ -141,11 +141,11 @@
     display: none;
 }
 
-.register-btn--loading svg {
+.register-create-btn--loading svg {
     display: none;
 }   
 
-.login-btn--loading::before, .register-btn--loading::before {
+.login-btn--loading::before, .register-create-btn--loading::before {
     content: '';
     width: 30rem;
     height: 30rem;

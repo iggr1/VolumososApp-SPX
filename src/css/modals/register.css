@@ -193,9 +193,8 @@
     color: var(--white);
     cursor: pointer;
     font-size: var(--text-medium);
-    font-weight: var(--text-bold);
+    font-weight: var(--text-normal);
     letter-spacing: 2rem;
-    text-transform: uppercase;
     background: var(--btn-bg, var(--orange));
     border: 0;
     transition: background .15s ease;
