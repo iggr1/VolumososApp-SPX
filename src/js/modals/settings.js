@@ -33,7 +33,7 @@ export default function render(_props = {}, api) {
 
     if (role === 'admin') {
       const hub = res?.hub || {};
-      el.innerHTML = adminView();              // UI admin com 3 botões
+      el.innerHTML = adminView();              // UI admin com botões e campos
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
       bindAdmin(el, api, hub);
     } else if (role === 'user') {
@@ -107,6 +107,19 @@ function adminView() {
       </div>
     </div>
 
+    <div class="setting-row">
+      <div class="setting-label">Permitir convidados:</div>
+      <div class="setting-control">
+        <label class="switch-io">
+          <input type="checkbox" id="switchOnOff" />
+          <span class="track" aria-hidden="true">
+            <span class="text on">SIM</span>
+            <span class="text off">NÃO</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
     <!-- Botões do admin: 1) Minhas info  2) Escolher foto  3) Gerenciar usuários -->
     <button id="myData" class="settings-button">
       <i data-lucide="id-card" aria-hidden="true"></i>
@@ -157,16 +170,20 @@ function bindAdmin(root, api, hub) {
     letter_to: toLetter((hub?.letter_range || '').split('-')[1], 'A'),
     num_from: toInt((hub?.number_range || '').split('-')[0], 1),
     num_to: toInt((hub?.number_range || '').split('-')[1], 1),
+    allow_guests: Boolean(hub?.allow_guests)
   };
   let initial = { ...cfg };
   let dirty = false;
 
   const $ = (s) => root.querySelector(s);
-  const palletVal = $('#palletVal');
+  const palletVal   = $('#palletVal');
   const letterStart = $('#letterStart');
-  const letterEnd = $('#letterEnd');
-  const numStart = $('#numStart');
-  const numEnd = $('#numEnd');
+  const letterEnd   = $('#letterEnd');
+  const numStart    = $('#numStart');
+  const numEnd      = $('#numEnd');
+
+  // >>> CORREÇÃO AQUI: usar o id que existe no HTML
+  const allowGuests = root.querySelector('#switchOnOff');
 
   renderVals();
 
@@ -179,25 +196,34 @@ function bindAdmin(root, api, hub) {
   });
 
   makeEditableLetter(letterStart, () => cfg.letter_from, (v, prev) => { cfg.letter_from = v; renderVals(); if (v !== prev) dirty = true; });
-  makeEditableLetter(letterEnd, () => cfg.letter_to, (v, prev) => { cfg.letter_to = v; renderVals(); if (v !== prev) dirty = true; });
-  makeEditableNumber(numStart, () => cfg.num_from, (v, prev) => { cfg.num_from = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
-  makeEditableNumber(numEnd, () => cfg.num_to, (v, prev) => { cfg.num_to = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
+  makeEditableLetter(letterEnd,   () => cfg.letter_to,   (v, prev) => { cfg.letter_to   = v; renderVals(); if (v !== prev) dirty = true; });
+  makeEditableNumber(numStart,    () => cfg.num_from,    (v, prev) => { cfg.num_from    = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
+  makeEditableNumber(numEnd,      () => cfg.num_to,      (v, prev) => { cfg.num_to      = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
+
+  // toggle convidados
+  if (allowGuests) {
+    allowGuests.addEventListener('change', () => {
+      cfg.allow_guests = !!allowGuests.checked;
+      if (cfg.allow_guests !== initial.allow_guests) dirty = true;
+    });
+  }
 
   function fixNum() { if (cfg.num_from > cfg.num_to) [cfg.num_from, cfg.num_to] = [cfg.num_to, cfg.num_from]; }
   function renderVals() {
     palletVal.textContent = cfg.max_packages;
     letterStart.value = cfg.letter_from;
-    letterEnd.value = cfg.letter_to;
-    numStart.value = cfg.num_from;
-    numEnd.value = cfg.num_to;
+    letterEnd.value   = cfg.letter_to;
+    numStart.value    = cfg.num_from;
+    numEnd.value      = cfg.num_to;
+
+    // >>> CORREÇÃO AQUI: só seta o checked se o elemento existir
+    if (allowGuests) allowGuests.checked = !!cfg.allow_guests;
   }
 
-  // botões finais
-  $('#myData').onclick = () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
-  $('#changeAvatar').onclick = () => import('../modal.js').then(m => m.openModal({ type: 'avatar' }));
+  $('#myData').onclick      = () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
+  $('#changeAvatar').onclick= () => import('../modal.js').then(m => m.openModal({ type: 'avatar' }));
   $('#manageUsers').onclick = () => import('../modal.js').then(m => m.openModal({ type: 'users' }));
 
-  // salvar somente ao sair
   api.setBeforeClose(async () => {
     if (!dirty || JSON.stringify(cfg) === JSON.stringify(initial)) return true;
 
@@ -208,14 +234,14 @@ function bindAdmin(root, api, hub) {
       okLabel: 'Salvar',
       cancelLabel: 'Descartar'
     });
-
     if (!wantSave) return true;
 
     try {
-      apiPut('config', {
+      await apiPut('config', {
         max_packages: cfg.max_packages,
         letter_range: `${cfg.letter_from}-${cfg.letter_to}`,
-        number_range: `${cfg.num_from}-${cfg.num_to}`
+        number_range: `${cfg.num_from}-${cfg.num_to}`,
+        allow_guests: cfg.allow_guests
       });
       initial = { ...cfg };
       dirty = false;
