@@ -48,7 +48,6 @@ let scanLock = false;
       camera.stop();
     });
   } catch (err) {
-    console.error(err);
     camEl.querySelector('.label').textContent = 'Permita acesso à câmera para ler QR';
   }
 })();

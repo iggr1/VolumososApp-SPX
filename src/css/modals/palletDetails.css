@@ -197,12 +197,6 @@
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 420px) {
-  .pallet-footer {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 .pallet-btn {
   height: 120rem;
   border: 0;
