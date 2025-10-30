@@ -4,6 +4,7 @@ export function setBase(url) {
   BASE = url;
   localStorage.setItem('hubServer', url);
 }
+
 export function getBase() {
   return BASE || localStorage.getItem('hubServer') || '';
 }

@@ -2,7 +2,7 @@ import { showAlert } from './alerts.js';
 import { openModal } from '../modal.js';
 import { startGetConfigLoop } from '../app.js';
 import { updateCounts } from './helper.js';
-import { apiPost } from '../api.js';
+import { apiPost, apiGet } from '../api.js';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -225,4 +225,25 @@ export function clearUserSession() {
 
 export function publicRegisterUser(u) {
   return apiPost('auth/register', u);
+}
+
+export async function guestLoginUser() {
+  const data = await apiGet('auth/guest-login');
+  if (!data) return null;
+
+  // se a resposta for {"error":"guest desabilitado"} 
+  if (data?.error) {
+    showAlert({
+      type: 'error',
+      title: 'Falha ao autenticar!',
+      message: data.error,
+      durationMs: 3000
+    });
+    return null;
+  }
+
+  setUserInfo(data.username, data.token, data.avatar_id);
+  updateCounts();
+
+  return true;
 }

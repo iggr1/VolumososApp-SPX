@@ -1,4 +1,5 @@
-import { loginRequest } from "../utils/auth.js";
+import { showAlert } from "../utils/alerts.js";
+import { loginRequest, guestLoginUser } from "../utils/auth.js";
 
 export const meta = {
   title: 'Login',
@@ -53,14 +54,18 @@ export default function render(_props = {}, api) {
     <div class="login-actions">
       <button type="button" class="login-btn btn--orange" id="login-submit">
         <i data-lucide="log-in" aria-hidden="true"></i>
-        <span>Acessar</span>
+        <span>Acessar / Entrar</span>
       </button>
-
+      
       <span>ou</span>
-
+            
       <button type="button" class="register-create-btn btn--orange" id="register-create">
         <i data-lucide="user-round-plus" aria-hidden="true"></i>
-        <span>Cadastrar-se</span>
+        <span>Fazer Cadastro</span>
+      </button>
+      <button type="button" class="guest-btn btn--orange" id="guest-login">
+        <i data-lucide="star" aria-hidden="true"></i>
+        <span>Sou Convidado</span>
       </button>
     </div>
   `;
@@ -140,7 +145,11 @@ export default function render(_props = {}, api) {
 
   function baseUrl() {
     const s = localStorage.getItem('hubServer');
-    if (!s) throw new Error('Selecione um HUB válido');
+    if (!s) showAlert({
+      type: 'error',
+      title: 'HUB não selecionado',
+      message: 'Por favor, selecione um HUB válido.',
+    });
     return s;
   }
 
@@ -238,6 +247,47 @@ export default function render(_props = {}, api) {
 
   // ====== ABRIR MODAL DE REGISTRO ======
   const registerBtn = el.querySelector('#register-create');
+  const guestBtn = el.querySelector('#guest-login');
+
+  guestBtn.addEventListener('click', async () => {
+    const guestButton = el.querySelector('#guest-login');
+    const modal = document.querySelector('.modal');
+    guestButton.classList.add('guest-btn--loading');
+    modal?.classList?.add('loading');
+
+    const hub = el.querySelector('#login-hub').value;
+    if (!hub) {
+      showAlert({
+        type: 'error',
+        title: 'HUB não selecionado',
+        message: 'Por favor, selecione um HUB válido.',
+      });
+      guestButton.classList.remove('guest-btn--loading');
+      modal?.classList?.remove('loading');
+      return;
+    }
+
+    saveHubLocal(resolveHub(hub));
+
+    showAlert({
+      type: 'info',
+      title: 'Login como convidado',
+      message: 'Você entrará como convidado. Algumas funcionalidades podem ser limitadas.',
+      durationMs: 3000,
+    });
+
+    const res = await guestLoginUser();
+    if (!res) {
+      guestButton.classList.remove('guest-btn--loading');
+      modal?.classList?.remove('loading');
+      return;
+    }
+
+    guestButton.classList.remove('guest-btn--loading');
+    modal?.classList?.remove('loading');
+
+    api.close('submit');
+  });
 
   registerBtn.addEventListener('click', () => {
     openModal({

@@ -101,7 +101,7 @@
     background-color: var(--btn-bg, var(--orange));
 }
 
-.register-create-btn {
+.register-create-btn, .guest-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -119,12 +119,12 @@
     background-color: var(--btn-bg, var(--light-gray));
 }
 
-.login-btn:focus-visible, .register-create-btn:focus-visible {
+.login-btn:focus-visible, .register-create-btn:focus-visible, .guest-btn:focus-visible {
     outline: 6rem solid var(--orange);
     outline-offset: 4rem;
 }
 
-.login-btn--orange, .register-create-btn--orange {
+.login-btn--orange, .register-create-btn--orange, .guest-btn--orange {
     --btn-bg: var(--orange);
     --btn-bg-hover: var(--dark-orange);
 }
@@ -137,19 +137,38 @@
     color: var(--orange);
 }
 
+.guest-btn svg {
+    color: var(--orange);
+}
+
 .login-btn--loading svg {
     display: none;
 }
 
 .register-create-btn--loading svg {
     display: none;
-}   
+}
 
-.login-btn--loading::before, .register-create-btn--loading::before {
+.guest-btn--loading svg {
+    display: none;
+}
+
+.login-btn--loading::before {
     content: '';
     width: 30rem;
     height: 30rem;
     border: 5rem solid var(--white);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+}
+
+.register-create-btn--loading::before, .guest-btn--loading::before {
+    content: '';
+    width: 30rem;
+    height: 30rem;
+    border: 5rem solid var(--orange);
     border-top-color: transparent;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;

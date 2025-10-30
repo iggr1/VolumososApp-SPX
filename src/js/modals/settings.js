@@ -36,10 +36,13 @@ export default function render(_props = {}, api) {
       el.innerHTML = adminView();              // UI admin com 3 botões
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
       bindAdmin(el, api, hub);
-    } else {
+    } else if (role === 'user') {
       el.innerHTML = userView(profile);        // UI user com 2 botões
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
       bindUser(el, api);
+    } else if (role === 'guest' || !role) {
+      el.innerHTML = errorView('Acesso negado: usuários convidados não podem acessar as configurações.');
+      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
     }
   }
 }
@@ -64,9 +67,6 @@ function errorView(msg) {
     <div style="display:grid;gap:16rem;place-items:center;text-align:center">
       <div style="font-weight:700">Erro</div>
       <div>${escapeHtml(msg)}</div>
-      <button class="settings-button" onclick="location.reload()">
-        <span>Tentar novamente</span>
-      </button>
     </div>
   `;
 }
