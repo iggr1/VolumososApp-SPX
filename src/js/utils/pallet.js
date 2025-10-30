@@ -184,81 +184,159 @@ export async function deletePallets(ids) {
 }
 
 export async function printPallets(ids, opts = {}) {
-  const list = Array.isArray(ids) ? ids : [ids];
-  const wanted = new Set(list.map(Number).filter(n => Number.isFinite(n) && n > 0));
-  if (!wanted.size) throw new Error('Nenhum pallet válido para impressão.');
+    const list = Array.isArray(ids) ? ids : [ids];
+    const wanted = new Set(list.map(Number).filter(n => Number.isFinite(n) && n > 0));
+    if (!wanted.size) throw new Error('Nenhum pallet válido para impressão.');
 
-  const batchSize = Math.max(1, Number(opts.batchSize ?? 60));
+    const batchSize = Math.max(1, Number(opts.batchSize ?? 60));
 
-  // Abre a guia já no gesto do usuário
-  const tab = window.open('', '_blank');
-  if (!tab) throw new Error('O navegador bloqueou a abertura de nova guia. Permita pop-ups/abas.');
+    // Abre a guia já no gesto do usuário
+    const tab = window.open('', '_blank');
+    if (!tab) throw new Error('O navegador bloqueou a abertura de nova guia. Permita pop-ups/abas.');
 
-  try { tab.opener = null; } catch (_) {}
+    try { tab.opener = null; } catch (_) { }
 
-  // Splash
-  tab.document.open();
-  tab.document.write(`<!doctype html><meta charset="utf-8"><title>Etiquetas</title>
-  <style>
-    html,body{height:100%;margin:0}
-    body{display:grid;place-items:center;background:#f4f4f4;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;color:#333}
-    .loading{display:grid;gap:12px;justify-items:center;text-align:center}
-    .spinner{width:44px;height:44px;border:4px solid #ddd;border-top-color:#ff7a00;border-radius:50%;animation:s .9s linear infinite}
-    @keyframes s{to{transform:rotate(1turn)}}
-  </style>
-  <div class="loading"><div class="spinner"></div><div>Gerando etiquetas…</div></div>`);
-  tab.document.close();
+    // Splash
+    tab.document.open();
+    tab.document.write(`<!doctype html>
+        <html lang="pt-BR">
+        <head>
+        <meta charset="utf-8">
+        <title>Etiquetas de Pallet</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <style>
+        :root{
+            /* fallback para navegadores antigos */
+            --vh: 1vh;
+        }
+        html, body { margin:0; padding:0; height:auto; }
+        html { -webkit-text-size-adjust:100%; }
+        body{
+            /* ocupa a tela inteira de forma robusta no mobile */
+            min-height: 100dvh;
+            min-height: 100svh;                  /* iOS 16+ / Chrome */
+            min-height: calc(var(--vh, 1vh) * 100); /* fallback */
+            background: #111;                     /* fundo escuro p/ contraste do card */
+            font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+            color:#e6e6e6;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-  // Busca dados
-  const res = await apiGet('pallets', { order: 'asc' });
-  const pallets = Array.isArray(res?.pallets) ? res.pallets : [];
-  const groups = pallets
-    .filter(p => wanted.has(Number(p.pallet)))
-    .map(p => ({
-      id: Number(p.pallet),
-      packages: (Array.isArray(p.packages) ? p.packages : []).map(n => ({
-        br: String(n.brCode || n.brcode || '').toUpperCase(),
-        route: String(n.route || ''),
-        user: String(n.userName || n.user || '')
-      }))
-    }));
+        /* camada fixa que cobre a viewport real (sem “pular” com a barra) */
+        .viewport {
+            position: fixed;
+            inset: 0;
+            padding:
+            max(12px, env(safe-area-inset-top))
+            max(12px, env(safe-area-inset-right))
+            max(12px, env(safe-area-inset-bottom))
+            max(12px, env(safe-area-inset-left));
+            display: grid;
+            place-items: center;
+        }
 
-  if (!groups.length) throw new Error('Pallet(s) não encontrado(s).');
+        .loading {
+            display: grid;
+            justify-items: center;
+            gap: 14px;
+            text-align: center;
+            background:#1c1c1c;
+            border-radius: 14px;
+            padding: 20px 22px;
+            width: min(92vw, 420px);
+            box-shadow: 0 8px 30px rgba(0,0,0,.35);
+        }
 
-  // Opcional: quebra em lotes para a pré-visualização abrir mais leve
-  const batches = [];
-  for (let i = 0; i < groups.length; i += batchSize) {
-    batches.push(groups.slice(i, i + batchSize));
-  }
+        .spinner {
+            width: 46px; height: 46px;
+            border: 4px solid #2e2e2e;
+            border-top-color: #ff7a00;
+            border-radius: 50%;
+            animation: sp .9s linear infinite;
+        }
+        @keyframes sp { to { transform: rotate(1turn) } }
 
-  // Primeira guia atual recebe o primeiro lote; demais lotes abrem novas guias
-  const firstHtml = buildPrintHtmlFast(batches[0]);
-  const firstBlob = new Blob([firstHtml], { type: 'text/html;charset=utf-8' });
-  const firstUrl = URL.createObjectURL(firstBlob);
-  tab.location.replace(firstUrl);
+        .title { font-weight: 700; letter-spacing:.3px; }
+        .hint  { opacity:.75; font-size: 13px; }
 
-  // Lotes adicionais em novas guias (se houver)
-  for (let i = 1; i < batches.length; i++) {
-    const h = buildPrintHtmlFast(batches[i]);
-    const b = new Blob([h], { type: 'text/html;charset=utf-8' });
-    const u = URL.createObjectURL(b);
-    const t = window.open(u, '_blank');
-    try { t?.focus(); } catch (_) {}
-  }
+        /* Acessibilidade: respeita redução de movimento */
+        @media (prefers-reduced-motion: reduce) {
+            .spinner { animation: none }
+        }
+        </style>
+        <script>
+        // Corrige o "100vh" no iOS/Android enquanto a barra de endereço muda
+        (function(){
+            function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
+            setVH();
+            window.addEventListener('resize', setVH);
+            window.addEventListener('orientationchange', setVH);
+        })();
+        </script>
+        </head>
+        <body>
+        <div class="viewport">
+            <div class="loading" role="status" aria-live="polite" aria-label="Gerando etiquetas">
+            <div class="spinner" aria-hidden="true"></div>
+            <div class="title">Gerando etiquetas…</div>
+            <div class="hint">No celular, a pré-visualização pode abrir em seguida.</div>
+            </div>
+        </div>
+        </body>
+        </html>
+        `);
+    tab.document.close();
+
+    // Busca dados
+    const res = await apiGet('pallets', { order: 'asc' });
+    const pallets = Array.isArray(res?.pallets) ? res.pallets : [];
+    const groups = pallets
+        .filter(p => wanted.has(Number(p.pallet)))
+        .map(p => ({
+            id: Number(p.pallet),
+            packages: (Array.isArray(p.packages) ? p.packages : []).map(n => ({
+                br: String(n.brCode || n.brcode || '').toUpperCase(),
+                route: String(n.route || ''),
+                user: String(n.userName || n.user || '')
+            }))
+        }));
+
+    if (!groups.length) throw new Error('Pallet(s) não encontrado(s).');
+
+    // Opcional: quebra em lotes para a pré-visualização abrir mais leve
+    const batches = [];
+    for (let i = 0; i < groups.length; i += batchSize) {
+        batches.push(groups.slice(i, i + batchSize));
+    }
+
+    // Primeira guia atual recebe o primeiro lote; demais lotes abrem novas guias
+    const firstHtml = buildPrintHtmlFast(batches[0]);
+    const firstBlob = new Blob([firstHtml], { type: 'text/html;charset=utf-8' });
+    const firstUrl = URL.createObjectURL(firstBlob);
+    tab.location.replace(firstUrl);
+
+    // Lotes adicionais em novas guias (se houver)
+    for (let i = 1; i < batches.length; i++) {
+        const h = buildPrintHtmlFast(batches[i]);
+        const b = new Blob([h], { type: 'text/html;charset=utf-8' });
+        const u = URL.createObjectURL(b);
+        const t = window.open(u, '_blank');
+        try { t?.focus(); } catch (_) { }
+    }
 }
 
 function buildPrintHtmlFast(groups) {
-  const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-  const pad2 = n => String(n).padStart(2, '0');
+    const esc = s => String(s ?? '').replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+    const pad2 = n => String(n).padStart(2, '0');
 
-  const pages = groups.map(g => {
-    const users = Array.from(new Set(g.packages.map(p => p.user).filter(Boolean)));
-    const userStr = users.join(', ');
-    const lines = g.packages.map(p =>
-      `<div class="line"><span class="br">${esc(p.br)}</span><span class="sep"> / </span><span class="route">${esc(p.route)}</span></div>`
-    ).join('');
+    const pages = groups.map(g => {
+        const users = Array.from(new Set(g.packages.map(p => p.user).filter(Boolean)));
+        const userStr = users.join(', ');
+        const lines = g.packages.map(p =>
+            `<div class="line"><span class="br">${esc(p.br)}</span><span class="sep"> / </span><span class="route">${esc(p.route)}</span></div>`
+        ).join('');
 
-    return `
+        return `
       <section class="label" data-pageslot aria-label="Etiqueta do pallet ${esc(g.id)}">
         <header class="hdr">
           <div class="title">PALLET N°</div>
@@ -278,9 +356,9 @@ function buildPrintHtmlFast(groups) {
         </footer>
       </section>
     `;
-  }).join('');
+    }).join('');
 
-  return `<!doctype html>
+    return `<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
