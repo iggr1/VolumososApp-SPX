@@ -481,3 +481,138 @@ body {
     padding: 20rem;
     flex-shrink: 0;
 }
+
+/* ====== variaveis basicas (fallbacks, caso nao estejam definidas) ====== */
+:root {
+    --white: #fff;
+    --black: #111;
+    --orange: #ef4c29;
+    --light-gray: #f2f2f2;
+    --text-small: 28rem;
+    --text-medium: 36rem;
+    --text-large: 48rem;
+    --text-normal: 400;
+    --text-bold: 700;
+}
+
+/* ====== layout seguro em aparelhos com notch ====== */
+body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* barra superior respeitando safe-area */
+.bar {
+    padding-left: calc(50rem + env(safe-area-inset-left));
+    padding-right: calc(50rem + env(safe-area-inset-right));
+}
+
+/* ====== video: ajustes iOS/Safari e clique na UI acima do video ====== */
+.cam video {
+    pointer-events: none;
+    /* deixa botoes clicaveis acima do video */
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    /* ajuda a evitar tearing em iOS */
+    background: #000;
+}
+
+/* ====== seletor de cameras: secoes e acessibilidade ====== */
+.cam-selector {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cam-selector li {
+    padding: 32rem 40rem;
+    line-height: 1.2;
+}
+
+.cam-selector li.section {
+    font-size: 22rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .7;
+    cursor: default;
+    padding: 24rem 40rem 12rem;
+}
+
+.cam-selector li[aria-selected="true"],
+.cam-selector li.active {
+    color: var(--orange);
+    font-weight: var(--text-bold);
+}
+
+/* toque confortável nos itens */
+@media (hover: none) {
+    .cam-selector li {
+        padding: 36rem 44rem;
+    }
+}
+
+/* modal central com safe-area */
+.cam-selector {
+    padding: calc(20rem + env(safe-area-inset-top)) 20rem calc(20rem + env(safe-area-inset-bottom));
+    box-shadow: 0 30rem 120rem rgba(0, 0, 0, .5);
+}
+
+/* ====== animacao da linha do scanner com transform (mais suave) ====== */
+.cam .cam-controls .scan {
+    position: relative;
+    overflow: hidden;
+    /* garante que a linha nao vaze */
+}
+
+/* ====== controles da camera: alinhamento em telas pequenas ====== */
+.cam .cam-ctrl {
+    gap: 40rem;
+    padding: 30rem 20rem;
+}
+
+.cam-ctrl .cam-select span {
+    max-width: 48vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ====== orientacao paisagem: da mais altura ao video/scan ====== */
+@media (orientation: landscape) {
+    .cam {
+        height: 100%;
+    }
+
+    .cam .cam-controls {
+        margin: 10rem 0;
+    }
+
+    .cam .cam-controls .scan {
+        max-width: 80vh;
+    }
+}
+
+/* ====== refinamentos visuais ====== */
+.logo img {
+    display: block;
+}
+
+.cam-video.mirror {
+    transform: scaleX(-1);
+}
+
+.panel .input input::placeholder {
+    color: #666;
+}
+
+/* botao flutuante mais “clicavel” em mobile */
+.btn-menu,
+.btn-info,
+.cam-ctrl .cam-flip {
+    touch-action: manipulation;
+}
+
+/* ====== estados focus visiveis sem baguncar layout ====== */
+:focus-visible {
+    outline: 4rem solid rgba(239, 76, 41, .35);
+    outline-offset: 4rem;
+    border-radius: 12rem;
+}
