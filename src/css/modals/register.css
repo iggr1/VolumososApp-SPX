@@ -237,3 +237,16 @@
     0%   { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+#reg-resend-code {
+    height: 120rem;
+    aspect-ratio: 1 !important;
+    width: auto !important;
+    background-color: var(--light-gray);
+}
+
+#reg-resend-code svg {
+    stroke: var(--orange);
+    width: 50rem;
+    height: 50rem;
+}

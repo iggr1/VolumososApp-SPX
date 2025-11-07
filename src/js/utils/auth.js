@@ -1,6 +1,6 @@
 import { showAlert } from './alerts.js';
 import { openModal } from '../modal.js';
-import { startGetConfigLoop } from '../app.js';
+import { getConfigs } from './config.js';
 import { updateCounts } from './helper.js';
 import { apiPost, apiGet } from '../api.js';
 
@@ -91,7 +91,7 @@ export async function verifyUserSession() {
     return false;
   }
 
-  startGetConfigLoop();
+  getConfigs();
 
   return true;
 }
@@ -227,6 +227,10 @@ export function publicRegisterUser(u) {
   return apiPost('auth/register', u);
 }
 
+export function requestEmailVerification(email) {
+  return apiPost('auth/request-email-code', { email });
+}
+
 export async function guestLoginUser() {
   const data = await apiGet('auth/guest-login');
   if (!data) return null;
@@ -246,4 +250,88 @@ export async function guestLoginUser() {
   updateCounts();
 
   return true;
+}
+
+/**
+ * Valida se é um ID Ops no formato "Ops" + dígitos.
+ */
+export function isValidOpsId(str) {
+  const s = String(str || '').trim();
+  return /^Ops\d+$/.test(s);
+}
+
+/**
+ * Valida se é um email corporativo permitido.
+ */
+export function isValidCorporateEmail(str) {
+  const lower = String(str || '').trim().toLowerCase();
+  const basic = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lower);
+  if (!basic) return false;
+  return (
+    lower.endsWith('@shopee.com') ||
+    lower.endsWith('@shopeemobile-external.com')
+  );
+}
+
+/**
+ * Normaliza o identificador de login/registro em um formato único:
+ * - Se "OpsXXXXX" + nome completo => "[opsXXXXX]Nome Completo"
+ * - Se email corporativo válido => o próprio email
+ *
+ * Retorna:
+ * { ok: true, ident, mode: 'ops' | 'email' }
+ * ou
+ * { ok: false, error }
+ */
+export function normalizeIdentifier(rawIdent, fullName) {
+  const ident = String(rawIdent || '').trim();
+  const name = String(fullName || '').trim();
+
+  const isOps = isValidOpsId(ident);
+  const isEmail = isValidCorporateEmail(ident);
+
+  if (!isOps && !isEmail) {
+    return {
+      ok: false,
+      error: 'Usuário/E-mail precisa ser OpsXXXXX ou um e-mail corporativo permitido.'
+    };
+  }
+
+  if (isOps) {
+    if (!name) {
+      return {
+        ok: false,
+        error: 'Para usuários OpsXXXXX, o nome completo é obrigatório.'
+      };
+    }
+    const numPart = ident.slice(3); // depois de "Ops"
+    const opsTag = `ops${numPart}`; // padroniza em minúsculo
+    return {
+      ok: true,
+      ident: `[${opsTag}]${name}`,
+      mode: 'ops'
+    };
+  }
+
+  // email válido
+  return {
+    ok: true,
+    ident,
+    mode: 'email'
+  };
+}
+
+/**
+ * Salva dados do HUB selecionado no localStorage.
+ * Útil para login e registro, então centralizamos aqui.
+ */
+export function saveHubLocal(hub) {
+  if (!hub) return;
+  try {
+    localStorage.setItem('hubCode', hub.code);
+    localStorage.setItem('hubServer', hub.server);
+    localStorage.setItem('hubLabel', hub.label);
+  } catch (err) {
+    console.error('Falha ao salvar hub local:', err);
+  }
 }

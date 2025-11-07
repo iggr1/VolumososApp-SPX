@@ -15,25 +15,3 @@ export function setupTypography() {
     addEventListener('resize', update);
     update();
 }
-
-export function startGetConfigLoop() {
-  (async function loop() {
-    try {
-      const config = await apiGet('config');
-      applyConfig(config);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setTimeout(loop, 300000);
-    }
-  })();
-}
-
-function applyConfig(config) {
-  if (config?.hub) {
-    const { max_packages, letter_range, number_range } = config.hub;
-    if (max_packages) localStorage.setItem('maxPackages', max_packages);
-    if (letter_range) localStorage.setItem('letterRange', letter_range);
-    if (number_range) localStorage.setItem('numberRange', number_range);
-  }
-}
