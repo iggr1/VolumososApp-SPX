@@ -18,15 +18,19 @@ const selectLabel = $('.cam-select span');
 const inputEl = $('.panel .input input');
 
 const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
+
 let scanLock = false;
+let scanner = null;
 
 (async () => {
   try {
+    // Garante permissão inicial para exibir labels e listar todas as câmeras
     await navigator.mediaDevices.getUserMedia({ video: true });
-    await camera.enumerate();
-    await camera.start(0);
 
-    const scanner = new QrScanner({
+    await camera.enumerate();
+
+    // Cria o scanner sempre usando o <video> interno da CameraController
+    scanner = new QrScanner({
       video: camera.getVideo(),
       camEl,
       scanEl,
@@ -41,21 +45,30 @@ let scanLock = false;
         setTimeout(() => { scanLock = false; }, 500); // debounce
       }
     });
-    await scanner.start();
+
+    // Integra: toda troca de câmera vai parar e reiniciar o scanner automaticamente
+    camera.attachScanner(scanner);
+
+    // Abre a primeira câmera; CameraController chamará scanner.start() internamente
+    await camera.start(0);
 
     addEventListener('beforeunload', () => {
-      scanner.stop();
-      camera.stop();
+      try { scanner.stop(); } catch { }
+      try { camera.stop(); } catch { }
     });
   } catch (err) {
-    camEl.querySelector('.label').textContent = 'Permita acesso à câmera para ler QR';
+    const label = camEl.querySelector('.label');
+    if (label) {
+      label.textContent = 'Permita acesso à câmera para ler QR';
+    }
   }
 })();
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   verifyUserSession();
 });
 
+/* Menu */
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-menu');
   if (!btn) return;
@@ -69,22 +82,21 @@ document.addEventListener('click', (e) => {
   });
 });
 
+/* Botão pallet atual */
 document.addEventListener('click', (e) => {
   const btnCurrentPallet = e.target.closest('.btn-current-pallet');
-  if (btnCurrentPallet) {
-    openModal({ type: 'currentPallet' });
-    return;
-  }
+  if (!btnCurrentPallet) return;
+  openModal({ type: 'currentPallet' });
 });
 
+/* Botão todos pallets */
 document.addEventListener('click', (e) => {
-  const btnCurrentPallet = e.target.closest('.btn-all-pallets');
-  if (btnCurrentPallet) {
-    openModal({ type: 'allPallets' });
-    return;
-  }
+  const btnAllPallets = e.target.closest('.btn-all-pallets');
+  if (!btnAllPallets) return;
+  openModal({ type: 'allPallets' });
 });
 
+/* Adicionar BR manual / via scanner */
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-add');
   if (!btn) return;
@@ -97,7 +109,6 @@ document.addEventListener('click', (e) => {
   const maxPackages = Number(localStorage.getItem('maxPackages') || '15');
 
   if (packagesCount && Array.isArray(items) && items.length >= maxPackages) {
-
     showAlert({
       type: 'error',
       title: 'Limite de pacotes atingido',
@@ -137,7 +148,6 @@ document.addEventListener('click', (e) => {
   }
 
   const alreadyExists = verifyAlreadyInLocalPallet(brCode);
-
   if (alreadyExists) {
     showAlert({
       type: 'warning',
@@ -161,11 +171,10 @@ document.addEventListener('click', (e) => {
     collapseDelayMs: 100,
   });
 
-  openModal({
-    type: 'routeSelect'
-  });
+  openModal({ type: 'routeSelect' });
 });
 
+/* Botão info */
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.btn-info');
   if (!btn) return;
