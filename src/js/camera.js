@@ -16,8 +16,9 @@ export class CameraController {
     this.selector.className = 'cam-selector';
     camEl.appendChild(this.selector);
 
-    this.allDevices = [];
-    this.working = [];
+    this.allDevices = [];   // enumerateDevices (videoinput)
+    this.working = [];      // entradas efetivas que abrem: { deviceId, label, facing, _byFacing? }
+    this.extra = [];        // “Outras detectadas” (deviceId distintos) que abrem
     this.currentIdx = 0;
     this.stream = null;
     this.mirrored = false;
@@ -41,12 +42,11 @@ export class CameraController {
   }
 
   async enumerate() {
-    // lista inicial
     let all = await navigator.mediaDevices.enumerateDevices();
     this.allDevices = all.filter(d => d.kind === 'videoinput');
     if (!this.allDevices.length) throw new Error('Sem câmera disponível');
 
-    // se não há labels, faz um getUserMedia rápido para “desbloquear” labels
+    // desbloqueia labels se necessário
     const hasLabels = this.allDevices.some(d => d.label && d.label.trim());
     if (!hasLabels) {
       try {
@@ -54,72 +54,89 @@ export class CameraController {
         tmp.getTracks().forEach(t => t.stop());
         all = await navigator.mediaDevices.enumerateDevices();
         this.allDevices = all.filter(d => d.kind === 'videoinput');
-      } catch {}
+      } catch { }
     }
 
-    await this._probeWorkingDevices(); // preenche this.working apenas com as que abrem
+    await this._discoverAllThatOpen();
   }
 
-  // ======== Helpers de plataforma/estratégia ========
+  // ======== Helpers de plataforma ========
   _isAppleLike() {
     const ua = navigator.userAgent || '';
     return /(iPhone|iPad|iPod)/i.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
   }
-
   _canUseDeviceId() {
-    // se estiver em iOS/Safari, normalmente deviceId não é confiável; caia para facingMode
     const ids = this.allDevices.map(d => d.deviceId).filter(Boolean);
     return !this._isAppleLike() && new Set(ids).size > 1;
   }
 
-  // ======== Descoberta de câmeras funcionais ========
-  async _probeWorkingDevices() {
+  // ======== Descoberta: virtuais (facing) + todas por deviceId ========
+  async _discoverAllThatOpen() {
     this.working = [];
+    this.extra = [];
 
+    // 1) Sempre tenta garantir entradas “virtuais” por facing (funciona no iOS)
+    const env = await this._testOpen(null, false, 'environment');
+    if (env) this._pushUnique(this.working, env);
+
+    const usr = await this._testOpen(null, false, 'user');
+    if (usr) this._pushUnique(this.working, usr);
+
+    // 2) Se possível, teste TODAS as câmeras por deviceId e liste-as como “Outras detectadas”
     const canById = this._canUseDeviceId();
-
     if (canById) {
-      // heurística: traseiras primeiro, depois as neutras, depois o resto
-      const looksBack  = (s) => /(back|rear|traseir|environment|world|wide)/i.test(String(s||''));
-      const looksFront = (s) => /(front|user|frontal|face|selfie)/i.test(String(s||''));
+      // heurística: traseiras primeiro, depois neutras, depois o resto
+      const looksBack = (s) => /(back|rear|traseir|environment|world|wide)/i.test(String(s || ''));
+      const looksFront = (s) => /(front|user|frontal|face|selfie)/i.test(String(s || ''));
 
       const envFirst = this.allDevices.filter(d => looksBack(d.label));
       const notFront = this.allDevices.filter(d => !looksBack(d.label) && !looksFront(d.label));
-      const theRest  = this.allDevices.filter(d => !envFirst.includes(d) && !notFront.includes(d));
-      const ordered  = [...envFirst, ...notFront, ...theRest];
+      const theRest = this.allDevices.filter(d => !envFirst.includes(d) && !notFront.includes(d));
+      const ordered = [...envFirst, ...notFront, ...theRest];
 
       for (const dev of ordered) {
+        if (!dev.deviceId) continue;
         const ok = await this._testOpen(dev.deviceId);
-        if (ok) this.working.push(ok);
-      }
-    } else {
-      // iOS/Safari/WebView: crie “entradas virtuais” por facingMode
-      const env = await this._testOpen(null, false, 'environment');
-      if (env) this.working.push(env);
+        if (!ok) continue;
 
-      const usr = await this._testOpen(null, false, 'user');
-      if (usr) this.working.push(usr);
-
-      // se ainda vazio, tente um genérico (pelo menos uma)
-      if (this.working.length === 0) {
-        const tryGen = await this._testOpen(null, true);
-        if (tryGen) this.working.push(tryGen);
+        // Se já existe entrada equivalente nas “virtuais”, não repete; senão entra como "extra"
+        if (!this._existsSimilar(this.working, ok)) this._pushUnique(this.extra, ok);
       }
     }
 
-    if (this.working.length === 0) throw new Error('Nenhuma câmera funcional foi encontrada');
+    // 3) Último recurso: genérico
+    if (this.working.length === 0 && this.extra.length === 0) {
+      const any = await this._testOpen(null, true);
+      if (any) this._pushUnique(this.working, any);
+    }
+
+    if (this.working.length === 0 && this.extra.length === 0) {
+      throw new Error('Nenhuma câmera funcional foi encontrada');
+    }
+  }
+
+  _pushUnique(arr, entry) {
+    const key = `${entry.deviceId || ''}|${entry.facing || ''}|${entry.label || ''}`;
+    const has = arr.some(e => (`${e.deviceId || ''}|${e.facing || ''}|${e.label || ''}`) === key);
+    if (!has) arr.push(entry);
+  }
+  _existsSimilar(arr, entry) {
+    // considera “similar” se o facing coincide ou o label sugere a mesma câmera (evita duplicar frontal/traseira)
+    const s = (v = '') => String(v).toLowerCase();
+    return arr.some(e =>
+      s(e.facing) && s(e.facing) === s(entry.facing) ||
+      /(front|user|frontal|face|selfie)/i.test(s(e.label)) && /(front|user|frontal|face|selfie)/i.test(s(entry.label)) ||
+      /(back|rear|traseir|environment|world|wide)/i.test(s(e.label)) && /(back|rear|traseir|environment|world|wide)/i.test(s(entry.label))
+    );
   }
 
   async _testOpen(deviceId, generic = false, mode = null) {
     let constraints;
     if (mode) {
-      // força abrir por facingMode (ideal)
       constraints = { video: { facingMode: { ideal: mode }, width: { ideal: 640 }, height: { ideal: 480 } } };
     } else if (generic) {
-      // tentativa genérica para ter ao menos uma câmera
       constraints = { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } };
     } else {
-      // seleção normal por deviceId quando possível
       constraints = {
         video: deviceId
           ? { deviceId: { exact: deviceId }, width: { ideal: 640 }, height: { ideal: 480 } }
@@ -129,19 +146,19 @@ export class CameraController {
 
     let stream = null;
     try {
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream = await navigator.mediaDevices.getUserMedia({ video: constraints.video });
       const [track] = stream.getVideoTracks();
       const settings = track?.getSettings?.() || {};
       const usedId = settings.deviceId || deviceId || '';
       const facing = (mode || settings.facingMode || this._guessFacingByLabel(this._labelOf(usedId)) || '').toLowerCase();
-      const label  = mode === 'environment' ? 'Traseira'
-                   : mode === 'user'        ? 'Frontal'
-                   : this._labelOf(usedId);
+      const label = mode === 'environment' ? 'Traseira'
+        : mode === 'user' ? 'Frontal'
+          : (this._labelOf(usedId) || 'Câmera');
       return { deviceId: usedId, label, facing, _byFacing: Boolean(mode) };
     } catch {
       return null;
     } finally {
-      try { stream?.getTracks?.().forEach(t => t.stop()); } catch {}
+      try { stream?.getTracks?.().forEach(t => t.stop()); } catch { }
     }
   }
 
@@ -157,38 +174,78 @@ export class CameraController {
     return 'unknown';
   }
 
-  // ======== UI do seletor ========
+  // ======== UI do seletor (com grupo “Outras detectadas”) ========
   buildSelector() {
     this.selector.innerHTML = '';
-    this.working.forEach((d, i) => {
+
+    const addSection = (title) => {
       const li = document.createElement('li');
-      li.textContent = this._friendlyName(d, i);
-      if (i === this.currentIdx) li.classList.add('active');
+      li.className = 'section';
+      li.textContent = title;
+      this.selector.appendChild(li);
+    };
+    const addItem = (d, i, source = 'primary') => {
+      const li = document.createElement('li');
+      li.textContent = this._friendlyName(d, i, source);
+      if (source === 'primary' && i === this.currentIdx) li.classList.add('active');
       li.addEventListener('click', async (e) => {
         e.stopPropagation();
-        await this.start(i, { preferBack: false }); // respeita escolha do usuário
+        if (source === 'primary') {
+          await this.start(i, { preferBack: false });
+        } else {
+          // “extra” é uma lista à parte: abra diretamente o device selecionado
+          this.stop();
+          const byFacing = d._byFacing || !this._canUseDeviceId();
+          const videoConstraints = byFacing
+            ? { facingMode: { ideal: (d.facing || 'environment') }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 } }
+            : { deviceId: { exact: d.deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 60 } };
+          this.stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+          this.video.srcObject = this.stream;
+          await this.video.play();
+
+          const isBack = (d.facing || '').toLowerCase() === 'environment' ||
+            /(back|rear|traseir|environment|world|wide)/i.test(d.label);
+          this.mirrored = !isBack;
+          this.video.classList.toggle('mirror', this.mirrored);
+          this.selectLabel.textContent = this._friendlyName(d, -1, 'extra');
+        }
         this.hideSelector();
       });
       this.selector.appendChild(li);
-    });
+    };
+
+    if (this.working.length) {
+      addSection('Câmeras principais');
+      this.working.forEach((d, i) => addItem(d, i, 'primary'));
+    }
+
+    if (this.extra.length) {
+      addSection('Outras detectadas');
+      this.extra.forEach((d, i) => addItem(d, i, 'extra'));
+    }
   }
   showSelector() { this.buildSelector(); this.selector.classList.add('show'); }
   hideSelector() { this.selector.classList.remove('show'); }
 
-  _friendlyName(d, idx) {
-    if ((d.facing || '').toLowerCase() === 'environment' || /(back|rear|traseir|environment|world|wide)/i.test(d.label)) {
-      return 'Traseira';
+  _friendlyName(d, idx, source = 'primary') {
+    const base =
+      ((d.facing || '').toLowerCase() === 'environment' || /(back|rear|traseir|environment|world|wide)/i.test(d.label)) ? 'Traseira' :
+        ((d.facing || '').toLowerCase() === 'user' || /(front|user|frontal|face|selfie)/i.test(d.label)) ? 'Frontal' :
+          `Câmera ${idx >= 0 ? (idx + 1) : ''}`.trim();
+
+    if (source === 'extra') {
+      // mostra label se existir pra diferenciar
+      const label = d.label && !/(frontal|traseira|front|user|back|rear|environment)/i.test(d.label) ? ` — ${d.label}` : '';
+      return `${base}${label}`;
     }
-    if ((d.facing || '').toLowerCase() === 'user' || /(front|user|frontal|face|selfie)/i.test(d.label)) {
-      return 'Frontal';
-    }
-    return `Câmera ${idx + 1}`;
+    return base;
   }
 
-  // ======== Abertura efetiva do stream ========
+  // ======== Abertura efetiva ========
   async start(index = undefined, { preferBack = true } = {}) {
-    if (!this.working.length) await this.enumerate();
+    if (!this.working.length && !this.extra.length) await this.enumerate();
 
+    // prioriza as “principais”
     let targetIdx = 0;
     if (typeof index === 'number') {
       targetIdx = Math.max(0, Math.min(index, this.working.length - 1));
@@ -221,19 +278,19 @@ export class CameraController {
       if (caps.focusMode?.includes?.('continuous')) adv.push({ focusMode: 'continuous' });
       if (typeof caps.focusDistance?.max === 'number') adv.push({ focusDistance: caps.focusDistance.max });
       if (adv.length) await track.applyConstraints({ advanced: adv });
-    } catch {}
+    } catch { }
 
     const isBack = (dev.facing || '').toLowerCase() === 'environment' ||
-                   /(back|rear|traseir|environment|world|wide)/i.test(dev.label);
-    this.mirrored = !isBack; // espelha apenas frontal
+      /(back|rear|traseir|environment|world|wide)/i.test(dev.label);
+    this.mirrored = !isBack;
     this.video.classList.toggle('mirror', this.mirrored);
 
-    this.selectLabel.textContent = this._friendlyName(dev, this.currentIdx);
+    this.selectLabel.textContent = this._friendlyName(dev, this.currentIdx, 'primary');
   }
 
   stop() {
     if (this.stream) {
-      try { this.stream.getTracks().forEach(t => t.stop()); } catch {}
+      try { this.stream.getTracks().forEach(t => t.stop()); } catch { }
       this.stream = null;
       this.video.srcObject = null;
     }

@@ -21,6 +21,7 @@
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--dark-gray) var(--light-gray);
+  padding: 10rem;
 }
 
 .allpallets-item {
