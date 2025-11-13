@@ -6,9 +6,9 @@
       "server": "https://script.google.com/macros/s/AKfycbyA6TtVGbsoEiNRTLQHiROeq-k-kM0-eQU1gbSc8aTQP5TnxVH9DEkIGS8NzI4yrQfC/exec"
     },
     {
-      "name": "DEV-TEST",
-      "code": "DEV",
-      "server": "https://script.google.com/macros/s/AKfycbyA6TtVGbsoEiNRTLQHiROeq-k-kM0-eQU1gbSc8aTQP5TnxVH9DEkIGS8NzI4yrQfC/exec"
+      "name": "LM Hub_SC_Araranguá",
+      "code": "LSC-11",
+      "server": "https://script.google.com/macros/s/AKfycbyQJiZ9x568i3ZP8cZziLPmNWmWAdm7jJ0EkbLsrItbsZC3MxyQdAflfXetjQXquc__7g/exec"
     }
   ]
 }
