@@ -4,9 +4,8 @@ import {
     publicRegisterUser,
     setUserInfo,
     normalizeIdentifier,
-    isValidOpsId,
     saveHubLocal,
-    requestEmailVerification // [EMAIL VERIFY]
+    requestEmailVerification 
 } from '../utils/auth.js';
 import { showAlert, showConfirmAlert } from '../utils/alerts.js';
 import { updateCounts } from '../utils/helper.js';
@@ -50,21 +49,11 @@ export default function render(_props = {}, api) {
 
     <!-- IDENTIFICAÇÃO -->
     <div class="register-field">
-      <div class="register-label">Usuário / E-mail corporativo</div>
+      <div class="register-label">E-mail corporativo</div>
       <input id="reg-user" class="register-input" type="text"
-             placeholder="ex: Ops12345 ou nome@shopee.com" required />
+             placeholder="ex: nome@shopee.com" required />
       <div class="register-hint">
-        OpsXXXXX ou e-mail @shopee.com / @shopeemobile-external.com
-      </div>
-    </div>
-
-    <!-- NOME COMPLETO (para OpsXXXXX) -->
-    <div class="register-field" id="full-name-field" hidden>
-      <div class="register-label">Nome completo</div>
-      <input id="reg-fullname" class="register-input" type="text"
-             placeholder="Digite seu nome completo..." />
-      <div class="register-hint">
-        ex.: Nome Segundonome Sobrenome
+        Apenas e-mails @shopee.com / @shopeemobile-external.com
       </div>
     </div>
 
@@ -125,39 +114,22 @@ export default function render(_props = {}, api) {
 
     // ====== REFERÊNCIAS ======
     const identInput = el.querySelector('#reg-user');
-    const fullNameField = el.querySelector('#full-name-field');
-    const fullNameInput = el.querySelector('#reg-fullname');
     const emailCodeField = el.querySelector('#email-code-field');
     const emailCodeInput = el.querySelector('#reg-email-code');
     const resendCodeBtn = el.querySelector('#reg-resend-code');
     const submitButton = el.querySelector('#reg-submit');
 
-    let lastNorm = null;
+    let lastEmailIdent = null;
     let hasPendingEmailCode = false;
 
-    // ====== EXIBIR / ESCONDER NOME COMPLETO PARA OpsXXXXX ======
-    function refreshFullNameVisibility() {
-        const ident = identInput.value.trim();
-        if (isValidOpsId(ident)) {
-            fullNameField.hidden = false;
-        } else {
-            fullNameField.hidden = true;
-            fullNameInput.value = '';
-        }
-    }
-
     identInput.addEventListener('input', () => {
-        refreshFullNameVisibility();
-
         // reset fluxo de e-mail ao mudar identificador
         emailCodeField.hidden = true;
         emailCodeInput.value = '';
         hasPendingEmailCode = false;
-        lastNorm = null;
+        lastEmailIdent = null;
         submitButton.querySelector('span').textContent = 'Criar Conta';
     });
-
-    refreshFullNameVisibility();
 
     // ====== HELPERS ======
     function setLoadingState(isLoading) {
@@ -184,7 +156,6 @@ export default function render(_props = {}, api) {
         const rawIdent = identInput.value.trim();
         const pass1 = el.querySelector('#reg-pass').value;
         const pass2 = el.querySelector('#reg-pass-confirm').value;
-        const fullName = fullNameInput.value.trim();
 
         if (!hubCode || !rawIdent || !pass1 || !pass2) {
             showAlert({
@@ -213,7 +184,7 @@ export default function render(_props = {}, api) {
             return null;
         }
 
-        const norm = normalizeIdentifier(rawIdent, fullName);
+        const norm = normalizeIdentifier(rawIdent);
         if (!norm.ok) {
             showAlert({
                 type: 'error',
@@ -233,13 +204,12 @@ export default function render(_props = {}, api) {
             return null;
         }
 
-        lastNorm = norm;
+        lastEmailIdent = norm.ident;
 
         return {
             ident: norm.ident,
             pass: pass1,
-            hub,
-            mode: norm.mode // 'ops' | 'email'
+            hub
         };
     }
 
@@ -286,11 +256,11 @@ export default function render(_props = {}, api) {
 
     // ====== [EMAIL VERIFY] REENVIAR CÓDIGO ======
     resendCodeBtn.addEventListener('click', async () => {
-        if (!lastNorm || lastNorm.mode !== 'email') return;
+        if (!lastEmailIdent) return;
 
         try {
             setLoadingState(true);
-            const res = await requestEmailVerification(lastNorm.ident);
+            const res = await requestEmailVerification(lastEmailIdent);
             if (!res || res.ok !== true) {
                 const msg = res?.error || 'Não foi possível reenviar o código.';
                 emitErrorToast('Falha ao reenviar código', msg);
@@ -300,7 +270,7 @@ export default function render(_props = {}, api) {
             showAlert({
                 type: 'success',
                 title: 'Código reenviado',
-                message: `Enviamos um novo código para ${lastNorm.ident}.`
+                message: `Enviamos um novo código para ${lastEmailIdent}.`
             });
         } catch (err) {
             console.error('Erro ao reenviar código:', err);
@@ -320,16 +290,52 @@ export default function render(_props = {}, api) {
             return;
         }
 
-        const { ident, pass, hub, mode } = info;
+        const { ident, pass, hub } = info;
 
         // aponta o cliente pro hub certo
         setBase(hub.server);
 
-        // ---------- OPS: fluxo com confirmação ----------
-        if (mode === 'ops') {
-            const runRegisterOps = async () => {
+        try {
+            // Etapa 1: enviar código
+            if (!hasPendingEmailCode || emailCodeField.hidden) {
+                const res = await requestEmailVerification(ident);
+
+                if (!res || res.ok !== true) {
+                    const msg = res?.error || 'Não foi possível enviar o código de verificação.';
+                    emitErrorToast('Falha ao enviar código', msg);
+                    setLoadingState(false);
+                    return;
+                }
+
+                hasPendingEmailCode = true;
+                emailCodeField.hidden = false;
+                submitButton.querySelector('span').textContent = 'Confirmar código';
+
+                showAlert({
+                    type: 'info',
+                    title: 'Verifique seu e-mail',
+                    message: `Enviamos um código de verificação para ${ident}.`
+                });
+
+                setLoadingState(false);
+                return;
+            }
+
+            // Etapa 2: validar código + confirmar antes de registrar
+            const emailCode = (emailCodeInput.value || '').trim();
+            if (!emailCode) {
+                emitErrorToast('Código obrigatório', 'Digite o código enviado para seu e-mail.');
+                setLoadingState(false);
+                return;
+            }
+
+            const runRegisterEmail = async () => {
                 try {
-                    const data = await publicRegisterUser({ username: ident, password: pass });
+                    const data = await publicRegisterUser({
+                        username: ident,
+                        password: pass,
+                        email_code: emailCode
+                    });
 
                     if (!data || data.ok !== true) {
                         const msg = data?.error || 'Não foi possível criar a conta.';
@@ -343,7 +349,7 @@ export default function render(_props = {}, api) {
                     showAlert({
                         type: 'success',
                         title: 'Conta criada com sucesso!',
-                        message: 'Você já será logado.'
+                        message: 'E-mail verificado e login efetuado.'
                     });
 
                     saveHubLocal(hub);
@@ -355,7 +361,7 @@ export default function render(_props = {}, api) {
                     setLoadingState(false);
                     api.close('registered');
                 } catch (err) {
-                    console.error('Erro no registro Ops (catch):', err);
+                    console.error('Erro no registro com e-mail (catch):', err);
                     const msg =
                         (err && err.message) ||
                         (err && err.data && err.data.error) ||
@@ -365,106 +371,17 @@ export default function render(_props = {}, api) {
                 }
             };
 
-            // abre confirmação e só registra se confirmar
-            confirmHubAndForm(hub.label, runRegisterOps);
-            return;
+            // abre confirmação (hub + confira campos) e só registra se confirmar
+            confirmHubAndForm(hub.label, runRegisterEmail);
+        } catch (err) {
+            console.error('Erro no fluxo de registro por e-mail (catch):', err);
+            const msg =
+                (err && err.message) ||
+                (err && err.data && err.data.error) ||
+                'Falha ao processar registro.';
+            emitErrorToast('Falha ao processar registro', msg);
+            setLoadingState(false);
         }
-
-        // ---------- EMAIL: 2 etapas + confirmação ----------
-        if (mode === 'email') {
-            try {
-                // Etapa 1: enviar código
-                if (!hasPendingEmailCode || emailCodeField.hidden) {
-                    const res = await requestEmailVerification(ident);
-
-                    if (!res || res.ok !== true) {
-                        const msg = res?.error || 'Não foi possível enviar o código de verificação.';
-                        emitErrorToast('Falha ao enviar código', msg);
-                        setLoadingState(false);
-                        return;
-                    }
-
-                    hasPendingEmailCode = true;
-                    emailCodeField.hidden = false;
-                    submitButton.querySelector('span').textContent = 'Confirmar código';
-
-                    showAlert({
-                        type: 'info',
-                        title: 'Verifique seu e-mail',
-                        message: `Enviamos um código de verificação para ${ident}.`
-                    });
-
-                    setLoadingState(false);
-                    return;
-                }
-
-                // Etapa 2: validar código + confirmar antes de registrar
-                const emailCode = (emailCodeInput.value || '').trim();
-                if (!emailCode) {
-                    emitErrorToast('Código obrigatório', 'Digite o código enviado para seu e-mail.');
-                    setLoadingState(false);
-                    return;
-                }
-
-                const runRegisterEmail = async () => {
-                    try {
-                        const data = await publicRegisterUser({
-                            username: ident,
-                            password: pass,
-                            email_code: emailCode
-                        });
-
-                        if (!data || data.ok !== true) {
-                            const msg = data?.error || 'Não foi possível criar a conta.';
-                            emitErrorToast('Falha ao criar conta', msg);
-                            setLoadingState(false);
-                            return;
-                        }
-
-                        setUserInfo(data.username, data.token, data.avatar_id);
-
-                        showAlert({
-                            type: 'success',
-                            title: 'Conta criada com sucesso!',
-                            message: 'E-mail verificado e login efetuado.'
-                        });
-
-                        saveHubLocal(hub);
-                        localStorage.setItem('authToken', data.token);
-
-                        getConfigs();
-                        updateCounts();
-
-                        setLoadingState(false);
-                        api.close('registered');
-                    } catch (err) {
-                        console.error('Erro no registro com e-mail (catch):', err);
-                        const msg =
-                            (err && err.message) ||
-                            (err && err.data && err.data.error) ||
-                            'Falha ao criar conta.';
-                        emitErrorToast('Falha ao criar conta', msg);
-                        setLoadingState(false);
-                    }
-                };
-
-                // abre confirmação (hub + confira campos) e só registra se confirmar
-                confirmHubAndForm(hub.label, runRegisterEmail);
-            } catch (err) {
-                console.error('Erro no fluxo de registro por e-mail (catch):', err);
-                const msg =
-                    (err && err.message) ||
-                    (err && err.data && err.data.error) ||
-                    'Falha ao processar registro.';
-                emitErrorToast('Falha ao processar registro', msg);
-                setLoadingState(false);
-            }
-
-            return;
-        }
-
-        // fallback
-        setLoadingState(false);
     }
 
     submitButton.onclick = onSubmit;

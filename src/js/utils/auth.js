@@ -253,14 +253,6 @@ export async function guestLoginUser() {
 }
 
 /**
- * Valida se é um ID Ops no formato "Ops" + dígitos.
- */
-export function isValidOpsId(str) {
-  const s = String(str || '').trim();
-  return /^Ops\d+$/.test(s);
-}
-
-/**
  * Valida se é um email corporativo permitido.
  */
 export function isValidCorporateEmail(str) {
@@ -274,50 +266,26 @@ export function isValidCorporateEmail(str) {
 }
 
 /**
- * Normaliza o identificador de login/registro em um formato único:
- * - Se "OpsXXXXX" + nome completo => "[opsXXXXX]Nome Completo"
- * - Se email corporativo válido => o próprio email
+ * Normaliza o identificador de registro garantindo que seja um e-mail corporativo.
  *
  * Retorna:
- * { ok: true, ident, mode: 'ops' | 'email' }
+ * { ok: true, ident }
  * ou
  * { ok: false, error }
  */
-export function normalizeIdentifier(rawIdent, fullName) {
+export function normalizeIdentifier(rawIdent) {
   const ident = String(rawIdent || '').trim();
-  const name = String(fullName || '').trim();
 
-  const isOps = isValidOpsId(ident);
-  const isEmail = isValidCorporateEmail(ident);
-
-  if (!isOps && !isEmail) {
+  if (!isValidCorporateEmail(ident)) {
     return {
       ok: false,
-      error: 'Usuário/E-mail precisa ser OpsXXXXX ou um e-mail corporativo permitido.'
+      error: 'Informe um e-mail corporativo válido (@shopee.com ou @shopeemobile-external.com).'
     };
   }
 
-  if (isOps) {
-    if (!name) {
-      return {
-        ok: false,
-        error: 'Para usuários OpsXXXXX, o nome completo é obrigatório.'
-      };
-    }
-    const numPart = ident.slice(3); // depois de "Ops"
-    const opsTag = `ops${numPart}`; // padroniza em minúsculo
-    return {
-      ok: true,
-      ident: `[${opsTag}]${name}`,
-      mode: 'ops'
-    };
-  }
-
-  // email válido
   return {
     ok: true,
-    ident,
-    mode: 'email'
+    ident
   };
 }
 
