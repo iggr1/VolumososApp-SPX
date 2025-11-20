@@ -81,6 +81,47 @@ body {
     color: var(--white);
 }
 
+.btn-install {
+    display: flex;
+    align-items: center;
+    gap: 15rem;
+    padding: 20rem 28rem;
+    background-color: var(--white);
+    color: var(--orange);
+    font-size: var(--text-medium);
+    font-weight: var(--text-bold);
+    border-radius: 999rem;
+    cursor: pointer;
+    box-shadow: 0 8rem 16rem rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-install i {
+    width: 32rem;
+    height: 32rem;
+    stroke: currentColor;
+}
+
+.btn-install:hover {
+    transform: translateY(-2rem);
+    box-shadow: 0 12rem 24rem rgba(0, 0, 0, 0.12);
+}
+
+.btn-install:active {
+    transform: translateY(0);
+    box-shadow: 0 6rem 12rem rgba(0, 0, 0, 0.1);
+}
+
+.btn-install:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.is-hidden {
+    display: none !important;
+}
+
 .btn-info {
     width: 80rem;
     height: 80rem;
