@@ -50,6 +50,7 @@ const PRECACHE_URLS = [
   'src/js/modals/login.js',
   'src/js/modals/register.js',
   'src/assets/img/spx-logo.png',
+  'src/assets/favicons/pallet-icon.svg',
   'src/assets/favicons/favicon-light.svg',
   'src/assets/favicons/favicon-dark.svg'
 ].map(toUrl);
