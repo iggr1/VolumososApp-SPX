@@ -7,6 +7,7 @@ import { verifyBrCode } from './utils/package.js';
 import { verifyAlreadyInLocalPallet } from './utils/pallet.js';
 import { showAlert } from './utils/alerts.js';
 import { isModalOpenOnScreen } from './utils/helper.js';
+import { setupPWA } from './pwa.js';
 
 setupTypography();
 
@@ -20,6 +21,8 @@ const installBtn = document.querySelector('.btn-install');
 
 const INSTALL_KEY = 'pwaInstalled';
 let deferredPrompt = null;
+
+setupPWA();
 
 const hideInstallCTA = () => {
   if (!installBtn) return;
