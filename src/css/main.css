@@ -84,16 +84,24 @@ body {
 .btn-install {
     display: flex;
     align-items: center;
-    gap: 15rem;
-    padding: 20rem 28rem;
+    gap: 12rem;
+    padding: 18rem 30rem;
     background-color: var(--white);
     color: var(--orange);
     font-size: var(--text-medium);
     font-weight: var(--text-bold);
+    line-height: 1;
+    letter-spacing: 0.01em;
     border-radius: 999rem;
+    border: 2rem solid rgba(255, 255, 255, 0.25);
     cursor: pointer;
-    box-shadow: 0 8rem 16rem rgba(0, 0, 0, 0.08);
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    box-shadow: 0 10rem 20rem rgba(0, 0, 0, 0.1);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-install span {
+    display: flex;
+    align-items: center;
 }
 
 .btn-install i {
@@ -104,12 +112,18 @@ body {
 
 .btn-install:hover {
     transform: translateY(-2rem);
-    box-shadow: 0 12rem 24rem rgba(0, 0, 0, 0.12);
+    box-shadow: 0 14rem 28rem rgba(0, 0, 0, 0.16);
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 .btn-install:active {
     transform: translateY(0);
     box-shadow: 0 6rem 12rem rgba(0, 0, 0, 0.1);
+}
+
+.btn-install:focus-visible {
+    outline: 3rem solid rgba(255, 255, 255, 0.4);
+    outline-offset: 4rem;
 }
 
 .btn-install:disabled {
