@@ -16,6 +16,53 @@ const selectBtn = $('.cam-select');
 const flipBtn = $('.cam-flip');
 const selectLabel = $('.cam-select span');
 const inputEl = $('.panel .input input');
+const installBtn = document.querySelector('.btn-install');
+
+const INSTALL_KEY = 'pwaInstalled';
+let deferredPrompt = null;
+
+const hideInstallCTA = () => {
+  if (!installBtn) return;
+  installBtn.classList.add('is-hidden');
+};
+
+const showInstallCTA = () => {
+  if (!installBtn) return;
+  if (localStorage.getItem(INSTALL_KEY) === 'true') return;
+  installBtn.classList.remove('is-hidden');
+};
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredPrompt = event;
+  showInstallCTA();
+});
+
+installBtn?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+
+  installBtn.disabled = true;
+  deferredPrompt.prompt();
+
+  const choice = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.disabled = false;
+
+  if (choice?.outcome === 'accepted') {
+    localStorage.setItem(INSTALL_KEY, 'true');
+    hideInstallCTA();
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  localStorage.setItem(INSTALL_KEY, 'true');
+  hideInstallCTA();
+  deferredPrompt = null;
+});
+
+if (localStorage.getItem(INSTALL_KEY) === 'true') {
+  hideInstallCTA();
+}
 
 const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
 
