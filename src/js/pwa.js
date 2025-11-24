@@ -24,8 +24,7 @@ const createManifest = (basePath) => ({
   theme_color: '#ef4c29',
   id: basePath,
   icons: [
-    { src: normalizePath('src/assets/favicons/favicon-light.svg', basePath), sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-    { src: normalizePath('src/assets/favicons/favicon-dark.svg', basePath), sizes: 'any', type: 'image/svg+xml', purpose: 'maskable any' }
+    { src: normalizePath('src/assets/favicons/favicon-light.svg', basePath), sizes: 'any', type: 'image/svg+xml', purpose: 'any' }
   ]
 });
 
