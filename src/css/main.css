@@ -102,11 +102,12 @@ body {
 .btn-install span {
     display: flex;
     align-items: center;
+    font-size: var(--text-small);
 }
 
-.btn-install i {
-    width: 32rem;
-    height: 32rem;
+.btn-install svg {
+    width: 10rem;
+    height: 10rem;
     stroke: currentColor;
 }
 
