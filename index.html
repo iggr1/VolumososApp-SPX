@@ -15,50 +15,12 @@
 
   <!-- Favicon dinâmico -->
   <link rel="icon" type="image/svg+xml" href="./src/assets/favicons/favicon-light.svg"
-    media="(prefers-color-scheme: light)">
+        media="(prefers-color-scheme: light)">
   <link rel="icon" type="image/svg+xml" href="./src/assets/favicons/favicon-dark.svg"
-    media="(prefers-color-scheme: dark)">
+        media="(prefers-color-scheme: dark)">
 
-  <script>
-    (function () {
-      const detectBasePath = () => {
-        const parts = window.location.pathname.split('/').filter(Boolean);
-        const last = parts[parts.length - 1];
-        if (last && last.includes('.')) parts.pop();
-        return parts.length ? `/${parts.join('/')}/` : '/';
-      };
-
-      const basePath = detectBasePath();
-      window.__APP_BASE_PATH__ = basePath;
-
-      const manifest = {
-        name: 'VolumososApp SPX',
-        short_name: 'VolumososApp',
-        start_url: basePath,
-        scope: basePath,
-        display: 'standalone',
-        orientation: 'portrait',
-        background_color: '#111111',
-        theme_color: '#ef4c29',
-        icons: [
-          { src: `${basePath}src/assets/favicons/pallet-icon.svg`, sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
-          { src: `${basePath}src/assets/favicons/favicon-light.svg`, sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: `${basePath}src/assets/favicons/favicon-dark.svg`, sizes: 'any', type: 'image/svg+xml', purpose: 'maskable any' }
-        ]
-      };
-
-      const existing = document.querySelector('link[rel="manifest"]');
-      if (existing) existing.remove();
-
-      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
-      const manifestUrl = URL.createObjectURL(manifestBlob);
-
-      const link = document.createElement('link');
-      link.rel = 'manifest';
-      link.href = manifestUrl;
-      document.head.appendChild(link);
-    })();
-  </script>
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
 
   <!-- CSS -->
   <link rel="stylesheet" href="./src/css/main.css" />
@@ -70,6 +32,7 @@
 </head>
 
 <body>
+
   <div id="app">
     <div class="wrap-x">
       <div class="wrap-y">
