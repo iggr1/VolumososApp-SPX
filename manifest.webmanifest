@@ -18,13 +18,13 @@
       "src": "./src/assets/favicons/favicon-light.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "maskable any"
     },
     {
       "src": "./src/assets/favicons/favicon-dark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "maskable any"
+      "purpose": "any"
     }
   ]
 }
