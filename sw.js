@@ -55,6 +55,9 @@ const PRECACHE_URLS = [
   'src/assets/favicons/favicon-dark.svg'
 ].map(toUrl);
 
+// Set para consulta rápida
+const PRECACHE_SET = new Set(PRECACHE_URLS);
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_VERSION).then((cache) => cache.addAll(PRECACHE_URLS))
@@ -64,27 +67,32 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((key) => (key === CACHE_VERSION ? null : caches.delete(key)))))
+      Promise.all(
+        keys.map((key) => (key === CACHE_VERSION ? null : caches.delete(key)))
+      )
+    )
   );
   self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+
   if (request.method !== 'GET') return;
 
+  // Se NÃO está na lista de pré-cache:
+  // deixa ir direto pra rede, sem cache (nem leitura nem gravação)
+  if (!PRECACHE_SET.has(request.url)) {
+    return;
+  }
+
+  // Só para os arquivos pré-cacheados usamos cache-first
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
-
-      return fetch(request)
-        .then((response) => {
-          if (!response || !response.ok || response.type === 'opaque') return response;
-          const responseClone = response.clone();
-          caches.open(CACHE_VERSION).then((cache) => cache.put(request, responseClone));
-          return response;
-        })
-        .catch(() => cached);
+      // Se por algum motivo não estiver no cache, busca da rede,
+      // mas NÃO grava no cache em tempo de execução.
+      return fetch(request);
     })
   );
 });
