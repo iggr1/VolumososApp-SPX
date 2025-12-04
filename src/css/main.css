@@ -240,6 +240,24 @@ body {
     padding: 20rem;
 }
 
+.cam .cam-error-message {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40rem;
+    color: var(--white);
+    font-size: var(--text-medium);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.85));
+    z-index: 2;
+}
+
+.cam.cam--error .cam-controls .scan .line {
+    display: none;
+}
+
 .cam .cam-controls .scan .line {
     width: 110%;
     height: 5rem;
