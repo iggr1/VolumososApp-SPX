@@ -24,12 +24,12 @@ function safeGetLS(key, fallback) {
  * mexem em LS/pallets em sequencia.
  */
 let updateCountsTimer = null;
-function scheduleUpdateCounts(delayMs = 80) {
+function scheduleUpdateCounts(delayMs = 80, options = {}) {
     if (updateCountsTimer) return;
     updateCountsTimer = setTimeout(() => {
         updateCountsTimer = null;
         try {
-            updateCounts();
+            updateCounts(options);
         } catch (err) {
             console.error('Falha em updateCounts:', err);
         }
@@ -75,7 +75,8 @@ export function sendToLocalPallet(packageToAdd) {
     arr.push(packageToAdd);
     localStorage.setItem('currentPallet', JSON.stringify(arr));
 
-    scheduleUpdateCounts();
+    // só mexe no contador local; evita request remota
+    scheduleUpdateCounts(80, { skipRemote: true });
 }
 
 /* ==========================================================================
