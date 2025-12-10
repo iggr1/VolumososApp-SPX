@@ -166,21 +166,17 @@
 }
 
 .route-btn {
-    width: 100%;
-    height: 150rem;
-    border: 0;
-    border-radius: 85rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18rem;
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    letter-spacing: 2rem;
+    --pill-height: 150rem;
+    --pill-padding-x: 50rem;
+    --pill-gap: 18rem;
+    --pill-letter-spacing: 2rem;
+    --pill-font-weight: var(--text-bold);
+    --btn-bg: var(--orange);
+    --btn-bg-hover: var(--dark-orange);
+    --btn-color: var(--white);
+    --btn-bg-disabled: #dcdcdc;
+    --btn-color-disabled: #9e9e9e;
     text-transform: uppercase;
-    background: var(--orange);
-    color: var(--white);
-    cursor: pointer;
     touch-action: manipulation;
 }
 
@@ -190,8 +186,3 @@
     stroke: currentColor;
 }
 
-.route-btn[disabled] {
-    background: #dcdcdc;
-    color: #9e9e9e;
-    cursor: not-allowed;
-}

@@ -8,17 +8,11 @@
 }
 
 .menu-button {
-    width: 100%;
-    height: 120rem;
-    border-radius: 85rem;
-    background: var(--light-gray);
-    color: var(--darker-gray);
-    display: flex;
-    align-items: center;
-    gap: 20rem;
-    padding: 0 40rem;
-    font-size: var(--text-medium);
-    cursor: pointer;
+    --btn-bg: var(--light-gray);
+    --btn-bg-hover: #dcdcdc;
+    --btn-color: var(--darker-gray);
+    --pill-padding-x: 40rem;
+    justify-content: flex-start;
 }
 
 .menu-button svg {
@@ -27,23 +21,11 @@
     stroke: var(--orange);
 }
 
-.menu-button:hover {
-    background: #dcdcdc;
-}
-
-.menu-button:focus-visible {
-    outline: 6rem solid var(--orange);
-    outline-offset: 4rem;
-}
-
 .menu-button--danger {
-    color: var(--red);
+    --btn-color: var(--red);
+    --btn-bg-hover: #f3d6d6;
 }
 
 .menu-button--danger svg {
     stroke: var(--red) !important;
-}
-
-.menu-button--danger:hover {
-    background: #f3d6d6;
 }
