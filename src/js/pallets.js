@@ -140,9 +140,6 @@ function renderRows() {
     const name = document.createElement('div');
     name.className = 'name';
     name.textContent = pkg.userName || 'Operador não informado';
-    const hint = document.createElement('div');
-    hint.className = 'hint';
-    hint.textContent = pkg.userImg ? `Avatar #${pkg.userImg}` : 'Sem avatar';
     info.appendChild(name);
     info.appendChild(hint);
     user.appendChild(img);
