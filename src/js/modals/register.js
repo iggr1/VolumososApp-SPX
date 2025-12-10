@@ -112,6 +112,10 @@ export default function render(_props = {}, api) {
   const emailCodeField = el.querySelector("#email-code-field");
   const emailCodeInput = el.querySelector("#reg-email-code");
   const resendCodeBtn = el.querySelector("#reg-resend-code");
+  const passInput = el.querySelector("#reg-pass");
+  const passConfirmInput = el.querySelector("#reg-pass-confirm");
+  const togglePassBtn = el.querySelector("#toggle-pass-main");
+  const togglePassConfirmBtn = el.querySelector("#toggle-pass-confirm");
 
   let lastEmailIdent = null;
   let awaitingCode = false;
@@ -123,6 +127,71 @@ export default function render(_props = {}, api) {
     submitButton.classList.toggle("register-btn--loading", isLoading);
     document.querySelector(".modal")?.classList?.toggle("loading", isLoading);
   }
+
+  // -------------------------------------------------------------------
+  // EYE TOGGLES (SENHAS)
+  // -------------------------------------------------------------------
+  function swapIcon(btn, name) {
+    if (window.lucide?.icons?.[name]?.toSvg) {
+      btn.innerHTML = window.lucide.icons[name].toSvg({ "aria-hidden": "true" });
+    } else {
+      let i = btn.querySelector("[data-lucide]") || document.createElement("i");
+      i.setAttribute("aria-hidden", "true");
+      i.setAttribute("data-lucide", name);
+      btn.innerHTML = "";
+      btn.appendChild(i);
+      try { window.lucide?.createIcons?.(); } catch {}
+    }
+  }
+
+  function setupToggle({ input, btn, labelShow, labelHide }) {
+    if (!input || !btn) return;
+
+    function setVisible(show) {
+      input.type = show ? "text" : "password";
+      btn.setAttribute("aria-pressed", String(show));
+      btn.setAttribute("aria-label", show ? labelHide : labelShow);
+      swapIcon(btn, show ? "eye-off" : "eye");
+    }
+
+    let lastSelection = null;
+
+    btn.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      lastSelection = {
+        start: input.selectionStart,
+        end: input.selectionEnd,
+        dir: input.selectionDirection,
+      };
+    });
+
+    btn.addEventListener("click", () => {
+      const willShow = input.type === "password";
+      setVisible(willShow);
+
+      const s = lastSelection?.start ?? input.value.length;
+      const e = lastSelection?.end ?? s;
+      requestAnimationFrame(() => {
+        try { input.setSelectionRange(s, e, lastSelection?.dir || "none"); } catch {}
+      });
+    });
+
+    setVisible(false);
+  }
+
+  setupToggle({
+    input: passInput,
+    btn: togglePassBtn,
+    labelShow: "Mostrar senha",
+    labelHide: "Ocultar senha",
+  });
+
+  setupToggle({
+    input: passConfirmInput,
+    btn: togglePassConfirmBtn,
+    labelShow: "Mostrar senha",
+    labelHide: "Ocultar senha",
+  });
 
   // -------------------------------------------------------------------
   // VALIDAR CAMPOS
