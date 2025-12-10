@@ -318,12 +318,6 @@ select option {
   transition: filter 0.18s ease, opacity 0.18s ease;
 }
 
-.row.priority-expedite:hover > *,
-.row.priority-super:hover > * {
-  filter: blur(2px);
-  opacity: 0.35;
-}
-
 .row.priority-expedite:hover::before,
 .row.priority-super:hover::before {
   opacity: 1;
