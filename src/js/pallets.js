@@ -133,6 +133,13 @@ function renderRows() {
     const row = document.createElement('div');
     row.className = 'row';
 
+    const priority = String(pkg.priority || '').toLowerCase();
+    if (priority === 'expedite') {
+      row.classList.add('priority-expedite');
+    } else if (priority === 'super expedite') {
+      row.classList.add('priority-super');
+    }
+
     const route = document.createElement('div');
     route.className = 'route';
     route.innerHTML = `<span class="route-badge">${pkg.route || '-'}</span><span>${pkg.hub || pkg.hubCode || ''}</span>`;
