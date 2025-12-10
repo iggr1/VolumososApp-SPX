@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Pallets por HUB</title>
+  <link rel="icon" href="./src/assets/favicons/favicon-dark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./src/css/pallets.css">
+  <script type="module" src="./src/js/pallets.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-circle">SPX</div>
+        <div class="titles">
+          <p class="eyebrow">Visão dedicada</p>
+          <h1>Painel de Pallets por HUB</h1>
+        </div>
+      </div>
+      <div class="meta">
+        <span class="pill" id="hub-badge">Carregando hubs...</span>
+        <span class="pill neutral" id="stats-pill">-- pedidos</span>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="input-group">
+        <label for="hub-select">Selecione o HUB</label>
+        <div class="select-wrap">
+          <select id="hub-select" aria-label="Selecione o HUB"></select>
+          <button class="ghost" id="refresh-btn" title="Recarregar">
+            <span>Atualizar</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="input-group search-group">
+        <label for="search">Busca rápida (Ctrl + F)</label>
+        <div class="search-box">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input id="search" type="search" placeholder="Filtrar por rota, BR, pallet ou operador" autocomplete="off" />
+          <button class="ghost" id="clear-search" aria-label="Limpar busca">Limpar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="filters" id="filters"></section>
+
+    <section class="table" aria-live="polite">
+      <div class="table-head">
+        <span>Rota</span>
+        <span>BR Code</span>
+        <span>Pallet</span>
+        <span>Data/Hora</span>
+        <span>Operador</span>
+      </div>
+      <div id="packages"></div>
+    </section>
+
+    <div class="empty" id="empty-state" hidden>
+      <div class="empty-card">
+        <div class="empty-icon">😶‍🌫️</div>
+        <p class="empty-title">Nada por aqui</p>
+        <p class="empty-sub">Escolha um HUB ou ajuste os filtros para ver os pedidos.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
