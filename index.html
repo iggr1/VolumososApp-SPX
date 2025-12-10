@@ -1,203 +1,134 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <meta name="app-version" content="1.2.0">
   <meta name="app-build" content="2025-09-21T14:10Z">
   <meta name="app-env" content="production">
+  <title>VolumososApp SPX — Painel de Pedidos</title>
+  <meta name="theme-color" content="#0e0f15">
 
-  <title>VolumososApp SPX</title>
-
-  <meta name="theme-color" content="#111111">
-
-  <!-- Favicon dinâmico -->
-  <link rel="icon" type="image/svg+xml" href="./src/assets/favicons/favicon-light.svg"
-        media="(prefers-color-scheme: light)">
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="./src/css/main.css" />
-  <link rel="stylesheet" href="./src/css/global.css" />
+  <link rel="icon" type="image/svg+xml" href="./src/assets/favicons/favicon-light.svg" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="./src/css/orders.css" />
 
   <script src="https://unpkg.com/lucide@latest"></script>
   <script type="module">lucide.createIcons();</script>
-  <script type="module" src="./src/js/main.js"></script>
-  <script type="module" src="./src/js/pwa-install.js"></script>
+  <script type="module" src="./src/js/orders.js" defer></script>
 </head>
-
 <body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <img src="./src/assets/img/spx-logo.png" alt="SPX" class="brand__logo" />
+        <div class="brand__titles">
+          <span class="brand__title">VolumososApp</span>
+          <span class="brand__subtitle">Painel de Pedidos</span>
+        </div>
+      </div>
+      <div class="user-chip" aria-live="polite">
+        <div class="user-chip__status"></div>
+        <div class="user-chip__content">
+          <span class="user-chip__label">Hub selecionado</span>
+          <strong class="user-chip__value">Nenhum hub</strong>
+        </div>
+      </div>
+    </header>
 
-  <div id="app">
-    <div class="wrap-x">
-      <div class="wrap-y">
-        <div class="screen">
-          <div class="bar">
-            <img src="./src/assets/img/spx-logo.png" alt="Logo" class="logo" />
-            <span class="title">VolumososApp</span>
-            <button class="btn-info">
-              <i data-lucide="info"></i>
+    <main class="shell">
+      <section class="hero">
+        <div class="hero__copy">
+          <p class="eyebrow">Monitoramento inteligente</p>
+          <h1>Visualize e filtre pedidos por rota de forma moderna e responsiva.</h1>
+          <p class="lede">Selecione um hub para carregar os pallets, utilize busca inteligente, filtros rápidos e um CTRL+F interno para achar qualquer informação sem sair da tela.</p>
+          <div class="hero__actions">
+            <button class="btn btn--primary" id="btnRefresh">
+              <i data-lucide="refresh-ccw"></i>
+              Atualizar lista
             </button>
-          </div>
-
-          <div class="header">
-            <div class="user">
-              <div class="avatar">
-                <img src="./src/assets/img/profile-images/loading.gif" alt="Avatar" />
-              </div>
-              <div class="user-info">
-                <span class="username">
-                  <svg width="10" height="10" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <style>
-                      .spinner_qM83 {
-                        animation: spinner_8HQG 1.05s infinite
-                      }
-
-                      .spinner_oXPr {
-                        animation-delay: .1s
-                      }
-
-                      .spinner_ZTLf {
-                        animation-delay: .2s
-                      }
-
-                      @keyframes spinner_8HQG {
-
-                        0%,
-                        57.14% {
-                          animation-timing-function: cubic-bezier(0.33, .66, .66, 1);
-                          transform: translate(0)
-                        }
-
-                        28.57% {
-                          animation-timing-function: cubic-bezier(0.33, 0, .66, .33);
-                          transform: translateY(-6px)
-                        }
-
-                        100% {
-                          transform: translate(0)
-                        }
-                      }
-                    </style>
-                    <circle class="spinner_qM83" cx="4" cy="12" r="3" />
-                    <circle class="spinner_qM83 spinner_oXPr" cx="12" cy="12" r="3" />
-                    <circle class="spinner_qM83 spinner_ZTLf" cx="20" cy="12" r="3" />
-                  </svg>
-                </span>
-                <span class="hub">Buscando suas informações...</span>
-              </div>
-            </div>
-            <button class="btn-menu">
-              <i data-lucide="menu"></i>
-            </button>
-          </div>
-
-          <div class="cam">
-            <div class="cam-controls">
-              <div class="scan">
-                <div class="line"></div>
-                <span class="label">Aponte a câmera para o QR Code</span>
-                <div class="cam-ctrl">
-                  <button class="cam-select">
-                    <i data-lucide="chevron-down"></i>
-                    <span>Câmera 1</span>
-                  </button>
-                  <button class="cam-flip">
-                    <i data-lucide="flip-horizontal-2"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="input">
-              <input type="text" class="brcode-input" placeholder="BR0000000000000" />
-              <button class="btn-add">
-                <i data-lucide="package-plus"></i>
-              </button>
-            </div>
-
-            <button class="btn-current-pallet">
-              <i data-lucide="package-open"></i>
-              <div class="local-wrap">
-                <span class="label">PALLET ATUAL</span>
-                <div class="count-wrap">
-                  <span class="current-pallet-count">
-                    <svg width="24" height="24" fill="var(--orange)" viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <style>
-                        .spinner_I8Q1 {
-                          animation: spinner_qhi1 .75s linear infinite
-                        }
-
-                        .spinner_vrS7 {
-                          animation-delay: -.375s
-                        }
-
-                        @keyframes spinner_qhi1 {
-
-                          0%,
-                          100% {
-                            r: 1.5px
-                          }
-
-                          50% {
-                            r: 3px
-                          }
-                        }
-                      </style>
-                      <circle class="spinner_I8Q1" cx="4" cy="12" r="1.5" />
-                      <circle class="spinner_I8Q1 spinner_vrS7" cx="12" cy="12" r="3" />
-                      <circle class="spinner_I8Q1" cx="20" cy="12" r="1.5" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-            </button>
-
-            <button class="btn-all-pallets">
-              <i data-lucide="package-check"></i>
-              <div class="all-wrap">
-                <span class="label">TODOS OS PALLETS</span>
-                <div class="count-wrap">
-                  <span class="all-pallets-count">
-                    <svg width="24" height="24" fill="var(--orange)" viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <style>
-                        .spinner_I8Q1 {
-                          animation: spinner_qhi1 .75s linear infinite
-                        }
-
-                        .spinner_vrS7 {
-                          animation-delay: -.375s
-                        }
-
-                        @keyframes spinner_qhi1 {
-
-                          0%,
-                          100% {
-                            r: 1.5px
-                          }
-
-                          50% {
-                            r: 3px
-                          }
-                        }
-                      </style>
-                      <circle class="spinner_I8Q1" cx="4" cy="12" r="1.5" />
-                      <circle class="spinner_I8Q1 spinner_vrS7" cx="12" cy="12" r="3" />
-                      <circle class="spinner_I8Q1" cx="20" cy="12" r="1.5" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
+            <button class="btn btn--ghost" id="btnFocusSearch">
+              <i data-lucide="search"></i>
+              Focar na busca (Ctrl + F)
             </button>
           </div>
         </div>
-      </div>
-    </div>
+        <div class="hero__panel">
+          <div class="field">
+            <label for="hubSelect">Escolha o hub</label>
+            <div class="field__control">
+              <select id="hubSelect" aria-label="Selecione o hub">
+                <option value="" disabled selected>Carregando hubs...</option>
+              </select>
+              <i data-lucide="chevron-down"></i>
+            </div>
+          </div>
+          <div class="field">
+            <label for="searchInput">Busca inteligente</label>
+            <div class="field__control field__control--search">
+              <i data-lucide="search"></i>
+              <input id="searchInput" type="search" placeholder="Filtrar por rota, BR Code, cliente ou endereço" autocomplete="off" />
+              <button class="pill pill--ghost" id="btnClearSearch">
+                Limpar
+              </button>
+            </div>
+            <small class="hint">Use Ctrl + F para focar aqui e encontrar qualquer coisa no painel.</small>
+          </div>
+          <div class="filters">
+            <span class="filters__label">Filtros rápidos</span>
+            <div class="filters__chips" role="group" aria-label="Filtros de status">
+              <button class="chip chip--active" data-filter="all">Todos</button>
+              <button class="chip" data-filter="pendente">Pendentes</button>
+              <button class="chip" data-filter="transito">Em trânsito</button>
+              <button class="chip" data-filter="entregue">Entregues</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats" aria-live="polite">
+        <div class="stat-card">
+          <div class="stat-card__label">Pedidos carregados</div>
+          <div class="stat-card__value" id="statTotal">0</div>
+          <div class="stat-card__meta">Agrupados por rota</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Rotas únicas</div>
+          <div class="stat-card__value" id="statRoutes">0</div>
+          <div class="stat-card__meta">Ordenação inteligente (A-1, A-2 ...)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Filtrados</div>
+          <div class="stat-card__value" id="statFiltered">0</div>
+          <div class="stat-card__meta">Após buscas e filtros</div>
+        </div>
+      </section>
+
+      <section class="board" aria-live="polite">
+        <div class="board__header">
+          <div>
+            <p class="eyebrow">Pedidos</p>
+            <h2>Lista detalhada por rota</h2>
+            <p class="lede">Cada grupo mostra a rota e todos os pacotes associados. Clique para copiar o BR Code ou expandir detalhes.</p>
+          </div>
+          <div class="board__actions">
+            <button class="btn btn--ghost" id="btnCollapseAll">
+              <i data-lucide="minimize-2"></i>
+              Recolher tudo
+            </button>
+            <button class="btn btn--ghost" id="btnExpandAll">
+              <i data-lucide="maximize-2"></i>
+              Expandir tudo
+            </button>
+          </div>
+        </div>
+        <div class="board__content" id="routesContainer">
+          <div class="empty">
+            <i data-lucide="package-search"></i>
+            <p>Selecione um hub para carregar os pedidos.</p>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 </body>
-
 </html>
