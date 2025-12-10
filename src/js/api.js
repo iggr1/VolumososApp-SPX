@@ -1,13 +1,37 @@
 // src/js/api.js
 let BASE = null;
 
+// URL fixa do backend em produção (Railway)
+const PROD_BASE = 'https://volumososapp-spx-server-side-production.up.railway.app/api';
+
+// URL local para desenvolvimento
+const DEV_BASE = 'http://localhost:3000/api';
+
 export function setBase(url) {
   BASE = url;
+  try {
+    localStorage.setItem('hubServer', url);
+  } catch (_) {}
 }
 
 export function getBase() {
-  // ex: 'http://localhost:3000/api'
-  return BASE || 'setBase("https://volumososapp-spx-server-side-production.up.railway.app/api");';
+  // 1) Se já setou manualmente (login/registro), usa essa
+  if (BASE) return BASE;
+
+  // 2) Se tem no localStorage, usa
+  const saved = localStorage.getItem('hubServer');
+  if (saved) {
+    BASE = saved;
+    return saved;
+  }
+
+  // 3) Decide pelo host: GitHub Pages => produção, senão dev
+  const host = (typeof window !== 'undefined' && window.location?.hostname) || '';
+  const isGithub = host.endsWith('github.io');
+
+  const url = isGithub ? PROD_BASE : DEV_BASE;
+  BASE = url;
+  return url;
 }
 
 export class ApiError extends Error {
