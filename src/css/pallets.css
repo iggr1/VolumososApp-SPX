@@ -262,7 +262,7 @@ select option {
 }
 
 .route-badge {
-  width: 36px;
+  width: 50px;
   height: 36px;
   border-radius: 12px;
   background: rgba(241, 104, 30, 0.18);
