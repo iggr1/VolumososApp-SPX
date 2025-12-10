@@ -1,1 +1,1 @@
-export const API_BASE = 'https://volumososapp-spx-server-side-production.up.railway.app/api';
+export const API_BASE = 'https://volumososapp-spx-server-side-production.up.railway.app:8080/api';
