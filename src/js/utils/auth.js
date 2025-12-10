@@ -6,39 +6,55 @@ import { apiPost, apiGet } from '../api.js';
 
 const $ = (selector) => document.querySelector(selector);
 
-// --- agora lê dados do localStorage em vez de localStorage
+/**
+ * HUB atual (só code/label; URL base agora vem do api.js)
+ */
+function getCurrentHub() {
+  const code = localStorage.getItem('hubCode');
+  const label = localStorage.getItem('hubLabel');
+  return { code, label };
+}
+
+// --- agora lê dados do localStorage
 export function setUserInfo(username, token, avatarImg) {
-  const hubLabel = localStorage.getItem('hubLabel');
+  const { label: hubLabel } = getCurrentHub();
 
   if (username && token) {
-    $('.username').textContent = username;
-    $('.hub').textContent = hubLabel;
-    $('.avatar img').src = avatarImg
-      ? `./src/assets/img/profile-images/${avatarImg}.jpg`
-      : './src/assets/img/profile-images/0.jpg';
+    if (username.includes('[convidado]')) {
+      if ($('.username')) $('.username').textContent = 'Convidado (Guest)';
+    } else {
+      if ($('.username')) $('.username').textContent = username;
+    }
+    if ($('.hub')) $('.hub').textContent = hubLabel || '-';
+
+    if ($('.avatar img')) {
+      $('.avatar img').src = avatarImg
+        ? `./src/assets/img/profile-images/${avatarImg}.jpg`
+        : './src/assets/img/profile-images/0.jpg';
+    }
 
     // salva token persistente
     localStorage.setItem('authToken', token);
     return;
   }
 
-  if (avatarImg) {
+  if (avatarImg && $('.avatar img')) {
     $('.avatar img').src = avatarImg
       ? `./src/assets/img/profile-images/${avatarImg}.jpg`
-      : './assets/img/profile-images/0.jpg';
+      : './src/assets/img/profile-images/0.jpg';
     return;
   }
 }
 
 export async function verifyUserSession() {
   const token = localStorage.getItem('authToken');
-  const hubServer = localStorage.getItem('hubServer');
+  const { code: hubCode } = getCurrentHub();
 
-  if (!hubServer) {
+  if (!hubCode) {
     showAlert({
       type: 'warning',
       title: 'HUB não configurado',
-      message: 'Faça o login/autenticação para acessar.',
+      message: 'Selecione o HUB e faça login para acessar.',
     });
     openModal({ type: 'login' });
     return;
@@ -76,7 +92,7 @@ export async function verifyUserSession() {
     showAlert({
       type: 'success',
       title: `Olá, ${userData?.username}!`,
-      message: `Sua sessão está ativa.`,
+      message: `Sua sessão está ativa no HUB ${hubCode}.`,
       buttons: [],
       durationMs: 2000,
       dismissible: false,
@@ -91,116 +107,101 @@ export async function verifyUserSession() {
     return false;
   }
 
+  // A partir daqui começa a bater nos endpoints que exigem pertencer ao HUB
   getConfigs();
 
   return true;
 }
 
 export async function fetchUserData() {
-  const url = new URL(localStorage.getItem('hubServer'));
   const token = localStorage.getItem('authToken');
+  if (!token) return null;
 
-  url.searchParams.set('path', 'user');
-  url.searchParams.set('token', token);
-
-  const r = await fetch(url.toString(), {
-    method: 'GET',
-    headers: { 'Content-Type': 'text/plain' }
-  });
-
-  const text = await r.text();
-  let data = null; try { data = JSON.parse(text); } catch (_) { }
-  if (!r.ok) {
-    const msg = data?.error || `erro ${r.status}`;
-    showAlert({
-      type: 'error',
-      title: 'Falha ao autenticar!',
-      message: msg,
-      durationMs: 3000
-    });
-    openModal({ type: 'login' });
+  // apiGet monta URL base, adiciona token e hub automaticamente
+  let data = null;
+  try {
+    data = await apiGet('user'); // não precisa mais passar { token }
+  } catch (err) {
+    console.error('fetchUserData error:', err);
   }
-  if (!data?.ok) {
+
+  if (!data || !data.ok) {
+    const msg = data?.error || 'Faça o login/autenticação para prosseguir.';
     showAlert({
       type: 'warning',
       title: 'Faça login',
-      message: 'Faça o login/autenticação para prosseguir.',
+      message: msg,
       buttons: [],
       durationMs: 5000,
       dismissible: false,
       collapseDelayMs: 150
     });
     openModal({ type: 'login' });
-
     return null;
   }
+
   return data;
 }
 
-export async function loginRequest({ username, password, baseUrl }) {
-  const url = new URL(baseUrl());
-  url.searchParams.set('path', 'auth/login');
+export async function loginRequest({ username, password }) {
+  try {
+    const data = await apiPost('auth/login', { username, password });
 
-  const r = await fetch(url.toString(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: JSON.stringify({ username, password })
-  });
+    if (!data?.token) {
+      showAlert({
+        type: 'error',
+        title: 'Falha na autenticação!',
+        message: 'Verifique suas credenciais e tente novamente.',
+        durationMs: 4000
+      });
+      return null;
+    }
 
-  const text = await r.text();
-  let data = null; try { data = JSON.parse(text); } catch (_) { }
-  if (!r.ok) {
-    const msg = data?.error || `erro ${r.status}`;
+    setUserInfo(data.username, data.token, data.avatar_id);
+    updateCounts();
+    return true;
+
+  } catch (err) {
+    let msg = err?.data?.error || err?.message || 'Falha ao autenticar!';
+    if (
+      err?.status === 403 &&
+      typeof msg === 'string' &&
+      msg.toLowerCase().includes('forbidden')
+    ) {
+      msg = 'Usuário ou senha inválidos, verifique e tente novamente.';
+      // ou qualquer mensagem que você quiser colocar aqui
+    }
+    
+    if (err?.status === 403 &&
+      typeof msg === 'string' &&
+      (msg.toLowerCase().includes('not allowed') || msg.toLowerCase().includes('usuário não tem acesso a este hub'))
+    ) {
+      msg = 'Você não possui acesso à este HUB. Contate sua liderança caso necessário.';
+    }
+
     showAlert({
       type: 'error',
       title: 'Falha ao autenticar!',
       message: msg,
-      durationMs: 3000
-    });
-  }
-  if (!data?.token) {
-    showAlert({
-      type: 'error',
-      title: 'Falha na autenticação!',
-      message: 'Verifique suas credenciais e tente novamente.',
       durationMs: 4000
     });
 
     return null;
   }
-
-  // salva o token já no localStorage via setUserInfo
-  setUserInfo(data.username, data.token, data.avatar_id);
-  updateCounts();
-
-  return true;
 }
 
 export async function fetchUserRole() {
-  const url = new URL(localStorage.getItem('hubServer'));
   const token = localStorage.getItem('authToken');
+  if (!token) return null;
 
-  url.searchParams.set('path', 'user/role');
-  url.searchParams.set('token', token);
-
-  const r = await fetch(url.toString(), {
-    method: 'GET',
-    headers: { 'Content-Type': 'text/plain' }
-  });
-
-  const text = await r.text();
-  let data = null; try { data = JSON.parse(text); } catch (_) { }
-  if (!r.ok) {
-    const msg = data?.error || `erro ${r.status}`;
-    showAlert({
-      type: 'error',
-      title: 'Falha ao autenticar!',
-      message: msg,
-      durationMs: 3000
-    });
-    openModal({ type: 'login' });
+  let data = null;
+  try {
+    data = await apiGet('user/role'); // token/hub já vão no api.js
+  } catch (err) {
+    console.error('fetchUserRole error:', err);
   }
-  if (!data?.ok) {
+
+  if (!data || !data.ok) {
     showAlert({
       type: 'warning',
       title: 'Faça login',
@@ -214,12 +215,12 @@ export async function fetchUserRole() {
 
     return null;
   }
+
   return data;
 }
 
 export function clearUserSession() {
   localStorage.removeItem('authToken');
-
   setUserInfo(null, null, null);
 }
 
@@ -232,10 +233,12 @@ export function requestEmailVerification(email) {
 }
 
 export async function guestLoginUser() {
-  const data = await apiGet('auth/guest-login');
+  const { code: hubCode } = getCurrentHub();
+
+  // apiGet já adiciona hub automaticamente, mas manter aqui não machuca
+  const data = await apiPost('auth/guest-login');
   if (!data) return null;
 
-  // se a resposta for {"error":"guest desabilitado"} 
   if (data?.error) {
     showAlert({
       type: 'error',
@@ -267,11 +270,6 @@ export function isValidCorporateEmail(str) {
 
 /**
  * Normaliza o identificador de registro garantindo que seja um e-mail corporativo.
- *
- * Retorna:
- * { ok: true, ident }
- * ou
- * { ok: false, error }
  */
 export function normalizeIdentifier(rawIdent) {
   const ident = String(rawIdent || '').trim();
@@ -291,14 +289,13 @@ export function normalizeIdentifier(rawIdent) {
 
 /**
  * Salva dados do HUB selecionado no localStorage.
- * Útil para login e registro, então centralizamos aqui.
  */
 export function saveHubLocal(hub) {
   if (!hub) return;
   try {
     localStorage.setItem('hubCode', hub.code);
-    localStorage.setItem('hubServer', hub.server);
     localStorage.setItem('hubLabel', hub.label);
+    // OBS: não tem mais hubServer aqui, esse papel é do api.js
   } catch (err) {
     console.error('Falha ao salvar hub local:', err);
   }

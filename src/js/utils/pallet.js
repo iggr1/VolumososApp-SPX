@@ -240,8 +240,7 @@ export async function deletePallets(ids) {
         throw new Error('Nenhum pallet válido informado para exclusão.');
     }
 
-    const res = await apiPost('pallets', {
-        _method: 'DELETE',
+    const res = await apiPost('pallets/delete', {
         ids: payload
     });
 

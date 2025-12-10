@@ -1,37 +1,37 @@
 // register.js
-import { setBase } from '../api.js';
 import {
-    publicRegisterUser,
-    setUserInfo,
-    normalizeIdentifier,
-    saveHubLocal,
-    requestEmailVerification 
-} from '../utils/auth.js';
-import { showAlert, showConfirmAlert } from '../utils/alerts.js';
-import { updateCounts } from '../utils/helper.js';
-import { getConfigs } from '../utils/config.js';
-import { enhanceSelect } from '../utils/uiSelect.js';
+  publicRegisterUser,
+  setUserInfo,
+  normalizeIdentifier,
+  saveHubLocal,
+  requestEmailVerification
+} from "../utils/auth.js";
+
+import { showAlert, showConfirmAlert } from "../utils/alerts.js";
+import { updateCounts } from "../utils/helper.js";
+import { getConfigs } from "../utils/config.js";
+import { enhanceSelect } from "../utils/uiSelect.js";
+import { apiGet } from "../api.js";
 
 export const meta = {
-    title: 'Criar Conta',
-    size: 'sm',
-    showBack: true,
-    showClose: false,
-    backdropClose: false,
-    escToClose: false,
-    initialFocus: '#reg-hub'
+  title: "Criar Conta",
+  size: "sm",
+  showBack: true,
+  showClose: false,
+  backdropClose: false,
+  escToClose: false,
+  initialFocus: "#reg-hub",
 };
 
 export default function render(_props = {}, api) {
-    api.setBackTo('login');
+  api.setBackTo("login");
 
-    const hubIndex = new Map();
+  const hubIndex = new Map();
+  const el = document.createElement("div");
+  el.className = "register-form";
 
-    const el = document.createElement('div');
-    el.className = 'register-form';
-
-    el.innerHTML = `
-    <!-- HUB SELEÇÃO -->
+  el.innerHTML = `
+    <!-- HUB SELECT -->
     <div class="register-field">
       <div class="register-label">Operação / HUB</div>
       <div class="login-select-wrap">
@@ -48,10 +48,10 @@ export default function render(_props = {}, api) {
       </div>
     </div>
 
-    <!-- IDENTIFICAÇÃO -->
+    <!-- EMAIL -->
     <div class="register-field">
       <div class="register-label">E-mail corporativo</div>
-      <input id="reg-user" class="register-input" type="text"
+      <input id="reg-user" class="register-input" type="text" 
              placeholder="ex: nome@shopee.com" required />
       <div class="register-hint">
         Apenas e-mails @shopee.com / @shopeemobile-external.com
@@ -62,469 +62,272 @@ export default function render(_props = {}, api) {
     <div class="register-field">
       <div class="register-label">Senha</div>
       <div class="register-input-row">
-        <input id="reg-pass" class="register-input" type="password"
-               placeholder="Crie uma senha/PIN" required />
-        <button type="button" class="register-eye-btn" id="toggle-pass-main"
-                aria-label="Mostrar senha" aria-pressed="false">
-          <i data-lucide="eye" aria-hidden="true"></i>
+        <input id="reg-pass" class="register-input" type="password" placeholder="Crie uma senha" required />
+        <button type="button" class="register-eye-btn" id="toggle-pass-main">
+          <i data-lucide="eye"></i>
         </button>
       </div>
     </div>
 
-    <!-- CONFIRMAR SENHA -->
+    <!-- CONFIRM PASSWORD -->
     <div class="register-field">
       <div class="register-label">Repita a senha</div>
       <div class="register-input-row">
-        <input id="reg-pass-confirm" class="register-input" type="password"
-               placeholder="Repita a mesma senha" required />
-        <button type="button" class="register-eye-btn" id="toggle-pass-confirm"
-                aria-label="Mostrar senha" aria-pressed="false">
-          <i data-lucide="eye" aria-hidden="true"></i>
+        <input id="reg-pass-confirm" class="register-input" type="password" placeholder="Repita a senha" required />
+        <button type="button" class="register-eye-btn" id="toggle-pass-confirm">
+          <i data-lucide="eye"></i>
         </button>
       </div>
     </div>
 
-    <!-- [EMAIL VERIFY] CÓDIGO DE VERIFICAÇÃO (apenas para e-mail) -->
+    <!-- EMAIL CODE -->
     <div class="register-field" id="email-code-field" hidden>
       <div class="register-label">Código de verificação</div>
       <div class="register-input-row">
-        <input id="reg-email-code" class="register-input"
+        <input id="reg-email-code" class="register-input" 
                type="text" inputmode="numeric" maxlength="6"
-               placeholder="Código no seu e-mail" />
-        <button type="button"
-                class="register-btn register-btn--ghost"
-                id="reg-resend-code">
-          <i data-lucide="refresh-cw" aria-hidden="true"></i>
+               placeholder="Código enviado ao e-mail" />
+        <button type="button" class="register-btn register-btn--ghost" id="reg-resend-code">
+          <i data-lucide="refresh-cw"></i>
         </button>
-      </div>
-      <div class="register-hint">
-        Verifique sua caixa de entrada e SPAM.
       </div>
     </div>
 
     <!-- AÇÕES -->
     <div class="register-actions">
       <button type="button" class="register-btn register-btn--orange" id="reg-submit">
-        <i data-lucide="user-plus" aria-hidden="true"></i>
+        <i data-lucide="user-plus"></i>
         <span>Criar Conta</span>
       </button>
     </div>
   `;
 
-    try { window.lucide?.createIcons?.(); } catch { }
+  try { window.lucide?.createIcons?.(); } catch {}
 
-    // ====== REFERÊNCIAS ======
-    const identInput = el.querySelector('#reg-user');
-    const emailCodeField = el.querySelector('#email-code-field');
-    const emailCodeInput = el.querySelector('#reg-email-code');
-    const resendCodeBtn = el.querySelector('#reg-resend-code');
-    const submitButton = el.querySelector('#reg-submit');
+  // -------------------------------------------------------------------
+  // REFERÊNCIAS
+  // -------------------------------------------------------------------
+  const identInput = el.querySelector("#reg-user");
+  const submitButton = el.querySelector("#reg-submit");
+  const emailCodeField = el.querySelector("#email-code-field");
+  const emailCodeInput = el.querySelector("#reg-email-code");
+  const resendCodeBtn = el.querySelector("#reg-resend-code");
 
-    let lastEmailIdent = null;
-    let hasPendingEmailCode = false;
+  let lastEmailIdent = null;
+  let awaitingCode = false;
 
-    identInput.addEventListener('input', () => {
-        // reset fluxo de e-mail ao mudar identificador
-        emailCodeField.hidden = true;
-        emailCodeInput.value = '';
-        hasPendingEmailCode = false;
-        lastEmailIdent = null;
-        submitButton.querySelector('span').textContent = 'Criar Conta';
-    });
+  // -------------------------------------------------------------------
+  // LOADING STATE
+  // -------------------------------------------------------------------
+  function setLoading(isLoading) {
+    submitButton.classList.toggle("register-btn--loading", isLoading);
+    document.querySelector(".modal")?.classList?.toggle("loading", isLoading);
+  }
 
-    // ====== HELPERS ======
-    function setLoadingState(isLoading) {
-        const modalEl = document.querySelector('.modal');
-        submitButton.classList.toggle('register-btn--loading', isLoading);
-        modalEl?.classList?.toggle('loading', isLoading);
+  // -------------------------------------------------------------------
+  // VALIDAR CAMPOS
+  // -------------------------------------------------------------------
+  function validateInputs() {
+    const hubCode = el.querySelector("#reg-hub").value;
+    const rawEmail = identInput.value.trim();
+    const pass = el.querySelector("#reg-pass").value;
+    const pass2 = el.querySelector("#reg-pass-confirm").value;
+
+    if (!hubCode || !rawEmail || !pass || !pass2) {
+      showAlert({
+        type: "error",
+        title: "Campos incompletos",
+        message: "Preencha todos os campos obrigatórios.",
+      });
+      return null;
     }
 
-    function emitErrorToast(title, message) {
-        if (typeof window.showAlert === 'function') {
-            window.showAlert({
-                type: 'error',
-                title,
-                message,
-                durationMs: 3000
-            });
-        } else {
-            showAlert({ type: 'error', title, message });
-        }
+    if (pass.length < 6) {
+      showAlert({
+        type: "error",
+        title: "Senha muito curta",
+        message: "A senha deve ter ao menos 6 caracteres.",
+      });
+      return null;
     }
 
-    function validateInputs() {
-        const hubCode = el.querySelector('#reg-hub').value;
-        const rawIdent = identInput.value.trim();
-        const pass1 = el.querySelector('#reg-pass').value;
-        const pass2 = el.querySelector('#reg-pass-confirm').value;
-
-        if (!hubCode || !rawIdent || !pass1 || !pass2) {
-            showAlert({
-                type: 'error',
-                title: 'Campos incompletos',
-                message: 'Preencha todos os campos obrigatórios.'
-            });
-            return null;
-        }
-
-        if (pass1.length < 6) {
-            showAlert({
-                type: 'error',
-                title: 'Senha muito curta',
-                message: 'A senha deve ter pelo menos 6 caracteres.'
-            });
-            return null;
-        }
-
-        if (pass1 !== pass2) {
-            showAlert({
-                type: 'error',
-                title: 'Senhas não conferem',
-                message: 'As senhas digitadas são diferentes. Verifique e tente novamente.'
-            });
-            return null;
-        }
-
-        const norm = normalizeIdentifier(rawIdent);
-        if (!norm.ok) {
-            showAlert({
-                type: 'error',
-                title: 'Identificador inválido',
-                message: norm.error || 'Verifique o usuário/e-mail informado.'
-            });
-            return null;
-        }
-
-        const hub = hubIndex.get(hubCode);
-        if (!hub) {
-            showAlert({
-                type: 'error',
-                title: 'HUB inválido',
-                message: 'Selecione um HUB válido.'
-            });
-            return null;
-        }
-
-        lastEmailIdent = norm.ident;
-
-        return {
-            ident: norm.ident,
-            pass: pass1,
-            hub
-        };
+    if (pass !== pass2) {
+      showAlert({
+        type: "error",
+        title: "Senhas não conferem",
+        message: "As senhas são diferentes.",
+      });
+      return null;
     }
 
-    async function confirmHubAndForm(hubLabel, onConfirm) {
-        const message =
-            `O seu HUB é "${hubLabel}"?\n\n` +
-            `Confira se todos os dados estão corretos, deseja prosseguir?`;
-
-        // Se existir showConfirmAlert (retorna Promise<boolean>)
-        if (typeof showConfirmAlert === 'function') {
-            // para não ficar com o botão travado enquanto a pessoa lê
-            setLoadingState(false);
-
-            const ok = await showConfirmAlert({
-                type: 'info',
-                title: 'Confirmação de dados',
-                message
-                // yesText / noText opcionais, usa padrão "Sim" / "Não"
-            });
-
-            if (!ok) {
-                // usuário cancelou
-                setLoadingState(false);
-                return false;
-            }
-
-            // confirmou → volta loading e executa a ação
-            setLoadingState(true);
-            await onConfirm();
-            return true;
-        }
-
-        // Fallback: window.confirm
-        const ok = window.confirm(message);
-        if (!ok) {
-            setLoadingState(false);
-            return false;
-        }
-
-        setLoadingState(true);
-        await onConfirm();
-        return true;
+    const norm = normalizeIdentifier(rawEmail);
+    if (!norm.ok) {
+      showAlert({
+        type: "error",
+        title: "E-mail inválido",
+        message: norm.error,
+      });
+      return null;
     }
 
-    // ====== [EMAIL VERIFY] REENVIAR CÓDIGO ======
-    resendCodeBtn.addEventListener('click', async () => {
-        if (!lastEmailIdent) return;
-
-        try {
-            setLoadingState(true);
-            const res = await requestEmailVerification(lastEmailIdent);
-            if (!res || res.ok !== true) {
-                const msg = res?.error || 'Não foi possível reenviar o código.';
-                emitErrorToast('Falha ao reenviar código', msg);
-                return;
-            }
-
-            showAlert({
-                type: 'success',
-                title: 'Código reenviado',
-                message: `Enviamos um novo código para ${lastEmailIdent}.`
-            });
-        } catch (err) {
-            console.error('Erro ao reenviar código:', err);
-            emitErrorToast('Erro', 'Não foi possível reenviar o código.');
-        } finally {
-            setLoadingState(false);
-        }
-    });
-
-    // ====== SUBMIT ======
-    async function onSubmit() {
-        setLoadingState(true);
-
-        const info = validateInputs();
-        if (!info) {
-            setLoadingState(false);
-            return;
-        }
-
-        const { ident, pass, hub } = info;
-
-        // aponta o cliente pro hub certo
-        setBase(hub.server);
-
-        try {
-            // Etapa 1: enviar código
-            if (!hasPendingEmailCode || emailCodeField.hidden) {
-                const res = await requestEmailVerification(ident);
-
-                if (!res || res.ok !== true) {
-                    const msg = res?.error || 'Não foi possível enviar o código de verificação.';
-                    emitErrorToast('Falha ao enviar código', msg);
-                    setLoadingState(false);
-                    return;
-                }
-
-                hasPendingEmailCode = true;
-                emailCodeField.hidden = false;
-                submitButton.querySelector('span').textContent = 'Confirmar código';
-
-                showAlert({
-                    type: 'info',
-                    title: 'Verifique seu e-mail',
-                    message: `Enviamos um código de verificação para ${ident}.`
-                });
-
-                setLoadingState(false);
-                return;
-            }
-
-            // Etapa 2: validar código + confirmar antes de registrar
-            const emailCode = (emailCodeInput.value || '').trim();
-            if (!emailCode) {
-                emitErrorToast('Código obrigatório', 'Digite o código enviado para seu e-mail.');
-                setLoadingState(false);
-                return;
-            }
-
-            const runRegisterEmail = async () => {
-                try {
-                    const data = await publicRegisterUser({
-                        username: ident,
-                        password: pass,
-                        email_code: emailCode
-                    });
-
-                    if (!data || data.ok !== true) {
-                        const msg = data?.error || 'Não foi possível criar a conta.';
-                        emitErrorToast('Falha ao criar conta', msg);
-                        setLoadingState(false);
-                        return;
-                    }
-
-                    setUserInfo(data.username, data.token, data.avatar_id);
-
-                    showAlert({
-                        type: 'success',
-                        title: 'Conta criada com sucesso!',
-                        message: 'E-mail verificado e login efetuado.'
-                    });
-
-                    saveHubLocal(hub);
-                    localStorage.setItem('authToken', data.token);
-
-                    getConfigs();
-                    updateCounts();
-
-                    setLoadingState(false);
-                    api.close('registered');
-                } catch (err) {
-                    console.error('Erro no registro com e-mail (catch):', err);
-                    const msg =
-                        (err && err.message) ||
-                        (err && err.data && err.data.error) ||
-                        'Falha ao criar conta.';
-                    emitErrorToast('Falha ao criar conta', msg);
-                    setLoadingState(false);
-                }
-            };
-
-            // abre confirmação (hub + confira campos) e só registra se confirmar
-            confirmHubAndForm(hub.label, runRegisterEmail);
-        } catch (err) {
-            console.error('Erro no fluxo de registro por e-mail (catch):', err);
-            const msg =
-                (err && err.message) ||
-                (err && err.data && err.data.error) ||
-                'Falha ao processar registro.';
-            emitErrorToast('Falha ao processar registro', msg);
-            setLoadingState(false);
-        }
+    const hub = hubIndex.get(hubCode);
+    if (!hub) {
+      showAlert({
+        type: "error",
+        title: "HUB inválido",
+        message: "Selecione um HUB válido.",
+      });
+      return null;
     }
 
-    submitButton.onclick = onSubmit;
-    el.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') onSubmit();
-    });
+    lastEmailIdent = norm.ident;
 
-    // ====== Toggle olhos senha ======
-    const passInputMain = el.querySelector('#reg-pass');
-    const passInputConf = el.querySelector('#reg-pass-confirm');
-    const toggleMain = el.querySelector('#toggle-pass-main');
-    const toggleConf = el.querySelector('#toggle-pass-confirm');
+    return { email: norm.ident, pass, hub };
+  }
 
-    function swapIcon(btn, name) {
-        if (window.lucide?.icons?.[name]?.toSvg) {
-            btn.innerHTML = window.lucide.icons[name].toSvg({ 'aria-hidden': 'true' });
-        } else {
-            let i = btn.querySelector('[data-lucide]') || document.createElement('i');
-            i.setAttribute('aria-hidden', 'true');
-            i.setAttribute('data-lucide', name);
-            btn.innerHTML = '';
-            btn.appendChild(i);
-            try { window.lucide?.createIcons?.(); } catch { }
-        }
-    }
+  // -------------------------------------------------------------------
+  // SUBMIT
+  // -------------------------------------------------------------------
+  async function onSubmit() {
+    const info = validateInputs();
+    if (!info) return;
 
-    function setVisible(input, btn, show) {
-        input.type = show ? 'text' : 'password';
-        btn.setAttribute('aria-pressed', String(show));
-        btn.setAttribute('aria-label', show ? 'Ocultar senha' : 'Mostrar senha');
-        swapIcon(btn, show ? 'eye-off' : 'eye');
-    }
+    const { email, pass, hub } = info;
 
-    function setupToggle(input, btn) {
-        let lastSel = null;
+    setLoading(true);
 
-        btn.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            lastSel = {
-                start: input.selectionStart,
-                end: input.selectionEnd,
-                dir: input.selectionDirection
-            };
-        });
+    // --- FASE 1: enviar código ---
+    if (!awaitingCode) {
+      const res = await requestEmailVerification(email);
 
-        btn.addEventListener('click', () => {
-            const willShow = input.type === 'password';
-            setVisible(input, btn, willShow);
-
-            const caretStart = lastSel?.start ?? input.value.length;
-            const caretEnd = lastSel?.end ?? caretStart;
-            const caretDir = lastSel?.dir || 'none';
-            requestAnimationFrame(() => {
-                try { input.setSelectionRange(caretStart, caretEnd, caretDir); } catch { }
-            });
-        });
-
-        setVisible(input, btn, false);
-    }
-
-    setupToggle(passInputMain, toggleMain);
-    setupToggle(passInputConf, toggleConf);
-
-    // ====== HUB SELECT ======
-    const niceSelect = enhanceSelect(el, 'reg-hub');
-
-    initHubs().catch(err =>
+      if (!res?.ok) {
         showAlert({
-            type: 'error',
-            title: 'Erro ao carregar hubs',
-            message: err?.message || 'Erro ao carregar hubs.'
-        })
-    );
-
-    async function initHubs() {
-        const cfg = await loadHubsConfig();
-        buildHubIndex(cfg);
-        populateSelect(cfg);
-
-        const saved = localStorage.getItem('hubCode');
-        if (saved && hubIndex.has(saved)) {
-            el.querySelector('#reg-hub').value = saved;
-            niceSelect.pick(saved, hubIndex.get(saved).label);
-        }
-    }
-
-    async function loadHubsConfig() {
-        const url = new URL('data/hubs.json', document.baseURI);
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error('Falha ao baixar hubs.json');
-        const data = await res.json();
-        if (!data || !Array.isArray(data.hubs)) {
-            throw new Error('Formato inválido em hubs.json');
-        }
-        return data.hubs;
-    }
-
-    function buildHubIndex(list) {
-        hubIndex.clear();
-        for (const h of list) {
-            const code = String(h.code ?? h.value ?? h.id ?? h.name ?? '').trim();
-            const label = String(h.name ?? h.label ?? code);
-            const server = String(h.server ?? '').trim();
-            if (code && server) hubIndex.set(code, { code, label, server });
-        }
-    }
-
-    function populateSelect(list) {
-        const sel = el.querySelector('#reg-hub');
-        const options = ['<option value="" selected disabled>Selecione uma opção</option>']
-            .concat(
-                list
-                    .filter(h => (h.code ?? h.value) && h.server)
-                    .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-                    .map(h => `<option value="${h.code}">${h.name}</option>`)
-            )
-            .join('');
-        sel.innerHTML = options;
-
-        const listEl = el.querySelector('.ui-select-list');
-        listEl.innerHTML = '';
-
-        Array.from(sel.options).forEach((op) => {
-            const li = document.createElement('li');
-            li.className = 'ui-option';
-            li.role = 'option';
-            li.dataset.value = op.value;
-            li.textContent = op.textContent;
-            li.tabIndex = 0;
-            if (op.selected) li.setAttribute('aria-selected', 'true');
-
-            li.onclick = () => niceSelect.pick(op.value, op.textContent);
-            li.onkeydown = (e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    li.click();
-                }
-            };
-
-            listEl.appendChild(li);
+          type: "error",
+          title: "Erro",
+          message: res?.error || "Falha ao enviar código.",
         });
+        return setLoading(false);
+      }
+
+      awaitingCode = true;
+      emailCodeField.hidden = false;
+      submitButton.querySelector("span").textContent = "Confirmar código";
+
+      showAlert({
+        type: "info",
+        title: "Código enviado",
+        message: `Um código foi enviado para ${email}`,
+      });
+
+      return setLoading(false);
     }
 
-    return el;
+    // --- FASE 2: validar código e registrar ---
+    const code = emailCodeInput.value.trim();
+    if (!code) {
+      showAlert({
+        type: "error",
+        title: "Código obrigatório",
+        message: "Digite o código enviado ao seu e-mail.",
+      });
+      return setLoading(false);
+    }
+
+    const data = await publicRegisterUser({
+      username: email,
+      password: pass,
+      email_code: code,
+      hub: hub.code, // agora o backend recebe o hub correto
+    });
+
+    if (!data?.ok) {
+      showAlert({
+        type: "error",
+        title: "Falha ao criar conta",
+        message: data?.error || "Erro desconhecido.",
+      });
+      return setLoading(false);
+    }
+
+    setUserInfo(data.username, data.token, data.avatar_id);
+    saveHubLocal(hub);
+
+    localStorage.setItem("authToken", data.token);
+
+    showAlert({
+      type: "success",
+      title: "Conta criada!",
+      message: "Sua conta foi criada e você já está logado!",
+    });
+
+    getConfigs();
+    updateCounts();
+
+    setLoading(false);
+    api.close("registered");
+  }
+
+  submitButton.onclick = onSubmit;
+
+  // -------------------------------------------------------------------
+  // HUB SELECT — agora via backend
+  // -------------------------------------------------------------------
+  const niceSelect = enhanceSelect(el, "reg-hub");
+
+  initHubs();
+
+  async function initHubs() {
+    const data = await apiGet("hubs");
+    if (!data?.ok || !Array.isArray(data.hubs)) {
+      return showAlert({
+        type: "error",
+        title: "Erro",
+        message: "Falha ao carregar lista de HUBs.",
+      });
+    }
+
+    buildHubIndex(data.hubs);
+    populateSelect(data.hubs);
+
+    const saved = localStorage.getItem("hubCode");
+    if (saved && hubIndex.has(saved)) {
+      el.querySelector("#reg-hub").value = saved;
+      niceSelect.pick(saved, hubIndex.get(saved).label);
+    }
+  }
+
+  function buildHubIndex(list) {
+    hubIndex.clear();
+    for (const h of list) {
+      const code = String(h.code).trim();
+      const label = h.label || h.name || code;
+      hubIndex.set(code, { code, label });
+    }
+  }
+
+  function populateSelect(list) {
+    const sel = el.querySelector("#reg-hub");
+
+    sel.innerHTML =
+      `<option value="" selected disabled>Selecione uma opção</option>` +
+      list
+        .map((h) => `<option value="${h.code}">${h.label}</option>`)
+        .join("");
+
+    const listEl = el.querySelector(".ui-select-list");
+    listEl.innerHTML = "";
+
+    Array.from(sel.options).forEach((op) => {
+      const li = document.createElement("li");
+      li.className = "ui-option";
+      li.role = "option";
+      li.dataset.value = op.value;
+      li.textContent = op.textContent;
+
+      li.onclick = () => niceSelect.pick(op.value, op.textContent);
+      listEl.appendChild(li);
+    });
+  }
+
+  return el;
 }

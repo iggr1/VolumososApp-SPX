@@ -7,7 +7,6 @@ import { verifyBrCode } from './utils/package.js';
 import { verifyAlreadyInLocalPallet } from './utils/pallet.js';
 import { showAlert } from './utils/alerts.js';
 import { isModalOpenOnScreen } from './utils/helper.js';
-import { setupPWA } from './pwa.js';
 
 setupTypography();
 
@@ -17,155 +16,11 @@ const selectBtn = $('.cam-select');
 const flipBtn = $('.cam-flip');
 const selectLabel = $('.cam-select span');
 const inputEl = $('.panel .input input');
-const installBtn = document.querySelector('.btn-install');
-const addBtn = document.querySelector('.btn-add');
-
-const INSTALL_KEY = 'pwaInstalled';
-let deferredPrompt = null;
-let keyboardBuffer = '';
-let keyboardTimer = null;
-const KEYBOARD_TIMEOUT = 150;
-
-setupPWA();
-
-const hideKeyboardBuffer = () => {
-  keyboardBuffer = '';
-  if (keyboardTimer) {
-    clearTimeout(keyboardTimer);
-    keyboardTimer = null;
-  }
-};
-
-const setCameraErrorState = (message) => {
-  if (!camEl) return;
-
-  camEl.classList.add('cam--error');
-
-  const label = camEl.querySelector('.label');
-  if (label) {
-    label.textContent = message || 'Não foi possível acessar a câmera.';
-  }
-
-  let msg = camEl.querySelector('.cam-error-message');
-  if (!msg) {
-    msg = document.createElement('div');
-    msg.className = 'cam-error-message';
-    camEl.appendChild(msg);
-  }
-  msg.textContent = message || 'Não foi possível acessar a câmera.';
-};
-
-const clearCameraErrorState = () => {
-  camEl?.classList.remove('cam--error');
-  camEl?.querySelector('.cam-error-message')?.remove();
-};
-
-const resetAfterRouteSelection = (reason) => {
-  hideKeyboardBuffer();
-  scanLock = false;
-  inputEl.value = '';
-  inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-  if (reason === 'submit') {
-    try { inputEl.focus(); } catch { /* ignore */ }
-  }
-};
-
-const handleScannedValue = (val) => {
-  const brCode = String(val || '').trim();
-  if (!brCode || scanLock || isModalOpenOnScreen()) return;
-
-  scanLock = true;
-  inputEl.value = brCode;
-  inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-  addBtn?.click();
-
-  setTimeout(() => { scanLock = false; }, 500);
-};
-
-const listenToKeyboardScans = () => {
-  document.addEventListener('keydown', (ev) => {
-    const target = ev.target;
-    const isEditable = target instanceof HTMLElement
-      && (target.isContentEditable
-        || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
-    const isBrInput = target?.classList?.contains('brcode-input');
-
-    // Deixa digitação normal em campos diferentes do input principal
-    if (isEditable && !isBrInput) return;
-    if (isModalOpenOnScreen()) return;
-
-    if (ev.key === 'Enter' || ev.key === 'NumpadEnter') {
-      if (keyboardBuffer) {
-        ev.preventDefault();
-        const buf = keyboardBuffer.trim();
-        hideKeyboardBuffer();
-        handleScannedValue(buf);
-      }
-      return;
-    }
-
-    if (ev.key?.length === 1 && !ev.ctrlKey && !ev.metaKey && !ev.altKey) {
-      keyboardBuffer += ev.key;
-      if (keyboardBuffer.length > 40) keyboardBuffer = keyboardBuffer.slice(-40);
-      if (keyboardTimer) clearTimeout(keyboardTimer);
-      keyboardTimer = setTimeout(() => {
-        const buf = keyboardBuffer.trim();
-        hideKeyboardBuffer();
-        handleScannedValue(buf);
-      }, KEYBOARD_TIMEOUT);
-    }
-  });
-};
-
-const hideInstallCTA = () => {
-  if (!installBtn) return;
-  installBtn.classList.add('is-hidden');
-};
-
-const showInstallCTA = () => {
-  if (!installBtn) return;
-  if (localStorage.getItem(INSTALL_KEY) === 'true') return;
-  installBtn.classList.remove('is-hidden');
-};
-
-window.addEventListener('beforeinstallprompt', (event) => {
-  event.preventDefault();
-  deferredPrompt = event;
-  showInstallCTA();
-});
-
-installBtn?.addEventListener('click', async () => {
-  if (!deferredPrompt) return;
-
-  installBtn.disabled = true;
-  deferredPrompt.prompt();
-
-  const choice = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.disabled = false;
-
-  if (choice?.outcome === 'accepted') {
-    localStorage.setItem(INSTALL_KEY, 'true');
-    hideInstallCTA();
-  }
-});
-
-window.addEventListener('appinstalled', () => {
-  localStorage.setItem(INSTALL_KEY, 'true');
-  hideInstallCTA();
-  deferredPrompt = null;
-});
-
-if (localStorage.getItem(INSTALL_KEY) === 'true') {
-  hideInstallCTA();
-}
 
 const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
 
 let scanLock = false;
 let scanner = null;
-
-listenToKeyboardScans();
 
 (async () => {
   try {
@@ -180,7 +35,14 @@ listenToKeyboardScans();
       camEl,
       scanEl,
       onResult: (val) => {
-        handleScannedValue(val);
+        if (scanLock || isModalOpenOnScreen()) return;
+        scanLock = true;
+
+        inputEl.value = val;
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        document.querySelector('.btn-add')?.click();
+
+        setTimeout(() => { scanLock = false; }, 500); // debounce
       }
     });
 
@@ -190,14 +52,15 @@ listenToKeyboardScans();
     // Abre a primeira câmera; CameraController chamará scanner.start() internamente
     await camera.start(0);
 
-    clearCameraErrorState();
-
     addEventListener('beforeunload', () => {
       try { scanner.stop(); } catch { }
       try { camera.stop(); } catch { }
     });
   } catch (err) {
-    setCameraErrorState('Permita acesso à câmera para ler QR');
+    const label = camEl.querySelector('.label');
+    if (label) {
+      label.textContent = 'Permita acesso à câmera para ler QR';
+    }
   }
 })();
 
@@ -308,13 +171,7 @@ document.addEventListener('click', (e) => {
     collapseDelayMs: 100,
   });
 
-  openModal({
-    type: 'routeSelect',
-    props: { brCode },
-    overrides: {
-      onClose: (reason) => resetAfterRouteSelection(reason)
-    }
-  });
+  openModal({ type: 'routeSelect' });
 });
 
 /* Botão info */

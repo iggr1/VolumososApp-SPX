@@ -246,13 +246,6 @@ export default function render(_props = {}, modalApi) {
       refreshButtons();
       paint();
 
-      await showAlert({
-        type: 'success',
-        title: 'Enviado',
-        message: `${qtt} pacote${qtt > 1 ? 's' : ''} enviados como novo pallet.`,
-        durationMs: 1600
-      });
-
       if (typeof _props.onFinish === 'function') {
         try { _props.onFinish(); } catch (_) { }
       }

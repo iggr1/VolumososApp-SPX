@@ -1,6 +1,7 @@
 import { showAlert } from "../utils/alerts.js";
-import { loginRequest, guestLoginUser } from "../utils/auth.js";
+import { loginRequest, guestLoginUser, saveHubLocal as saveHubFromAuth } from "../utils/auth.js";
 import { enhanceSelect } from "../utils/uiSelect.js";
+import { apiGet } from "../api.js";
 
 export const meta = {
   title: 'Login',
@@ -71,17 +72,25 @@ export default function render(_props = {}, api) {
     </div>
   `;
 
-  // Se o Lucide estiver carregado, (re)cria os ícones desse bloco também
   try { window.lucide?.createIcons?.(); } catch { }
 
   const niceSelect = enhanceSelect(el, 'login-hub');
 
-  initHubs().catch((e) => alert(e?.message || 'Erro ao carregar hubs'));
+  initHubs().catch((e) => {
+    console.error(e);
+    showAlert({
+      type: 'error',
+      title: 'Erro ao carregar HUBs',
+      message: e?.message || 'Não foi possível carregar a lista de HUBs.',
+      durationMs: 4000
+    });
+  });
 
   async function initHubs() {
-    const cfg = await loadHubsConfig();
-    buildHubIndex(cfg);
-    populateSelect(cfg);
+    const hubs = await loadHubsConfig();
+    buildHubIndex(hubs);
+    populateSelect(hubs);
+
     const saved = localStorage.getItem('hubCode');
     if (saved && hubIndex.has(saved)) {
       el.querySelector('#login-hub').value = saved;
@@ -90,21 +99,29 @@ export default function render(_props = {}, api) {
   }
 
   async function loadHubsConfig() {
-    const url = new URL('data/hubs.json', document.baseURI);
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Falha ao baixar hubs.json');
-    const data = await res.json();
-    if (!data || !Array.isArray(data.hubs)) throw new Error('Formato inválido em hubs.json');
+    let data;
+    try {
+      data = await apiGet('hubs'); // GET /api?path=hubs
+    } catch (err) {
+      console.error('Erro ao buscar hubs:', err);
+      throw new Error('Falha ao carregar lista de HUBs');
+    }
+
+    if (!data?.ok || !Array.isArray(data.hubs)) {
+      throw new Error('Resposta inválida ao carregar HUBs');
+    }
     return data.hubs;
   }
 
   function buildHubIndex(list) {
     hubIndex.clear();
     for (const h of list) {
-      const code = String(h.code ?? h.value ?? h.id ?? h.name ?? '').trim();
-      const label = String(h.name ?? h.label ?? code);
-      const server = String(h.server ?? '').trim();
-      if (code && server) hubIndex.set(code, { code, label, server });
+      const code = String(h.code ?? '').trim();
+      const label = String(h.label ?? h.name ?? code).trim();
+
+      if (code) {
+        hubIndex.set(code, { code, label });
+      }
     }
   }
 
@@ -113,9 +130,14 @@ export default function render(_props = {}, api) {
     const options = ['<option value="" selected disabled>Selecione uma opção</option>']
       .concat(
         list
-          .filter(h => (h.code ?? h.value) && h.server)
-          .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-          .map(h => `<option value="${h.code}">${h.name}</option>`)
+          .filter(h => h.code)
+          .sort((a, b) =>
+            String(a.label || a.name || a.code)
+              .localeCompare(String(b.label || b.name || b.code))
+          )
+          .map(h =>
+            `<option value="${h.code}">${h.label || h.name || h.code}</option>`
+          )
       )
       .join('');
     sel.innerHTML = options;
@@ -131,27 +153,26 @@ export default function render(_props = {}, api) {
       li.tabIndex = 0;
       if (op.selected) li.setAttribute('aria-selected', 'true');
       li.onclick = () => niceSelect.pick(op.value, op.textContent);
-      li.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); } };
+      li.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          li.click();
+        }
+      };
       listEl.appendChild(li);
     });
   }
 
-  function resolveHub(code) { return hubIndex.get(code) || null; }
-
-  function saveHubLocal(hub) {
-    localStorage.setItem('hubCode', hub.code);
-    localStorage.setItem('hubServer', hub.server);
-    localStorage.setItem('hubLabel', hub.label);
+  function resolveHub(code) {
+    return hubIndex.get(code) || null;
   }
 
-  function baseUrl() {
-    const s = localStorage.getItem('hubServer');
-    if (!s) showAlert({
-      type: 'error',
-      title: 'HUB não selecionado',
-      message: 'Por favor, selecione um HUB válido.',
+  function saveHub(hub) {
+    if (!hub) return;
+    saveHubFromAuth({
+      code: hub.code,
+      label: hub.label
     });
-    return s;
   }
 
   async function onSubmit() {
@@ -164,6 +185,7 @@ export default function render(_props = {}, api) {
       const code = el.querySelector('#login-hub').value;
       const username = el.querySelector('#login-user').value.trim();
       const password = el.querySelector('#login-pass').value;
+
       if (!code || !username || !password) {
         el.querySelector('form')?.reportValidity?.();
         submitButton.classList.remove('login-btn--loading');
@@ -172,10 +194,10 @@ export default function render(_props = {}, api) {
       }
 
       const hub = resolveHub(code);
-      if (!hub) throw new Error('HUB sem servidor configurado');
-      saveHubLocal(hub);
+      if (!hub) throw new Error('HUB inválido');
+      saveHub(hub);
 
-      const res = await loginRequest({ username, password, baseUrl });
+      const res = await loginRequest({ username, password });
 
       if (!res) {
         submitButton.classList.remove('login-btn--loading');
@@ -221,9 +243,8 @@ export default function render(_props = {}, api) {
 
   let lastSel = null;
 
-  // Evita perder o foco e captura a seleção/caret antes de trocar o type
   toggleBtn.addEventListener('pointerdown', (e) => {
-    e.preventDefault(); // mantém o foco no input
+    e.preventDefault();
     lastSel = {
       start: passInput.selectionStart,
       end: passInput.selectionEnd,
@@ -235,7 +256,6 @@ export default function render(_props = {}, api) {
     const willShow = passInput.type === 'password';
     setPasswordVisible(willShow);
 
-    // Restaura a seleção/caret no próximo frame (mais confiável em Safari/iOS)
     const s = lastSel?.start ?? passInput.value.length;
     const e = lastSel?.end ?? s;
     requestAnimationFrame(() => {
@@ -243,12 +263,11 @@ export default function render(_props = {}, api) {
     });
   });
 
-  // Estado inicial
   setPasswordVisible(false);
 
-  // ====== ABRIR MODAL DE REGISTRO ======
+  // ====== ABRIR MODAL DE REGISTRO / GUEST ======
   const registerBtn = el.querySelector('#register-create');
-  const guestBtn = el.querySelector('#guest-login');
+  const guestBtn    = el.querySelector('#guest-login');
 
   guestBtn.addEventListener('click', async () => {
     const guestButton = el.querySelector('#guest-login');
@@ -256,38 +275,69 @@ export default function render(_props = {}, api) {
     guestButton.classList.add('guest-btn--loading');
     modal?.classList?.add('loading');
 
-    const hub = el.querySelector('#login-hub').value;
-    if (!hub) {
+    try {
+      const hubCode = el.querySelector('#login-hub').value;
+      if (!hubCode) {
+        showAlert({
+          type: 'error',
+          title: 'HUB não selecionado',
+          message: 'Por favor, selecione um HUB válido.',
+        });
+        return;
+      }
+
+      const hub = resolveHub(hubCode);
+      if (!hub) {
+        showAlert({
+          type: 'error',
+          title: 'HUB inválido',
+          message: 'Por favor, selecione um HUB válido.',
+        });
+        return;
+      }
+
+      saveHub(hub);
+
+      // tentamos login como convidado
+      const res = await guestLoginUser();
+
+      if (!res) {
+        // guestLoginUser pode já ter mostrado alerta;
+        // aqui só garantimos que não fecha o modal.
+        return;
+      }
+
+      // sucesso
       showAlert({
-        type: 'error',
-        title: 'HUB não selecionado',
-        message: 'Por favor, selecione um HUB válido.',
+        type: 'info',
+        title: 'Login como convidado',
+        message: 'Você entrou como convidado. Algumas funcionalidades podem ser limitadas.',
+        durationMs: 3000,
       });
+
+      api.close('submit');
+    } catch (err) {
+      const msg = String(err?.message || '').toLowerCase();
+
+      if (msg.includes('não permite convidados') || msg.includes('nao permite convidados')) {
+        showAlert({
+          type: 'error',
+          title: 'Convidados não permitidos',
+          message: 'Este HUB não permite convidados, acesse usando seu e-mail shopee.',
+          durationMs: 4000,
+        });
+      } else {
+        showAlert({
+          type: 'error',
+          title: 'Falha ao autenticar!',
+          message: err?.message || 'Não foi possível entrar como convidado.',
+          durationMs: 4000,
+        });
+      }
+    } finally {
       guestButton.classList.remove('guest-btn--loading');
       modal?.classList?.remove('loading');
-      return;
     }
-
-    saveHubLocal(resolveHub(hub));
-
-    showAlert({
-      type: 'info',
-      title: 'Login como convidado',
-      message: 'Você entrará como convidado. Algumas funcionalidades podem ser limitadas.',
-      durationMs: 3000,
-    });
-
-    const res = await guestLoginUser();
-    if (!res) {
-      guestButton.classList.remove('guest-btn--loading');
-      modal?.classList?.remove('loading');
-      return;
-    }
-
-    guestButton.classList.remove('guest-btn--loading');
-    modal?.classList?.remove('loading');
-
-    api.close('submit');
   });
 
   registerBtn.addEventListener('click', () => {
@@ -298,4 +348,3 @@ export default function render(_props = {}, api) {
 
   return el;
 }
-
