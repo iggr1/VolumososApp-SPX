@@ -67,9 +67,7 @@ body {
 .app-name {
   margin: 6px 0 0;
   color: var(--accent);
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .meta {
