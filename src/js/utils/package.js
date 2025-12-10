@@ -49,8 +49,6 @@ export async function deletePackagesByIndices(items = [], indices = [], palletId
   const brs = idxs
     .map(i => items[i] && (items[i].brCode || items[i].brcode))
     .filter(Boolean);
-
-  updateCounts();
   return deletePackagesByBrCodes(brs, palletId, { all });
 }
 
@@ -63,7 +61,7 @@ export function dropItemsByIndices(items = [], indices = []) {
     else out.push(it);
   });
 
-  updateCounts();
-  
+  updateCounts({ skipRemote: true });
+
   return { items: out, removed };
 }

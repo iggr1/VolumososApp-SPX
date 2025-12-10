@@ -1,7 +1,17 @@
 // helper.js
 import { apiGet } from '../api.js';
 
-export function updateCounts() {
+const REMOTE_DEBOUNCE_MS = 350;
+const REMOTE_CACHE_MS = 10_000;
+
+let remoteTimer = null;
+let remoteInFlight = null;
+let lastRemoteCount = null;
+let lastRemoteAt = 0;
+
+export function updateCounts(options = {}) {
+    const { skipRemote = false, forceRemote = false } = options;
+
     setCountsLoading(true);
 
     const currentEl = document.querySelector('.current-pallet-count');
@@ -22,23 +32,69 @@ export function updateCounts() {
     }
 
     // ----- contador de todos os pallets (API) -----
-    if (allEl) {
-        (async () => {
-            try {
-                const res = await apiGet('pallets/count');
-                const c = toInt(res?.count, 0);
-                allEl.textContent = `${c} pallet${c === 1 ? '' : 's'}`;
-            } catch (_) {
-                // fallback visual simples em caso de erro de rede/servidor
-                allEl.textContent = '—';
-            } finally {
-                // nada a desfazer aqui: quem escreve o número já substitui o spinner
-                setCountsLoading(false);
-            }
-        })();
-    } else {
+    if (!allEl) {
         setCountsLoading(false);
+        return;
     }
+
+    if (skipRemote) {
+        setCountsLoading(false);
+        return;
+    }
+
+    const now = Date.now();
+    const isCacheFresh = !forceRemote
+        && lastRemoteCount !== null
+        && (now - lastRemoteAt) < REMOTE_CACHE_MS;
+
+    if (isCacheFresh) {
+        renderRemoteCount(lastRemoteCount);
+        setCountsLoading(false);
+        return;
+    }
+
+    debounceRemoteFetch();
+}
+
+function debounceRemoteFetch() {
+    if (remoteTimer) return;
+    remoteTimer = setTimeout(fetchRemoteCount, REMOTE_DEBOUNCE_MS);
+}
+
+async function fetchRemoteCount() {
+    remoteTimer = null;
+
+    if (remoteInFlight) return remoteInFlight;
+
+    remoteInFlight = (async () => {
+        try {
+            const res = await apiGet('pallets/count');
+            const c = toInt(res?.count, 0);
+            lastRemoteCount = c;
+            lastRemoteAt = Date.now();
+            renderRemoteCount(c);
+        } catch (_) {
+            renderRemoteCount(null, true);
+        } finally {
+            setCountsLoading(false);
+            remoteInFlight = null;
+        }
+    })();
+
+    return remoteInFlight;
+}
+
+function renderRemoteCount(count, errored = false) {
+    const allEl = document.querySelector('.all-pallets-count');
+    if (!allEl) return;
+
+    if (errored) {
+        allEl.textContent = '—';
+        return;
+    }
+
+    const c = toInt(count, 0);
+    allEl.textContent = `${c} pallet${c === 1 ? '' : 's'}`;
 }
 
 function toInt(v, d = 0) {
