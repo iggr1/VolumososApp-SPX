@@ -7,7 +7,7 @@ export function setBase(url) {
 
 export function getBase() {
   // ex: 'http://localhost:3000/api'
-  return BASE || 'http://localhost:3000/api';
+  return BASE || 'setBase("https://volumososapp-spx-server-side-production.up.railway.app/api");';
 }
 
 export class ApiError extends Error {
