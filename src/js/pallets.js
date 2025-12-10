@@ -1,4 +1,4 @@
-import { apiGet } from './api.js';
+import { apiGet, apiPost } from './api.js';
 
 const hubSelect = document.getElementById('hub-select');
 const refreshBtn = document.getElementById('refresh-btn');
@@ -9,12 +9,14 @@ const statsBadge = document.getElementById('stats-pill');
 const searchInput = document.getElementById('search');
 const clearSearchBtn = document.getElementById('clear-search');
 const emptyState = document.getElementById('empty-state');
+const toggleFinalized = document.getElementById('toggle-finalized');
 
 const state = {
   hubs: [],
   packages: [],
   filterLetter: 'all',
   search: '',
+  showFinalized: false,
 };
 
 function setLoading(isLoading) {
@@ -69,6 +71,19 @@ function formatDate(value) {
   return date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
 }
 
+function formatStatus(status = '') {
+  const normalized = status.toLowerCase().replace(/\s+/g, '');
+  switch (normalized) {
+    case 'assigned':
+      return { label: 'Entregue', className: 'status-assigned' };
+    case 'removed':
+      return { label: 'Removido', className: 'status-removed' };
+    case 'onpallet':
+    default:
+      return { label: 'Em pallet', className: 'status-onpallet' };
+  }
+}
+
 function buildUserImage(userImg) {
   const id = userImg ? String(userImg).replace(/\D/g, '') : '0';
   return `./src/assets/img/profile-images/${id || '0'}.jpg`;
@@ -80,6 +95,10 @@ function applyFilters(list) {
   return list.filter((item) => {
     const routeInfo = parseRoute(item.route);
     if (state.filterLetter !== 'all' && routeInfo.letter !== state.filterLetter) return false;
+
+    const statusValue = String(item.status || 'on pallet').toLowerCase();
+    const isFinalized = statusValue === 'removed' || statusValue === 'assigned';
+    if (!state.showFinalized && isFinalized) return false;
 
     if (!search) return true;
     const haystack = [
@@ -144,9 +163,52 @@ function renderRows() {
     user.appendChild(img);
     user.appendChild(info);
 
-    row.append(route, br, pallet, date, user);
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+
+    const statusInfo = formatStatus(pkg.status);
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `status-badge ${statusInfo.className}`;
+    statusBadge.textContent = statusInfo.label;
+
+    const deliverBtn = document.createElement('button');
+    deliverBtn.type = 'button';
+    deliverBtn.className = 'action-btn primary';
+    deliverBtn.textContent = 'Marcar entregue';
+    deliverBtn.disabled = statusInfo.label === 'Entregue';
+    deliverBtn.addEventListener('click', () => updatePackageStatus(pkg, 'assigned'));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'action-btn';
+    removeBtn.textContent = 'Marcar removido';
+    removeBtn.disabled = statusInfo.label === 'Removido';
+    removeBtn.addEventListener('click', () => updatePackageStatus(pkg, 'removed'));
+
+    actions.append(statusBadge, deliverBtn, removeBtn);
+
+    row.append(route, br, pallet, date, user, actions);
     packagesEl.appendChild(row);
   });
+}
+
+async function updatePackageStatus(pkg, status) {
+  const hub = hubSelect.value;
+  if (!hub) return;
+
+  const brCode = pkg.brCode;
+  try {
+    const payload = { hub, brCode, status };
+    await apiPost('public/package/status', payload);
+
+    state.packages = state.packages.map((item) =>
+      item.brCode === brCode ? { ...item, status } : item,
+    );
+    renderRows();
+  } catch (err) {
+    console.error('Erro ao atualizar status', err);
+    alert('Não foi possível atualizar o status do pacote. Tente novamente.');
+  }
 }
 
 async function loadPackages(hubCode) {
@@ -234,6 +296,11 @@ function registerEvents() {
     searchInput.focus();
   });
 
+  toggleFinalized.addEventListener('change', (ev) => {
+    state.showFinalized = ev.target.checked;
+    renderRows();
+  });
+
   document.addEventListener('keydown', (ev) => {
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'f') {
       ev.preventDefault();
@@ -245,6 +312,7 @@ function registerEvents() {
 
 async function init() {
   registerEvents();
+  toggleFinalized.checked = state.showFinalized;
   await loadHubs();
 }
 

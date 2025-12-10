@@ -48,6 +48,18 @@
           <button class="ghost" id="clear-search" aria-label="Limpar busca">Limpar</button>
         </div>
       </div>
+
+      <div class="input-group compact-group">
+        <label for="toggle-finalized">Visualização</label>
+        <div class="toggle-row">
+          <span class="muted">Ocultar entregues/removidos</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-finalized" />
+            <span class="slider"></span>
+          </label>
+          <span>Mostrar todos</span>
+        </div>
+      </div>
     </section>
 
     <section class="filters" id="filters"></section>
@@ -59,6 +71,7 @@
         <span>Pallet</span>
         <span>Data/Hora</span>
         <span>Operador</span>
+        <span>Ações</span>
       </div>
       <div id="packages"></div>
     </section>
