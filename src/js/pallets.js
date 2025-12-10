@@ -141,7 +141,6 @@ function renderRows() {
     name.className = 'name';
     name.textContent = pkg.userName || 'Operador não informado';
     info.appendChild(name);
-    info.appendChild(hint);
     user.appendChild(img);
     user.appendChild(info);
 
