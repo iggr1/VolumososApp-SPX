@@ -174,15 +174,15 @@ function renderRows() {
     const deliverBtn = document.createElement('button');
     deliverBtn.type = 'button';
     deliverBtn.className = 'action-btn primary';
-    deliverBtn.textContent = 'Marcar entregue';
+    deliverBtn.textContent = 'Entregar';
     deliverBtn.disabled = statusInfo.label === 'Entregue';
     deliverBtn.addEventListener('click', () => updatePackageStatus(pkg, 'assigned'));
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'action-btn';
-    removeBtn.textContent = 'Marcar removido';
-    removeBtn.disabled = statusInfo.label === 'Removido';
+    removeBtn.textContent = '🗑';
+    removeBtn.disabled = statusInfo.label === '🗑';
     removeBtn.addEventListener('click', () => updatePackageStatus(pkg, 'removed'));
 
     actions.append(statusBadge, deliverBtn, removeBtn);
