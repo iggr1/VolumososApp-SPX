@@ -22,4 +22,74 @@
     --text-light: 300;
     --text-normal: 400;
     --text-bold: 700;
+
+    --pill-height: 120rem;
+    --pill-radius: 85rem;
+    --pill-padding-x: 40rem;
+    --pill-gap: 20rem;
+    --pill-font-size: var(--text-medium);
+    --pill-font-weight: var(--text-normal);
+    --pill-letter-spacing: 2rem;
+
+    --control-height: 120rem;
+    --control-radius: 85rem;
+    --control-padding-x: 50rem;
+}
+
+/* Form controls */
+:where(.login-input, .login-select, .ui-select-btn) {
+    width: 100%;
+    height: var(--control-height);
+    border-radius: var(--control-radius);
+    background: var(--light-gray);
+    padding: 0 var(--control-padding-x);
+    font-size: var(--text-medium);
+    font-weight: var(--text-normal);
+    color: var(--dark-gray);
+    border: 0;
+    appearance: none;
+}
+
+:where(.login-input, .login-select, .ui-select-btn)::placeholder {
+    color: var(--dark-gray);
+}
+
+:where(.login-input, .login-select, .ui-select-btn):focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
+/* Pill buttons */
+:where(.menu-button, .login-btn, .register-create-btn, .guest-btn, .route-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--pill-gap);
+    width: 100%;
+    height: var(--pill-height);
+    padding: 0 var(--pill-padding-x);
+    border-radius: var(--pill-radius);
+    border: 0;
+    font-size: var(--pill-font-size);
+    font-weight: var(--pill-font-weight);
+    letter-spacing: var(--pill-letter-spacing);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+    background: var(--btn-bg, var(--light-gray));
+    color: var(--btn-color, var(--darker-gray));
+}
+
+:where(.menu-button, .login-btn, .register-create-btn, .guest-btn, .route-btn):focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
+:where(.menu-button, .login-btn, .register-create-btn, .guest-btn, .route-btn):not([disabled]):hover {
+    background: var(--btn-bg-hover, var(--btn-bg, var(--light-gray)));
+}
+
+:where(.menu-button, .login-btn, .register-create-btn, .guest-btn, .route-btn)[disabled] {
+    background: var(--btn-bg-disabled, #dcdcdc);
+    color: var(--btn-color-disabled, #9e9e9e);
+    cursor: not-allowed;
 }
