@@ -75,12 +75,18 @@ function formatStatus(status = '') {
   const normalized = status.toLowerCase().replace(/\s+/g, '');
   switch (normalized) {
     case 'assigned':
-      return { label: 'Entregue', className: 'status-assigned' };
+      return { label: 'Entregue', className: 'status-assigned', icon: 'badge-check', key: 'assigned' };
     case 'removed':
-      return { label: 'Removido', className: 'status-removed' };
+      return { label: 'Removido', className: 'status-removed', icon: 'trash-2', key: 'removed' };
     case 'onpallet':
     default:
-      return { label: 'Em pallet', className: 'status-onpallet' };
+      return { label: 'Em pallet', className: 'status-onpallet', icon: 'box', key: 'onpallet' };
+  }
+}
+
+function hydrateIcons() {
+  if (window.lucide?.createIcons) {
+    window.lucide.createIcons({ attrs: { 'stroke-width': '1.75' } });
   }
 }
 
@@ -176,20 +182,20 @@ function renderRows() {
     const statusInfo = formatStatus(pkg.status);
     const statusBadge = document.createElement('span');
     statusBadge.className = `status-badge ${statusInfo.className}`;
-    statusBadge.textContent = statusInfo.label;
+    statusBadge.innerHTML = `<i data-lucide="${statusInfo.icon}"></i><span>${statusInfo.label}</span>`;
 
     const deliverBtn = document.createElement('button');
     deliverBtn.type = 'button';
     deliverBtn.className = 'action-btn primary';
-    deliverBtn.textContent = 'Entregar';
-    deliverBtn.disabled = statusInfo.label === 'Entregue';
+    deliverBtn.innerHTML = '<i data-lucide="check-circle-2"></i><span>Entregar</span>';
+    deliverBtn.disabled = statusInfo.key === 'assigned';
     deliverBtn.addEventListener('click', () => updatePackageStatus(pkg, 'assigned'));
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'action-btn';
-    removeBtn.textContent = '🗑';
-    removeBtn.disabled = statusInfo.label === '🗑';
+    removeBtn.innerHTML = '<i data-lucide="trash-2"></i><span>Remover</span>';
+    removeBtn.disabled = statusInfo.key === 'removed';
     removeBtn.addEventListener('click', () => updatePackageStatus(pkg, 'removed'));
 
     actions.append(statusBadge, deliverBtn, removeBtn);
@@ -197,6 +203,8 @@ function renderRows() {
     row.append(route, br, pallet, date, user, actions);
     packagesEl.appendChild(row);
   });
+
+  hydrateIcons();
 }
 
 async function updatePackageStatus(pkg, status) {
@@ -321,6 +329,7 @@ async function init() {
   registerEvents();
   toggleFinalized.checked = state.showFinalized;
   await loadHubs();
+  hydrateIcons();
 }
 
 init();
