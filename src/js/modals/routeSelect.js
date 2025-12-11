@@ -166,7 +166,7 @@ export default function render(props = {}, api) {
     const packageToAdd = {
       brCode,
       route: `${state.letter}-${parseInt(state.numberStr, 10)}`,
-      datetime: new Date(),
+      datetime: new Date().toISOString(),
       userToken: localStorage.getItem('authToken')
     };
 
