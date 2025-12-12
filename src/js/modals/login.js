@@ -142,25 +142,7 @@ export default function render(_props = {}, api) {
       .join('');
     sel.innerHTML = options;
 
-    const listEl = el.querySelector('.ui-select-list');
-    listEl.innerHTML = '';
-    Array.from(sel.options).forEach((op) => {
-      const li = document.createElement('li');
-      li.className = 'ui-option';
-      li.role = 'option';
-      li.dataset.value = op.value;
-      li.textContent = op.textContent;
-      li.tabIndex = 0;
-      if (op.selected) li.setAttribute('aria-selected', 'true');
-      li.onclick = () => niceSelect.pick(op.value, op.textContent);
-      li.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          li.click();
-        }
-      };
-      listEl.appendChild(li);
-    });
+    niceSelect.refreshOptions();
   }
 
   function resolveHub(code) {

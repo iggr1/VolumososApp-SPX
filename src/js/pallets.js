@@ -1,4 +1,5 @@
 import { apiGet, apiPost } from './api.js';
+import { enhanceSelect } from './utils/uiSelect.js';
 
 const hubSelect = document.getElementById('hub-select');
 const refreshBtn = document.getElementById('refresh-btn');
@@ -12,6 +13,7 @@ const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const emptyState = document.getElementById('empty-state');
 const toggleFinalized = document.getElementById('toggle-finalized');
+const hubSelectNice = enhanceSelect(document, 'hub-select', { searchPlaceholder: 'Buscar HUB...' });
 
 const state = {
   hubs: [],
@@ -288,12 +290,19 @@ async function loadHubs() {
       hubSelect.appendChild(opt);
     });
 
+    hubSelectNice?.refreshOptions();
+
     const saved = localStorage.getItem('hubCode');
     const first = saved && data.hubs.find((h) => h.code === saved) ? saved : data.hubs[0]?.code;
     if (first) {
       hubSelect.value = first;
-      hubBadge.textContent = hubSelect.options[hubSelect.selectedIndex]?.textContent || first;
-      await loadPackages(first);
+      const label = hubSelect.options[hubSelect.selectedIndex]?.textContent || first;
+      if (hubSelectNice) {
+        hubSelectNice.pick(first, label);
+      } else {
+        hubBadge.textContent = label;
+        await loadPackages(first);
+      }
     } else {
       updateBadges('Nenhum HUB encontrado', 0);
     }
