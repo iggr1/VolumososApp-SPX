@@ -8,6 +8,8 @@ const hubBadge = document.getElementById('hub-badge');
 const statsBadge = document.getElementById('stats-pill');
 const searchInput = document.getElementById('search');
 const clearSearchBtn = document.getElementById('clear-search');
+const routeSearchInput = document.getElementById('route-search');
+const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const emptyState = document.getElementById('empty-state');
 const toggleFinalized = document.getElementById('toggle-finalized');
 
@@ -16,6 +18,7 @@ const state = {
   packages: [],
   filterLetter: 'all',
   search: '',
+  routeSearch: '',
   showFinalized: false,
 };
 
@@ -91,10 +94,19 @@ function buildUserImage(userImg) {
 
 function applyFilters(list) {
   const search = state.search.trim().toLowerCase();
+  const normalizedRouteSearch = state.routeSearch.trim().toUpperCase().replace(/\s+/g, '');
 
   return list.filter((item) => {
     const routeInfo = parseRoute(item.route);
     if (state.filterLetter !== 'all' && routeInfo.letter !== state.filterLetter) return false;
+
+    if (normalizedRouteSearch) {
+      const normalizedItemRoute = String(item.route || '')
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '');
+      if (normalizedItemRoute !== normalizedRouteSearch) return false;
+    }
 
     const statusValue = String(item.status || 'on pallet').toLowerCase();
     const isFinalized = statusValue === 'removed' || statusValue === 'assigned';
@@ -134,6 +146,17 @@ function renderRows() {
     row.className = 'row';
 
     const priority = String(pkg.priority || '').toLowerCase();
+    if (priority === 'expedite' || priority === 'super expedite') {
+      const priorityFlag = document.createElement('span');
+      const isSuper = priority === 'super expedite';
+      priorityFlag.className = `priority-flag ${isSuper ? 'priority-flag-super' : ''}`;
+      priorityFlag.textContent = isSuper ? 'Prioridade Máxima' : 'Prioridade';
+      priorityFlag.dataset.tooltip = isSuper
+        ? 'Super expedite: atender antes dos demais'
+        : 'Expedite: priorize esta entrega';
+      row.appendChild(priorityFlag);
+    }
+
     if (priority === 'expedite') {
       row.classList.add('priority-expedite');
     } else if (priority === 'super expedite') {
@@ -286,6 +309,11 @@ function handleSearch(value) {
   renderRows();
 }
 
+function handleRouteSearch(value) {
+  state.routeSearch = value;
+  renderRows();
+}
+
 function registerEvents() {
   hubSelect.addEventListener('change', (ev) => {
     const hubCode = ev.target.value;
@@ -297,10 +325,18 @@ function registerEvents() {
 
   searchInput.addEventListener('input', (ev) => handleSearch(ev.target.value));
 
+  routeSearchInput.addEventListener('input', (ev) => handleRouteSearch(ev.target.value));
+
   clearSearchBtn.addEventListener('click', () => {
     searchInput.value = '';
     handleSearch('');
     searchInput.focus();
+  });
+
+  clearRouteSearchBtn.addEventListener('click', () => {
+    routeSearchInput.value = '';
+    handleRouteSearch('');
+    routeSearchInput.focus();
   });
 
   toggleFinalized.addEventListener('change', (ev) => {
