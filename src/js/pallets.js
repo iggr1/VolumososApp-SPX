@@ -12,7 +12,6 @@ const clearSearchBtn = document.getElementById('clear-search');
 const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const emptyState = document.getElementById('empty-state');
-const toggleFinalized = document.getElementById('toggle-finalized');
 const hubSelectNice = enhanceSelect(document, 'hub-select', { searchPlaceholder: 'Buscar HUB...' });
 
 const state = {
@@ -21,7 +20,6 @@ const state = {
   filterLetter: 'all',
   search: '',
   routeSearch: '',
-  showFinalized: false,
 };
 
 function setLoading(isLoading) {
@@ -109,10 +107,6 @@ function applyFilters(list) {
         .replace(/\s+/g, '');
       if (normalizedItemRoute !== normalizedRouteSearch) return false;
     }
-
-    const statusValue = String(item.status || 'on pallet').toLowerCase();
-    const isFinalized = statusValue === 'removed' || statusValue === 'assigned';
-    if (!state.showFinalized && isFinalized) return false;
 
     if (!search) return true;
     const haystack = [
@@ -348,11 +342,6 @@ function registerEvents() {
     routeSearchInput.focus();
   });
 
-  toggleFinalized.addEventListener('change', (ev) => {
-    state.showFinalized = ev.target.checked;
-    renderRows();
-  });
-
   document.addEventListener('keydown', (ev) => {
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'f') {
       ev.preventDefault();
@@ -364,7 +353,6 @@ function registerEvents() {
 
 async function init() {
   registerEvents();
-  toggleFinalized.checked = state.showFinalized;
   await loadHubs();
 }
 
