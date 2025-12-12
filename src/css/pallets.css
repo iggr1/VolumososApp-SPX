@@ -499,6 +499,37 @@ button {
   font-weight: 800;
 }
 
+.priority-label {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  gap: 2px;
+}
+
+.priority-title {
+  font-size: 12px;
+  color: var(--sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.priority-value {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.priority-text-normal {
+  color: #16a34a;
+}
+
+.priority-text-high {
+  color: #d97706;
+}
+
+.priority-text-max {
+  color: #dc2626;
+}
+
 .brcode {
   font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
   color: #111827;

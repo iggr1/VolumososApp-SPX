@@ -125,6 +125,38 @@ function applyFilters(list) {
   });
 }
 
+function getPriorityInfo(priorityValue = '') {
+  const normalized = String(priorityValue).toLowerCase();
+  if (normalized === 'super expedite') {
+    return {
+      type: 'max',
+      rowClass: 'priority-super',
+      flagLabel: 'Prioridade Máxima',
+      tooltip: 'Super expedite: atender antes dos demais',
+      textClass: 'priority-text-max',
+      valueLabel: 'Máxima',
+    };
+  }
+  if (normalized === 'expedite') {
+    return {
+      type: 'high',
+      rowClass: 'priority-expedite',
+      flagLabel: 'Prioridade',
+      tooltip: 'Expedite: priorize esta entrega',
+      textClass: 'priority-text-high',
+      valueLabel: 'Alta',
+    };
+  }
+  return {
+    type: 'normal',
+    rowClass: '',
+    flagLabel: '',
+    tooltip: '',
+    textClass: 'priority-text-normal',
+    valueLabel: 'Normal',
+  };
+}
+
 function renderRows() {
   packagesEl.innerHTML = '';
   const sorted = sortPackages(applyFilters(state.packages));
@@ -141,27 +173,28 @@ function renderRows() {
     const row = document.createElement('div');
     row.className = 'row';
 
-    const priority = String(pkg.priority || '').toLowerCase();
-    if (priority === 'expedite' || priority === 'super expedite') {
+    const priorityInfo = getPriorityInfo(pkg.priority);
+    if (priorityInfo.flagLabel) {
       const priorityFlag = document.createElement('span');
-      const isSuper = priority === 'super expedite';
-      priorityFlag.className = `priority-flag ${isSuper ? 'priority-flag-super' : ''}`;
-      priorityFlag.textContent = isSuper ? 'Prioridade Máxima' : 'Prioridade';
-      priorityFlag.dataset.tooltip = isSuper
-        ? 'Super expedite: atender antes dos demais'
-        : 'Expedite: priorize esta entrega';
+      priorityFlag.className = `priority-flag ${priorityInfo.type === 'max' ? 'priority-flag-super' : ''}`;
+      priorityFlag.textContent = priorityInfo.flagLabel;
+      priorityFlag.dataset.tooltip = priorityInfo.tooltip;
       row.appendChild(priorityFlag);
     }
 
-    if (priority === 'expedite') {
-      row.classList.add('priority-expedite');
-    } else if (priority === 'super expedite') {
-      row.classList.add('priority-super');
+    if (priorityInfo.rowClass) {
+      row.classList.add(priorityInfo.rowClass);
     }
 
     const route = document.createElement('div');
     route.className = 'route';
-    route.innerHTML = `<span class="route-badge">${pkg.route || '-'}</span><span>${pkg.hub || pkg.hubCode || ''}</span>`;
+    route.innerHTML = `
+      <span class="route-badge">${pkg.route || '-'}</span>
+      <span class="priority-label ${priorityInfo.textClass}">
+        <span class="priority-title">Prioridade</span>
+        <span class="priority-value">${priorityInfo.valueLabel}</span>
+      </span>
+    `;
 
     const br = document.createElement('div');
     br.className = 'brcode';
