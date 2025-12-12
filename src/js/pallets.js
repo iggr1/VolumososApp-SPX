@@ -1,4 +1,5 @@
 import { apiGet, apiPost } from './api.js';
+import { enhanceSelect } from './utils/uiSelect.js';
 
 const hubSelect = document.getElementById('hub-select');
 const refreshBtn = document.getElementById('refresh-btn');
@@ -11,7 +12,7 @@ const clearSearchBtn = document.getElementById('clear-search');
 const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const emptyState = document.getElementById('empty-state');
-const toggleFinalized = document.getElementById('toggle-finalized');
+const hubSelectNice = enhanceSelect(document, 'hub-select', { searchPlaceholder: 'Buscar HUB...' });
 
 const state = {
   hubs: [],
@@ -19,7 +20,6 @@ const state = {
   filterLetter: 'all',
   search: '',
   routeSearch: '',
-  showFinalized: false,
 };
 
 function setLoading(isLoading) {
@@ -107,10 +107,6 @@ function applyFilters(list) {
         .replace(/\s+/g, '');
       if (normalizedItemRoute !== normalizedRouteSearch) return false;
     }
-
-    const statusValue = String(item.status || 'on pallet').toLowerCase();
-    const isFinalized = statusValue === 'removed' || statusValue === 'assigned';
-    if (!state.showFinalized && isFinalized) return false;
 
     if (!search) return true;
     const haystack = [
@@ -288,12 +284,19 @@ async function loadHubs() {
       hubSelect.appendChild(opt);
     });
 
+    hubSelectNice?.refreshOptions();
+
     const saved = localStorage.getItem('hubCode');
     const first = saved && data.hubs.find((h) => h.code === saved) ? saved : data.hubs[0]?.code;
     if (first) {
       hubSelect.value = first;
-      hubBadge.textContent = hubSelect.options[hubSelect.selectedIndex]?.textContent || first;
-      await loadPackages(first);
+      const label = hubSelect.options[hubSelect.selectedIndex]?.textContent || first;
+      if (hubSelectNice) {
+        hubSelectNice.pick(first, label);
+      } else {
+        hubBadge.textContent = label;
+        await loadPackages(first);
+      }
     } else {
       updateBadges('Nenhum HUB encontrado', 0);
     }
@@ -339,11 +342,6 @@ function registerEvents() {
     routeSearchInput.focus();
   });
 
-  toggleFinalized.addEventListener('change', (ev) => {
-    state.showFinalized = ev.target.checked;
-    renderRows();
-  });
-
   document.addEventListener('keydown', (ev) => {
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'f') {
       ev.preventDefault();
@@ -355,7 +353,6 @@ function registerEvents() {
 
 async function init() {
   registerEvents();
-  toggleFinalized.checked = state.showFinalized;
   await loadHubs();
 }
 
