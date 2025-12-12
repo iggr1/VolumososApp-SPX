@@ -223,6 +223,29 @@
     display: block;
 }
 
+.ui-option--search {
+    position: sticky;
+    top: 0;
+    padding: 12rem 12rem 16rem;
+    background: #e0e0e0;
+    z-index: 1;
+}
+
+.ui-select-search {
+    width: 100%;
+    padding: 16rem 24rem;
+    border-radius: 60rem;
+    border: 1rem solid var(--light-gray);
+    background: #f5f5f5;
+    font-size: var(--text-medium);
+    color: var(--darker-gray);
+}
+
+.ui-select-search:focus-visible {
+    outline: 6rem solid var(--orange);
+    outline-offset: 4rem;
+}
+
 .ui-option {
     list-style: none;
     padding: 24rem 32rem;
