@@ -174,14 +174,6 @@ function renderRows() {
     row.className = 'row';
 
     const priorityInfo = getPriorityInfo(pkg.priority);
-    if (priorityInfo.flagLabel) {
-      const priorityFlag = document.createElement('span');
-      priorityFlag.className = `priority-flag ${priorityInfo.type === 'max' ? 'priority-flag-super' : ''}`;
-      priorityFlag.textContent = priorityInfo.flagLabel;
-      priorityFlag.dataset.tooltip = priorityInfo.tooltip;
-      row.appendChild(priorityFlag);
-    }
-
     if (priorityInfo.rowClass) {
       row.classList.add(priorityInfo.rowClass);
     }

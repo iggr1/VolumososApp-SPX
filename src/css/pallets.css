@@ -431,53 +431,6 @@ button {
   background: linear-gradient(90deg, rgba(239, 68, 68, 0.22), #ffe9e6);
 }
 
-.priority-flag {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 12px;
-  border: 1px solid var(--stroke);
-  background: #ffffff;
-  color: #b45309;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
-  cursor: default;
-}
-
-.priority-flag-super {
-  color: #b91c1c;
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-.priority-flag::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 110%;
-  left: 50%;
-  transform: translate(-50%, 6px);
-  background: #0f172a;
-  color: #ffffff;
-  padding: 8px 10px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  pointer-events: none;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
-}
-
-.priority-flag:hover::after {
-  opacity: 1;
-  transform: translate(-50%, 2px);
-}
-
 /* COLUNAS */
 
 .route {
