@@ -32,8 +32,16 @@
       <div class="input-group">
         <label for="hub-select">Selecione o HUB</label>
         <div class="select-wrap">
-          <select id="hub-select" aria-label="Selecione o HUB"></select>
-          <button class="ghost" id="refresh-btn" title="Recarregar">
+          <select id="hub-select" class="select-hidden" aria-label="Selecione o HUB">
+            <option value="" selected disabled>Carregando hubs...</option>
+          </select>
+          <div class="ui-select" data-for="hub-select" aria-expanded="false">
+            <button type="button" class="ui-select-btn" aria-haspopup="listbox">
+              <span class="label">Carregando hubs...</span>
+            </button>
+            <ul class="ui-select-list" role="listbox"></ul>
+          </div>
+          <button class="ghost" type="button" id="refresh-btn" title="Recarregar">
             <span>Atualizar</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path></svg>
           </button>
@@ -55,18 +63,6 @@
           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <input id="route-search" type="search" placeholder="Ex.: A-1" autocomplete="off" />
           <button class="ghost" id="clear-route-search" aria-label="Limpar busca por rota">Limpar</button>
-        </div>
-      </div>
-
-      <div class="input-group compact-group">
-        <label for="toggle-finalized">Visualização</label>
-        <div class="toggle-row">
-          <span class="muted">Ocultar entregues/removidos</span>
-          <label class="switch">
-            <input type="checkbox" id="toggle-finalized" />
-            <span class="slider"></span>
-          </label>
-          <span>Mostrar todos</span>
         </div>
       </div>
     </section>

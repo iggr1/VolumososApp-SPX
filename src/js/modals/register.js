@@ -383,19 +383,7 @@ export default function render(_props = {}, api) {
         .map((h) => `<option value="${h.code}">${h.label}</option>`)
         .join("");
 
-    const listEl = el.querySelector(".ui-select-list");
-    listEl.innerHTML = "";
-
-    Array.from(sel.options).forEach((op) => {
-      const li = document.createElement("li");
-      li.className = "ui-option";
-      li.role = "option";
-      li.dataset.value = op.value;
-      li.textContent = op.textContent;
-
-      li.onclick = () => niceSelect.pick(op.value, op.textContent);
-      listEl.appendChild(li);
-    });
+    niceSelect.refreshOptions();
   }
 
   return el;
