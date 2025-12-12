@@ -379,6 +379,7 @@ function registerEvents() {
 async function init() {
   registerEvents();
   await loadHubs();
+  loadPackages(hubSelect.value)
 }
 
 init();
