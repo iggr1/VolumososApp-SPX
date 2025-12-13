@@ -531,7 +531,7 @@ button {
 .user .name {
     color: var(--sub);
     font-weight: 500;
-    max-width: 85%;
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
