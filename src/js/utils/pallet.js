@@ -24,12 +24,21 @@ function safeGetLS(key, fallback) {
  * mexem em LS/pallets em sequencia.
  */
 let updateCountsTimer = null;
+let pendingUpdateOptions = { skipRemote: false, forceRemote: false };
 function scheduleUpdateCounts(delayMs = 80, options = {}) {
+    const { skipRemote, forceRemote } = options;
+    if (forceRemote) pendingUpdateOptions.skipRemote = false;
+    if (skipRemote !== undefined) pendingUpdateOptions.skipRemote = skipRemote;
+    if (forceRemote !== undefined) pendingUpdateOptions.forceRemote = pendingUpdateOptions.forceRemote || forceRemote;
+
     if (updateCountsTimer) return;
+
     updateCountsTimer = setTimeout(() => {
+        const opts = pendingUpdateOptions;
+        pendingUpdateOptions = { skipRemote: false, forceRemote: false };
         updateCountsTimer = null;
         try {
-            updateCounts(options);
+            updateCounts(opts);
         } catch (err) {
             console.error('Falha em updateCounts:', err);
         }
@@ -130,6 +139,8 @@ async function processQueue() {
     if (processing) return;
     processing = true;
 
+    let sentSuccessfully = false;
+
     try {
         let queue = safeGetLS(QUEUE_KEY, []);
         if (!Array.isArray(queue)) {
@@ -198,6 +209,7 @@ async function processQueue() {
                     dismissible: true,
                     collapseDelayMs: 100
                 });
+                sentSuccessfully = true;
 
                 // remove item processado da fila
                 queue.shift();
@@ -216,7 +228,7 @@ async function processQueue() {
         }
     } finally {
         processing = false;
-        scheduleUpdateCounts();
+        scheduleUpdateCounts(sentSuccessfully ? 0 : undefined, { forceRemote: sentSuccessfully });
     }
 }
 
