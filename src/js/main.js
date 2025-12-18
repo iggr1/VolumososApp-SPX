@@ -21,6 +21,42 @@ const camera = new CameraController({ camEl, selectBtn, flipBtn, selectLabel });
 
 let scanLock = false;
 let scanner = null;
+let resumeLock = false;
+
+async function stopCameraAndScanner() {
+  try { scanner?.stop(); } catch { }
+  try { camera.stop(); } catch { }
+}
+
+async function resumeCameraFlow(forceRestart = false) {
+  if (resumeLock || document.visibilityState !== 'visible') return;
+  resumeLock = true;
+  try {
+    if (forceRestart) {
+      stopCameraAndScanner();
+    }
+    await camera.resume();
+    await scanner?.start();
+  } catch (err) {
+    console.error('Falha ao retomar câmera', err);
+  } finally {
+    resumeLock = false;
+  }
+}
+
+function setupLifecycleEvents() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      stopCameraAndScanner();
+    } else {
+      resumeCameraFlow(true);
+    }
+  });
+
+  // Garante retomada ao voltar de apps/background no mobile
+  window.addEventListener('focus', () => resumeCameraFlow());
+  window.addEventListener('pageshow', () => resumeCameraFlow(true));
+}
 
 (async () => {
   try {
@@ -53,9 +89,10 @@ let scanner = null;
     await camera.start(0);
 
     addEventListener('beforeunload', () => {
-      try { scanner.stop(); } catch { }
-      try { camera.stop(); } catch { }
+      stopCameraAndScanner();
     });
+
+    setupLifecycleEvents();
   } catch (err) {
     const label = camEl.querySelector('.label');
     if (label) {

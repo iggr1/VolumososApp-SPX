@@ -33,6 +33,22 @@ export class CameraController {
     return this.video;
   }
 
+  isStreamLive() {
+    const tracks = this.stream?.getVideoTracks?.() || [];
+    return tracks.some((t) => t.readyState === 'live');
+  }
+
+  /**
+   * Reativa a câmera atual, solicitando uma nova stream caso a existente tenha parado.
+   */
+  async resume() {
+    if (this.isStreamLive() && this.video?.srcObject) {
+      await this.video.play().catch(() => {});
+      return;
+    }
+    await this.start(this.currentIdx);
+  }
+
   /**
    * Pluga uma instância de QrScanner para ser reiniciada em toda troca de câmera.
    */
