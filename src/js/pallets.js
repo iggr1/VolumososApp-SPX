@@ -22,6 +22,9 @@ const hubSelectButton = document.querySelector('.ui-select[data-for="hub-select"
 const HUB_HISTORY_KEY = 'hubHistory';
 const HUB_HISTORY_LIMIT = 6;
 
+const HUB_HISTORY_KEY = 'hubHistory';
+const HUB_HISTORY_LIMIT = 6;
+
 const state = {
   hubs: [],
   packages: [],
