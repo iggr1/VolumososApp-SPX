@@ -13,11 +13,14 @@ const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const emptyState = document.getElementById('empty-state');
 const hubModal = document.getElementById('hub-modal');
-const hubModalOpen = document.getElementById('hub-modal-open');
 const hubModalClose = document.getElementById('hub-modal-close');
 const hubModalRecent = document.getElementById('hub-modal-recent');
 const hubModalList = document.getElementById('hub-modal-list');
 const hubSelectNice = enhanceSelect(document, 'hub-select', { searchPlaceholder: 'Buscar HUB...' });
+const hubSelectButton = document.querySelector('.ui-select[data-for="hub-select"] .ui-select-btn');
+
+const HUB_HISTORY_KEY = 'hubHistory';
+const HUB_HISTORY_LIMIT = 6;
 
 const HUB_HISTORY_KEY = 'hubHistory';
 const HUB_HISTORY_LIMIT = 6;
@@ -427,6 +430,7 @@ async function loadHubs() {
       updateBadges('Nenhum HUB encontrado', 0);
     }
     buildHubModal();
+    openHubModal();
   } catch (err) {
     console.error('Erro ao carregar hubs', err);
     hubBadge.textContent = 'Erro ao carregar hubs';
@@ -471,11 +475,6 @@ function registerEvents() {
     routeSearchInput.focus();
   });
 
-  hubModalOpen?.addEventListener('click', () => {
-    buildHubModal();
-    openHubModal();
-  });
-
   hubModalClose?.addEventListener('click', closeHubModal);
 
   hubModal?.addEventListener('click', (ev) => {
@@ -483,6 +482,18 @@ function registerEvents() {
       closeHubModal();
     }
   });
+
+  hubSelectButton?.addEventListener(
+    'click',
+    (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      hubSelectNice?.close();
+      buildHubModal();
+      openHubModal();
+    },
+    true,
+  );
 
   document.addEventListener('keydown', (ev) => {
     if (ev.key === 'Escape' && hubModal?.classList.contains('is-open')) {
