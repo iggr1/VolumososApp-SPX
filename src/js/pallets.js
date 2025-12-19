@@ -12,7 +12,15 @@ const clearSearchBtn = document.getElementById('clear-search');
 const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const emptyState = document.getElementById('empty-state');
+const hubModal = document.getElementById('hub-modal');
+const hubModalClose = document.getElementById('hub-modal-close');
+const hubModalRecent = document.getElementById('hub-modal-recent');
+const hubModalList = document.getElementById('hub-modal-list');
 const hubSelectNice = enhanceSelect(document, 'hub-select', { searchPlaceholder: 'Buscar HUB...' });
+const hubSelectButton = document.querySelector('.ui-select[data-for="hub-select"] .ui-select-btn');
+
+const HUB_HISTORY_KEY = 'hubHistory';
+const HUB_HISTORY_LIMIT = 6;
 
 const state = {
   hubs: [],
@@ -20,6 +28,7 @@ const state = {
   filterLetter: 'all',
   search: '',
   routeSearch: '',
+  hubHistory: [],
 };
 
 function setLoading(isLoading) {
@@ -29,6 +38,33 @@ function setLoading(isLoading) {
 function updateBadges(hubLabel = '', count = 0) {
   hubBadge.textContent = hubLabel || 'Selecione um HUB';
   statsBadge.textContent = `${count} pedidos`;
+}
+
+function getHubHistory() {
+  try {
+    const raw = localStorage.getItem(HUB_HISTORY_KEY);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch (err) {
+    console.warn('Erro ao ler histórico de hubs', err);
+    return [];
+  }
+}
+
+function saveHubHistory(list) {
+  localStorage.setItem(HUB_HISTORY_KEY, JSON.stringify(list));
+}
+
+function updateHubHistory(hubCode) {
+  if (!hubCode) return;
+  const current = state.hubHistory.length ? [...state.hubHistory] : getHubHistory();
+  const next = [hubCode, ...current.filter((code) => code !== hubCode)].slice(0, HUB_HISTORY_LIMIT);
+  state.hubHistory = next;
+  saveHubHistory(next);
+}
+
+function getHubLabel(code) {
+  return state.hubs.find((hub) => hub.code === code)?.label || code;
 }
 
 function parseRoute(route = '') {
@@ -243,6 +279,69 @@ function renderRows() {
   });
 }
 
+function openHubModal() {
+  if (!hubModal) return;
+  hubModal.classList.add('is-open');
+  hubModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeHubModal() {
+  if (!hubModal) return;
+  hubModal.classList.remove('is-open');
+  hubModal.setAttribute('aria-hidden', 'true');
+}
+
+function selectHub(code) {
+  if (!code) return;
+  const label = getHubLabel(code);
+  if (hubSelectNice) {
+    hubSelectNice.pick(code, label);
+  } else {
+    hubSelect.value = code;
+    hubSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  updateHubHistory(code);
+  buildHubModal();
+  closeHubModal();
+}
+
+function buildHubModal() {
+  if (!hubModalRecent || !hubModalList) return;
+  hubModalRecent.innerHTML = '';
+  hubModalList.innerHTML = '';
+
+  const selectedCode = hubSelect.value;
+  const recentHubs = state.hubHistory
+    .map((code) => state.hubs.find((hub) => hub.code === code))
+    .filter(Boolean);
+
+  if (!recentHubs.length) {
+    const empty = document.createElement('p');
+    empty.className = 'hub-empty';
+    empty.textContent = 'Nenhum hub recente.';
+    hubModalRecent.appendChild(empty);
+  } else {
+    recentHubs.forEach((hub) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `hub-option ${hub.code === selectedCode ? 'active' : ''}`;
+      btn.textContent = hub.label;
+      btn.addEventListener('click', () => selectHub(hub.code));
+      hubModalRecent.appendChild(btn);
+    });
+  }
+
+  const sortedHubs = [...state.hubs].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+  sortedHubs.forEach((hub) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `hub-option ${hub.code === selectedCode ? 'active' : ''}`;
+    btn.textContent = hub.label;
+    btn.addEventListener('click', () => selectHub(hub.code));
+    hubModalList.appendChild(btn);
+  });
+}
+
 async function updatePackageStatus(pkg, status) {
   const hub = hubSelect.value;
   if (!hub) return;
@@ -301,6 +400,7 @@ async function loadHubs() {
     if (!data?.ok || !Array.isArray(data.hubs)) throw new Error('Resposta inválida');
 
     state.hubs = data.hubs;
+    state.hubHistory = getHubHistory();
     hubSelect.innerHTML = '';
     data.hubs.forEach((hub) => {
       const opt = document.createElement('option');
@@ -315,6 +415,7 @@ async function loadHubs() {
     const first = saved && data.hubs.find((h) => h.code === saved) ? saved : data.hubs[0]?.code;
     if (first) {
       hubSelect.value = first;
+      updateHubHistory(first);
       const label = hubSelect.options[hubSelect.selectedIndex]?.textContent || first;
       if (hubSelectNice) {
         hubSelectNice.pick(first, label);
@@ -325,6 +426,8 @@ async function loadHubs() {
     } else {
       updateBadges('Nenhum HUB encontrado', 0);
     }
+    buildHubModal();
+    openHubModal();
   } catch (err) {
     console.error('Erro ao carregar hubs', err);
     hubBadge.textContent = 'Erro ao carregar hubs';
@@ -346,6 +449,8 @@ function registerEvents() {
   hubSelect.addEventListener('change', (ev) => {
     const hubCode = ev.target.value;
     localStorage.setItem('hubCode', hubCode);
+    updateHubHistory(hubCode);
+    buildHubModal();
     loadPackages(hubCode);
   });
 
@@ -367,7 +472,31 @@ function registerEvents() {
     routeSearchInput.focus();
   });
 
+  hubModalClose?.addEventListener('click', closeHubModal);
+
+  hubModal?.addEventListener('click', (ev) => {
+    if (ev.target?.matches?.('[data-modal-close]')) {
+      closeHubModal();
+    }
+  });
+
+  hubSelectButton?.addEventListener(
+    'click',
+    (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      hubSelectNice?.close();
+      buildHubModal();
+      openHubModal();
+    },
+    true,
+  );
+
   document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && hubModal?.classList.contains('is-open')) {
+      closeHubModal();
+      return;
+    }
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'f') {
       ev.preventDefault();
       searchInput.focus();

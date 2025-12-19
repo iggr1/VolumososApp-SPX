@@ -87,5 +87,34 @@
       </div>
     </div>
   </div>
+
+  <div class="modal" id="hub-modal" aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="hub-modal-title">
+      <div class="modal-header">
+        <div>
+          <p class="modal-eyebrow">Seleção rápida</p>
+          <h2 id="hub-modal-title">Selecionar HUB</h2>
+        </div>
+        <button class="ghost" type="button" id="hub-modal-close" aria-label="Fechar modal">Fechar</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <div class="modal-section-header">
+            <h3>Últimos hubs</h3>
+            <span class="muted">Acessados recentemente</span>
+          </div>
+          <div class="hub-grid" id="hub-modal-recent"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-header">
+            <h3>Todos os hubs</h3>
+            <span class="muted">Ordenados de A-Z</span>
+          </div>
+          <div class="hub-grid" id="hub-modal-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
