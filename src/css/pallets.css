@@ -335,6 +335,126 @@ button {
   font-size: 13px;
 }
 
+/* MODAL */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 20;
+}
+
+.modal.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(720px, 92vw);
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-header h2 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.modal-eyebrow {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--muted);
+}
+
+.modal-body {
+  display: grid;
+  gap: 18px;
+}
+
+.modal-section {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: #f9fafb;
+}
+
+.modal-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-section-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.hub-option {
+  border: 1px solid var(--stroke);
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  transition: 0.15s ease;
+}
+
+.hub-option:hover {
+  border-color: rgba(241, 104, 30, 0.5);
+  box-shadow: 0 12px 20px rgba(241, 104, 30, 0.12);
+}
+
+.hub-option.active {
+  background: rgba(241, 104, 30, 0.12);
+  border-color: rgba(241, 104, 30, 0.5);
+  color: #a13c00;
+}
+
+.hub-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 /* FILTROS */
 
 .filters {
