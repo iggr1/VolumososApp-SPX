@@ -9,8 +9,10 @@ const removedEl = document.getElementById('tv-removed');
 const lettersEl = document.getElementById('tv-letters');
 const palletsEl = document.getElementById('tv-pallets');
 const emptyEl = document.getElementById('tv-empty');
+const themeToggleBtn = document.getElementById('tv-theme-toggle');
 
 const REFRESH_INTERVAL = 60000;
+const THEME_KEY = 'theme';
 
 const state = {
   packages: [],
@@ -25,6 +27,28 @@ function parseRoute(route = '') {
 
 function formatUpdatedLabel(date = new Date()) {
   return date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+function updateThemeToggle(theme) {
+  if (!themeToggleBtn) return;
+  const icon = themeToggleBtn.querySelector('.theme-icon');
+  const label = themeToggleBtn.querySelector('.theme-label');
+  const isDark = theme === 'dark';
+  if (icon) icon.textContent = isDark ? '☀️' : '🌙';
+  if (label) label.textContent = isDark ? 'Claro' : 'Escuro';
+}
+
+function applyTheme(theme) {
+  const nextTheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = nextTheme;
+  localStorage.setItem(THEME_KEY, nextTheme);
+  updateThemeToggle(nextTheme);
+}
+
+function initTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  const theme = stored || 'dark';
+  applyTheme(theme);
 }
 
 function setEmpty(isEmpty) {
@@ -161,6 +185,11 @@ function initHubFromQuery() {
 
 function init() {
   initHubFromQuery();
+  initTheme();
+  themeToggleBtn?.addEventListener('click', () => {
+    const current = document.documentElement.dataset.theme || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
   loadPackages();
   window.setInterval(loadPackages, REFRESH_INTERVAL);
 }
