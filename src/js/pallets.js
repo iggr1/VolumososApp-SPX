@@ -11,6 +11,7 @@ const searchInput = document.getElementById('search');
 const clearSearchBtn = document.getElementById('clear-search');
 const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
+const tvModeBtn = document.getElementById('tv-mode-btn');
 const emptyState = document.getElementById('empty-state');
 const hubModal = document.getElementById('hub-modal');
 const hubModalClose = document.getElementById('hub-modal-close');
@@ -38,6 +39,17 @@ function setLoading(isLoading) {
 function updateBadges(hubLabel = '', count = 0) {
   hubBadge.textContent = hubLabel || 'Selecione um HUB';
   statsBadge.textContent = `${count} pedidos`;
+}
+
+function updateTvLink(hubCode = '') {
+  if (!tvModeBtn) return;
+  const url = new URL(tvModeBtn.getAttribute('href'), window.location.href);
+  if (hubCode) {
+    url.searchParams.set('hub', hubCode);
+  } else {
+    url.searchParams.delete('hub');
+  }
+  tvModeBtn.href = url.toString();
 }
 
 function getHubHistory() {
@@ -377,6 +389,7 @@ async function loadPackages(hubCode) {
     state.packages = Array.isArray(packages) ? packages : [];
     buildFilterButtons(state.packages);
     updateBadges(hub || hubCode, state.packages.length);
+    updateTvLink(hubCode);
     renderRows();
   } catch (err) {
     console.error('Erro ao buscar pallets', err);
@@ -416,6 +429,7 @@ async function loadHubs() {
     if (first) {
       hubSelect.value = first;
       updateHubHistory(first);
+      updateTvLink(first);
       const label = hubSelect.options[hubSelect.selectedIndex]?.textContent || first;
       if (hubSelectNice) {
         hubSelectNice.pick(first, label);
@@ -451,6 +465,7 @@ function registerEvents() {
     localStorage.setItem('hubCode', hubCode);
     updateHubHistory(hubCode);
     buildHubModal();
+    updateTvLink(hubCode);
     loadPackages(hubCode);
   });
 
