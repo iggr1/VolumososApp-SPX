@@ -133,7 +133,7 @@ export default function render(_props = {}, api) {
                     await showAlert({
                         type: 'success',
                         title: 'Importação concluída',
-                        message: 'Rotas importadas com sucesso. Boa operação! 🚀',
+                        message: 'As rotas ficaram disponíveis por 4 horas. Boa operação! 🚀',
                         durationMs: 2600
                     });
 
@@ -337,7 +337,7 @@ function successView({ preRoutes, uniqueRoutes }) {
       </section>
 
       <div class="opdocs-goodop">
-        <span>Importação pronta. Boa operação! 🚀</span>
+        <span>As rotas ficaram disponíveis por 4 horas. Boa operação! 🚀<span>
       </div>
 
       <button class="opdocs-helpbtn" type="button" onclick="location.reload()">
