@@ -5,7 +5,7 @@ let BASE = null;
 const PROD_BASE = 'https://volumososapp-spx-server-side-production.up.railway.app/api';
 
 // URL local para desenvolvimento
-const DEV_BASE = 'http://localhost:3000/api';
+const DEV_BASE = 'http://localhost:8081/api';
 
 export function setBase(url) {
   BASE = url;
@@ -29,7 +29,7 @@ export function getBase() {
   const host = (typeof window !== 'undefined' && window.location?.hostname) || '';
   const isGithub = host.endsWith('github.io');
 
-  const url = isGithub ? PROD_BASE : DEV_BASE;
+  const url = PROD_BASE;
   BASE = url;
   return url;
 }

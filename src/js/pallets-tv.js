@@ -6,8 +6,9 @@ const totalEl = document.getElementById('tv-total');
 const onPalletEl = document.getElementById('tv-onpallet');
 const assignedEl = document.getElementById('tv-assigned');
 const removedEl = document.getElementById('tv-removed');
+
 const lettersEl = document.getElementById('tv-letters');
-const palletsEl = document.getElementById('tv-pallets');
+const routesEl = document.getElementById('tv-routes');
 const emptyEl = document.getElementById('tv-empty');
 const themeToggleBtn = document.getElementById('tv-theme-toggle');
 
@@ -52,11 +53,13 @@ function initTheme() {
 }
 
 function setEmpty(isEmpty) {
+  if (!emptyEl) return;
   emptyEl.hidden = !isEmpty;
 }
 
 function updateSummary() {
   const total = state.packages.length;
+
   const statusCounts = state.packages.reduce(
     (acc, pkg) => {
       const status = String(pkg.status || 'onpallet').toLowerCase();
@@ -68,13 +71,15 @@ function updateSummary() {
     { onpallet: 0, assigned: 0, removed: 0 },
   );
 
-  totalEl.textContent = total;
-  onPalletEl.textContent = statusCounts.onpallet;
-  assignedEl.textContent = statusCounts.assigned;
-  removedEl.textContent = statusCounts.removed;
+  if (totalEl) totalEl.textContent = total;
+  if (onPalletEl) onPalletEl.textContent = statusCounts.onpallet;
+  if (assignedEl) assignedEl.textContent = statusCounts.assigned;
+  if (removedEl) removedEl.textContent = statusCounts.removed;
 }
 
+/* ===== BARRAS ===== */
 function buildBars(container, items, max) {
+  if (!container) return;
   container.innerHTML = '';
 
   if (!items.length) {
@@ -110,49 +115,121 @@ function buildBars(container, items, max) {
   });
 }
 
+/* ===== ROTAS POR LETRA ===== */
+function routeLabelFromPkg(pkg) {
+  const info = parseRoute(pkg.route || '');
+  if (!info.letter) return 'OUTROS';
+  if (!Number.isFinite(info.number)) return info.letter;
+  return `${info.letter}-${info.number}`;
+}
+
+function buildRouteColumns(container, groupedByLetter) {
+  if (!container) return;
+  container.innerHTML = '';
+
+  const letters = [...groupedByLetter.keys()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+  if (!letters.length) {
+    const empty = document.createElement('div');
+    empty.className = 'tv-route-col';
+    empty.innerHTML = `
+      <div class="tv-route-head">
+        <span class="tv-route-letter">--</span>
+        <span class="tv-route-total">0</span>
+      </div>
+      <div class="tv-route-list"></div>
+    `;
+    container.appendChild(empty);
+    return;
+  }
+
+  letters.forEach((letter) => {
+    const routesMap = groupedByLetter.get(letter);
+
+    const list = [...routesMap.entries()]
+      .map(([label, value]) => ({ label, value, info: parseRoute(label) }))
+      .sort((a, b) => {
+        const an = a.info.number;
+        const bn = b.info.number;
+        if (Number.isFinite(an) && Number.isFinite(bn) && an !== bn) return an - bn;
+        return a.label.localeCompare(b.label, 'pt-BR');
+      });
+
+    const total = list.reduce((sum, item) => sum + item.value, 0);
+
+    const col = document.createElement('div');
+    col.className = 'tv-route-col';
+
+    const head = document.createElement('div');
+    head.className = 'tv-route-head';
+    head.innerHTML = `
+      <span class="tv-route-letter">${letter}</span>
+      <span class="tv-route-total">${total}</span>
+    `;
+
+    const ul = document.createElement('div');
+    ul.className = 'tv-route-list';
+
+    // lista somente com rotas tipo "C-12", "D-1" (igual ao print)
+    list
+      .filter(item => item.label.includes('-'))
+      .forEach(({ label, value }) => {
+        const row = document.createElement('div');
+        row.className = 'tv-route-row';
+        row.innerHTML = `
+          <span class="tv-route-name">${label}</span>
+          <span class="tv-route-count">${value}</span>
+        `;
+        ul.appendChild(row);
+      });
+
+    col.append(head, ul);
+    container.appendChild(col);
+  });
+}
+
 function renderCharts() {
   updateSummary();
 
   if (!state.packages.length) {
     setEmpty(true);
-    lettersEl.innerHTML = '';
-    palletsEl.innerHTML = '';
+    if (lettersEl) lettersEl.innerHTML = '';
+    if (routesEl) routesEl.innerHTML = '';
     return;
   }
 
   setEmpty(false);
 
-  const letters = new Map();
-  const pallets = new Map();
+  // ===== barras por letra (B/C/D...) =====
+  const lettersCount = new Map();
+  // ===== rotas por letra (C-12, D-1...) =====
+  const grouped = new Map();
 
   state.packages.forEach((pkg) => {
     const routeInfo = parseRoute(pkg.route || '');
-    const letter = routeInfo.letter || 'Outros';
-    letters.set(letter, (letters.get(letter) || 0) + 1);
+    const letter = routeInfo.letter || 'OUTROS';
+    const routeLabel = routeLabelFromPkg(pkg);
 
-    const pallet = pkg.pallet ?? '---';
-    pallets.set(pallet, (pallets.get(pallet) || 0) + 1);
+    lettersCount.set(letter, (lettersCount.get(letter) || 0) + 1);
+
+    if (!grouped.has(letter)) grouped.set(letter, new Map());
+    const routesMap = grouped.get(letter);
+    routesMap.set(routeLabel, (routesMap.get(routeLabel) || 0) + 1);
   });
 
-  const letterList = [...letters.entries()]
+  const letterList = [...lettersCount.entries()]
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 
-  const palletList = [...pallets.entries()]
-    .map(([label, value]) => ({ label: String(label), value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
-
   const maxLetters = Math.max(...letterList.map((item) => item.value));
-  const maxPallets = Math.max(...palletList.map((item) => item.value));
-
   buildBars(lettersEl, letterList, maxLetters || 1);
-  buildBars(palletsEl, palletList, maxPallets || 1);
+
+  buildRouteColumns(routesEl, grouped);
 }
 
 async function loadPackages() {
   if (!state.hubCode) {
-    hubLabelEl.textContent = 'Selecione um HUB';
+    if (hubLabelEl) hubLabelEl.textContent = 'Selecione um HUB';
     state.packages = [];
     renderCharts();
     return;
@@ -163,12 +240,12 @@ async function loadPackages() {
     if (!res?.ok) throw new Error(res?.error || 'Erro ao carregar pallets');
 
     state.packages = Array.isArray(res.packages) ? res.packages : [];
-    hubLabelEl.textContent = res.hub || state.hubCode;
-    updatedEl.textContent = formatUpdatedLabel();
+    if (hubLabelEl) hubLabelEl.textContent = res.hub || state.hubCode;
+    if (updatedEl) updatedEl.textContent = formatUpdatedLabel();
     renderCharts();
   } catch (err) {
     console.error('Erro ao carregar dados do modo TV', err);
-    hubLabelEl.textContent = 'Erro ao carregar dados';
+    if (hubLabelEl) hubLabelEl.textContent = 'Erro ao carregar dados';
     state.packages = [];
     renderCharts();
   }
@@ -178,18 +255,18 @@ function initHubFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const hub = params.get('hub') || localStorage.getItem('hubCode') || '';
   state.hubCode = hub;
-  if (hub) {
-    localStorage.setItem('hubCode', hub);
-  }
+  if (hub) localStorage.setItem('hubCode', hub);
 }
 
 function init() {
   initHubFromQuery();
   initTheme();
+
   themeToggleBtn?.addEventListener('click', () => {
     const current = document.documentElement.dataset.theme || 'dark';
     applyTheme(current === 'dark' ? 'light' : 'dark');
   });
+
   loadPackages();
   window.setInterval(loadPackages, REFRESH_INTERVAL);
 }

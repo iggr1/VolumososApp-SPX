@@ -21,9 +21,6 @@ export default function render(_props = {}, api) {
       <button id="users-refresh" class="users-btn" aria-label="Atualizar">
         <i data-lucide="refresh-ccw"></i>
       </button>
-      <button id="users-new" class="users-btn users-btn--primary">
-        <i data-lucide="user-plus"></i>
-      </button>
     </div>
 
     <div class="users-list users-list--loading" id="users-list">
@@ -53,7 +50,6 @@ export default function render(_props = {}, api) {
   });
 
   $('#users-refresh').addEventListener('click', load);
-  $('#users-new').addEventListener('click', () => openEditor({ mode: 'create' }));
 
   return el;
 

@@ -20,17 +20,14 @@ export default function render(_props = {}, api) {
   el.className = 'profile-modal';
   el.innerHTML = loadingView();
 
-  let role = 'user';
-  let currentUser = '';
   let dirty = false;
 
   const state = {
     username: '',
-    newUsername: '',
+    changePwOpen: false,
     newPass: '',
     confirmPass: ''
   };
-  let initial = null;
 
   init().catch(err => {
     el.innerHTML = errorView(err?.message || 'Falha ao carregar.');
@@ -67,16 +64,13 @@ export default function render(_props = {}, api) {
   return el;
 
   async function init() {
-    const res = await apiGet('config'); // { ok, profile:{username, avatar_id, role} }
-    role = String(res?.profile?.role || 'user').toLowerCase();
-    currentUser = String(res?.profile?.username || '');
-    state.username = currentUser;
-    state.newUsername = currentUser;
+    // aqui só carrega dados. sem role/admin/user
+    const res = await apiGet('config'); // { ok, profile:{username, avatar_id, role?} }
+    state.username = String(res?.profile?.username || '');
 
-    el.innerHTML = formView({ role, username: currentUser });
+    el.innerHTML = formView({ username: state.username, changePwOpen: state.changePwOpen });
     bindForm(el);
 
-    initial = snapshot(state);
     if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   }
 
@@ -84,67 +78,129 @@ export default function render(_props = {}, api) {
     const $ = s => root.querySelector(s);
 
     const inputUser = $('#pf-username');
-    const inputNew  = $('#pf-newpass');
-    const inputConf = $('#pf-confpass');
+    const btnChangePw = $('#pf-change-pw');
+    const btnAvatar = $('#pf-avatar');
 
-    if (inputUser) {
-      inputUser.disabled = role !== 'admin';
-      inputUser.addEventListener('input', () => { state.newUsername = inputUser.value.trim(); markDirty(); });
+    // username SEMPRE bloqueado
+    if (inputUser) inputUser.disabled = true;
+
+    // Foto de perfil (abre modal avatar)
+    if (btnAvatar) {
+      btnAvatar.onclick = () => import('../modal.js').then(m => m.openModal({ type: 'avatar' }));
     }
-    if (inputNew)  inputNew.addEventListener('input',  () => { state.newPass     = inputNew.value;  markDirty(); });
-    if (inputConf) inputConf.addEventListener('input', () => { state.confirmPass = inputConf.value; markDirty(); });
 
+    // Abrir área de senha
+    if (btnChangePw) {
+      btnChangePw.onclick = () => {
+        state.changePwOpen = true;
+        renderPwBlock(root);
+        setTimeout(() => root.querySelector('#pf-newpass')?.focus(), 0);
+      };
+    }
+
+    // Enter navega e salva senha no último campo
     root.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
-      const order = [inputUser, inputNew, inputConf].filter(Boolean);
+
+      const np = root.querySelector('#pf-newpass');
+      const cp = root.querySelector('#pf-confpass');
+      const sp = root.querySelector('#pf-save-pw');
+
+      if (!np || !cp || !sp) return;
+
+      const order = [np, cp];
       const i = order.indexOf(document.activeElement);
-      if (i >= 0 && i < order.length - 1) { e.preventDefault(); order[i + 1].focus(); }
+
+      if (i >= 0 && i < order.length - 1) {
+        e.preventDefault();
+        order[i + 1].focus();
+        return;
+      }
+
+      if (document.activeElement === cp) {
+        e.preventDefault();
+        sp.click();
+      }
     });
-  }
 
-  function hasChanges() {
-    if (role === 'admin' && state.newUsername && state.newUsername !== state.username) return true;
-    if (state.newPass || state.confirmPass) return true;
-    return false;
-  }
+    function renderPwBlock(root) {
+      const container = root.querySelector('#pf-pw-container');
+      if (!container) return;
 
-  async function saveChanges() {
-    const wantsPw = !!(state.newPass || state.confirmPass);
-
-    if (wantsPw) {
-      if (state.newPass.length < 6) throw new Error('Nova senha deve ter pelo menos 6 caracteres.');
-      if (state.newPass !== state.confirmPass) throw new Error('Confirmação de senha não confere.');
+      container.innerHTML = pwBlockView({ open: state.changePwOpen });
+      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+      wirePwInputs(root);
     }
 
-    if (role === 'admin' && state.newUsername && state.newUsername !== state.username) {
-      await apiPut(`users/${encodeURIComponent(state.username)}`, { new_username: state.newUsername });
-      currentUser = state.newUsername;
-      state.username = state.newUsername;
-      try {
-        const usernameEl = document.querySelector('.username');
-        if (usernameEl) {
-          usernameEl.textContent = state.newUsername;
-        }
-      } catch {}
-    }
+    function wirePwInputs(root) {
+      const np = root.querySelector('#pf-newpass');
+      const cp = root.querySelector('#pf-confpass');
+      const sp = root.querySelector('#pf-save-pw');
 
-    if (wantsPw) {
-      if (role === 'admin') {
-        await apiPut(`users/${encodeURIComponent(currentUser)}`, { password: state.newPass });
-      } else {
-        await apiPut('profile/password', { new_password: state.newPass });
+      if (np) np.addEventListener('input', () => { state.newPass = np.value; markDirty(); syncSavePwBtn(root); });
+      if (cp) cp.addEventListener('input', () => { state.confirmPass = cp.value; markDirty(); syncSavePwBtn(root); });
+
+      if (sp) {
+        syncSavePwBtn(root);
+        sp.onclick = async () => {
+          try {
+            await savePasswordOnly();
+
+            // fecha bloco e limpa
+            state.changePwOpen = false;
+            state.newPass = '';
+            state.confirmPass = '';
+            dirty = false;
+
+            const container = root.querySelector('#pf-pw-container');
+            if (container) container.innerHTML = pwBlockView({ open: false });
+            if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+          } catch (e) {
+            await showAlert({
+              type: 'error',
+              title: 'Falha ao salvar',
+              message: e?.message || 'Erro inesperado.',
+              durationMs: 3000
+            });
+          }
+        };
       }
     }
 
-    initial = snapshot(state);
-    dirty = false;
+    function syncSavePwBtn(root) {
+      const sp = root.querySelector('#pf-save-pw');
+      if (!sp) return;
+      const wantsPw = !!(state.newPass || state.confirmPass);
+      sp.disabled = !wantsPw;
+    }
+  }
+
+  function hasChanges() {
+    // só senha (e só se bloco foi aberto)
+    return state.changePwOpen && (state.newPass || state.confirmPass);
+  }
+
+  async function savePasswordOnly() {
+    if (state.newPass.length < 6) throw new Error('Nova senha deve ter pelo menos 6 caracteres.');
+    if (state.newPass !== state.confirmPass) throw new Error('Confirmação de senha não confere.');
+
+    // aqui é onde o backend valida permissões/autorização
+    await apiPut('profile/password', { new_password: state.newPass });
 
     await showAlert({
       type: 'success',
       title: 'Salvo',
-      message: 'Informações atualizadas.',
+      message: 'Senha atualizada.',
       durationMs: 1600
     });
+  }
+
+  async function saveChanges() {
+    // usado no beforeClose
+    if (!hasChanges()) return;
+
+    await savePasswordOnly();
+    dirty = false;
   }
 
   function markDirty() { dirty = true; }
@@ -165,17 +221,42 @@ function loadingView() {
   `;
 }
 
-function formView({ role, username }) {
-  const isAdmin = role === 'admin';
+function formView({ username, changePwOpen }) {
   return `
-    <div class="settings-list" style="display:grid;gap:24rem">
+    <div class="settings-list">
       <div class="setting-row">
-        <div class="setting-label">Nome de usuário:</div>
+        <div class="setting-label">Login/User:</div>
         <div class="setting-control">
-          <input id="pf-username" class="pill-input" type="text" value="${escapeHtml(username)}" />
+          <input id="pf-username" class="pill-input" type="text" value="${escapeHtml(username)}" disabled />
         </div>
       </div>
 
+      <div id="pf-pw-container">
+        ${pwBlockView({ open: !!changePwOpen })}
+      </div>
+
+      <button id="pf-avatar" class="settings-button">
+        <i data-lucide="image" aria-hidden="true"></i>
+        <span>Foto de perfil</span>
+        <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
+      </button>
+    </div>
+  `;
+}
+
+function pwBlockView({ open }) {
+  if (!open) {
+    return `
+      <button id="pf-change-pw" class="settings-button">
+        <i data-lucide="key-round" aria-hidden="true"></i>
+        <span>Alterar senha</span>
+        <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
+      </button>
+    `;
+  }
+
+  return `
+    <div id="pf-pw-area">
       <div class="setting-row">
         <div class="setting-label">Nova senha:</div>
         <div class="setting-control">
@@ -184,11 +265,16 @@ function formView({ role, username }) {
       </div>
 
       <div class="setting-row">
-        <div class="setting-label">Confirmar nova senha:</div>
+        <div class="setting-label">Confirmar:</div>
         <div class="setting-control">
           <input id="pf-confpass" class="pill-input" type="password" autocomplete="new-password" placeholder="Repita a nova senha" />
         </div>
       </div>
+
+      <button id="pf-save-pw" class="save-pass-button" disabled>
+        <i data-lucide="save" aria-hidden="true"></i>
+        <span>Salvar senha</span>
+      </button>
     </div>
   `;
 }
@@ -206,5 +292,4 @@ function errorView(msg) {
 }
 
 /* --------------------- Utils --------------------- */
-function snapshot(s) { return JSON.parse(JSON.stringify(s)); }
 function escapeHtml(v){ const d=document.createElement('div'); d.textContent=String(v??''); return d.innerHTML; }

@@ -1,5 +1,4 @@
-import { apiGet, apiPut } from '../api.js';
-import { showConfirmAlert, showAlert } from '../utils/alerts.js';
+import { apiGet } from '../api.js';
 
 export const meta = {
   title: 'Configurações',
@@ -27,23 +26,27 @@ export default function render(_props = {}, api) {
   return el;
 
   async function init() {
-    const res = await apiGet('config'); // { ok, profile{username,avatar_id,role}, hub? }
+    const res = await apiGet('config'); // { ok, profile{...}, hub? }
     const profile = res?.profile || {};
     const role = String(profile.role || '').toLowerCase();
 
     if (role === 'admin') {
-      const hub = res?.hub || {};
-      el.innerHTML = adminView();              // UI admin com botões e campos
+      el.innerHTML = adminMenuView();
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
-      bindAdmin(el, api, hub);
-    } else if (role === 'user') {
-      el.innerHTML = userView(profile);        // UI user com 2 botões
-      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
-      bindUser(el, api);
-    } else if (role === 'guest' || !role) {
-      el.innerHTML = errorView('Acesso negado: usuários convidados não podem acessar as configurações.');
-      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+      bindAdminMenu(el, api);
+      return;
     }
+
+    if (role === 'user') {
+      el.innerHTML = userMenuView();
+      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+      bindUserMenu(el, api);
+      return;
+    }
+
+    // guest ou indefinido
+    el.innerHTML = errorView('Acesso negado: usuários convidados não podem acessar as configurações.');
+    if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   }
 }
 
@@ -71,65 +74,12 @@ function errorView(msg) {
   `;
 }
 
-function adminView() {
+function adminMenuView() {
   return `
   <div class="settings-list">
-    <div class="setting-row">
-      <div class="setting-label">Pacotes por pallet:</div>
-      <div class="setting-control">
-        <div class="stepper">
-          <button class="step minus" aria-label="Diminuir" data-act="pallet-dec">−</button>
-          <span class="step-val" id="palletVal">0</span>
-          <button class="step plus" aria-label="Aumentar" data-act="pallet-inc">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="setting-row">
-      <div class="setting-label">Intervalo de letras:</div>
-      <div class="setting-control">
-        <div class="pill-range">
-          <input id="letterStart" class="pill-input letter" inputmode="text" maxlength="1" value="" />
-          <span class="dash">−</span>
-          <input id="letterEnd" class="pill-input letter" inputmode="text" maxlength="1" value="" />
-        </div>
-      </div>
-    </div>
-
-    <div class="setting-row">
-      <div class="setting-label">Intervalo numérico:</div>
-      <div class="setting-control">
-        <div class="pill-range">
-          <input id="numStart" class="pill-input num" type="text" inputmode="numeric" pattern="[0-9]*" min="0" value="1" />
-          <span class="dash">−</span>
-          <input id="numEnd" class="pill-input num" type="text" inputmode="numeric" pattern="[0-9]*" min="0" value="1" />
-        </div>
-      </div>
-    </div>
-
-    <div class="setting-row">
-      <div class="setting-label">Permitir convidados:</div>
-      <div class="setting-control">
-        <label class="switch-io">
-          <input type="checkbox" id="switchOnOff" />
-          <span class="track" aria-hidden="true">
-            <span class="text on">SIM</span>
-            <span class="text off">NÃO</span>
-          </span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Botões do admin: 1) Minhas info  2) Escolher foto  3) Gerenciar usuários -->
     <button id="myData" class="settings-button">
       <i data-lucide="id-card" aria-hidden="true"></i>
       <span>Minhas informações</span>
-      <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
-    </button>
-
-    <button id="changeAvatar" class="settings-button">
-      <i data-lucide="image" aria-hidden="true"></i>
-      <span>Escolher minha foto de perfil</span>
       <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
     </button>
 
@@ -138,23 +88,28 @@ function adminView() {
       <span>Gerenciar contas e usuários</span>
       <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
     </button>
+
+    <button id="hubSettings" class="settings-button">
+      <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+      <span>Configurações de HUB</span>
+      <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
+    </button>
+
+    <button id="opDocs" class="settings-button">
+      <i data-lucide="file-text" aria-hidden="true"></i>
+      <span>Documentos operacionais</span>
+      <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
+    </button>
   </div>
   `;
 }
 
-function userView(_profile) {
+function userMenuView() {
   return `
   <div class="settings-list">
-    <!-- Botões do user: 1) Minhas info  2) Escolher foto -->
     <button id="myData" class="settings-button">
       <i data-lucide="id-card" aria-hidden="true"></i>
       <span>Minhas informações</span>
-      <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
-    </button>
-
-    <button id="changeAvatar" class="settings-button">
-      <i data-lucide="image" aria-hidden="true"></i>
-      <span>Escolher minha foto de perfil</span>
       <i data-lucide="chevron-right" class="chev" aria-hidden="true"></i>
     </button>
   </div>
@@ -163,160 +118,30 @@ function userView(_profile) {
 
 /* ---------------------- BINDINGS ---------------------- */
 
-function bindAdmin(root, api, hub) {
-  let cfg = {
-    max_packages: toInt(hub?.max_packages, 0),
-    letter_from: toLetter((hub?.letter_range || '').split('-')[0], 'A'),
-    letter_to: toLetter((hub?.letter_range || '').split('-')[1], 'A'),
-    num_from: toInt((hub?.number_range || '').split('-')[0], 1),
-    num_to: toInt((hub?.number_range || '').split('-')[1], 1),
-    allow_guests: Boolean(hub?.allow_guests)
-  };
-  let initial = { ...cfg };
-  let dirty = false;
-
-  const $ = (s) => root.querySelector(s);
-  const palletVal   = $('#palletVal');
-  const letterStart = $('#letterStart');
-  const letterEnd   = $('#letterEnd');
-  const numStart    = $('#numStart');
-  const numEnd      = $('#numEnd');
-
-  // >>> CORREÇÃO AQUI: usar o id que existe no HTML
-  const allowGuests = root.querySelector('#switchOnOff');
-
-  renderVals();
-
-  root.addEventListener('click', (e) => {
-    const act = e.target?.dataset?.act;
-    if (!act) return;
-    if (act === 'pallet-inc') cfg.max_packages = clamp(cfg.max_packages + 1, 1, 999);
-    if (act === 'pallet-dec') cfg.max_packages = clamp(cfg.max_packages - 1, 1, 999);
-    renderVals(); if (initial.max_packages !== cfg.max_packages) dirty = true;
-  });
-
-  makeEditableLetter(letterStart, () => cfg.letter_from, (v, prev) => { cfg.letter_from = v; renderVals(); if (v !== prev) dirty = true; });
-  makeEditableLetter(letterEnd,   () => cfg.letter_to,   (v, prev) => { cfg.letter_to   = v; renderVals(); if (v !== prev) dirty = true; });
-  makeEditableNumber(numStart,    () => cfg.num_from,    (v, prev) => { cfg.num_from    = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
-  makeEditableNumber(numEnd,      () => cfg.num_to,      (v, prev) => { cfg.num_to      = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
-
-  // toggle convidados
-  if (allowGuests) {
-    allowGuests.addEventListener('change', () => {
-      cfg.allow_guests = !!allowGuests.checked;
-      if (cfg.allow_guests !== initial.allow_guests) dirty = true;
-    });
-  }
-
-  function fixNum() { if (cfg.num_from > cfg.num_to) [cfg.num_from, cfg.num_to] = [cfg.num_to, cfg.num_from]; }
-  function renderVals() {
-    palletVal.textContent = cfg.max_packages;
-    letterStart.value = cfg.letter_from;
-    letterEnd.value   = cfg.letter_to;
-    numStart.value    = cfg.num_from;
-    numEnd.value      = cfg.num_to;
-
-    // >>> CORREÇÃO AQUI: só seta o checked se o elemento existir
-    if (allowGuests) allowGuests.checked = !!cfg.allow_guests;
-  }
-
-  $('#myData').onclick      = () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
-  $('#changeAvatar').onclick= () => import('../modal.js').then(m => m.openModal({ type: 'avatar' }));
-  $('#manageUsers').onclick = () => import('../modal.js').then(m => m.openModal({ type: 'users' }));
-
-  api.setBeforeClose(async () => {
-    if (!dirty || JSON.stringify(cfg) === JSON.stringify(initial)) return true;
-
-    const wantSave = await showConfirmAlert({
-      type: 'warning',
-      title: 'Salvar alterações?',
-      message: 'Você fez alterações nas configurações.',
-      okLabel: 'Salvar',
-      cancelLabel: 'Descartar'
-    });
-    if (!wantSave) return true;
-
-    try {
-      await apiPut('config', {
-        max_packages: cfg.max_packages,
-        letter_range: `${cfg.letter_from}-${cfg.letter_to}`,
-        number_range: `${cfg.num_from}-${cfg.num_to}`,
-        allow_guests: cfg.allow_guests
-      });
-      initial = { ...cfg };
-      dirty = false;
-      return true;
-    } catch (e) {
-      await showAlert({
-        type: 'error',
-        title: 'Falha ao salvar',
-        message: e?.message || 'Erro inesperado.',
-        durationMs: 3000
-      });
-      return false;
-    }
-  });
-}
-
-function bindUser(root, _api) {
+function bindAdminMenu(root, api) {
   root.querySelector('#myData').onclick =
     () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
-  root.querySelector('#changeAvatar').onclick =
-    () => import('../modal.js').then(m => m.openModal({ type: 'avatar' }));
+
+  root.querySelector('#manageUsers').onclick =
+    () => import('../modal.js').then(m => m.openModal({ type: 'users' }));
+
+  root.querySelector('#hubSettings').onclick =
+    () => import('../modal.js').then(m => m.openModal({ type: 'hub_settings' }));
+
+  // vamos implementar depois — por enquanto só avisa ou não faz nada
+  root.querySelector('#opDocs').onclick = 
+    () => import('../modal.js').then(m => m.openModal({ type: 'opdocs' }));
 }
 
-/* ---------------------- INPUT HELPERS ---------------------- */
-
-function makeEditableLetter(inputEl, getVal, setVal) {
-  inputEl.setAttribute('autocapitalize', 'characters');
-  inputEl.addEventListener('focus', () => {
-    inputEl.dataset.prev = getVal();
-    inputEl.value = '';
-    setTimeout(() => { inputEl.focus(); inputEl.select?.(); }, 0);
-  });
-  inputEl.addEventListener('input', () => {
-    const v = inputEl.value.toUpperCase().replace(/[^A-Z]/g, '');
-    inputEl.value = v.slice(0, 1);
-  });
-  inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') inputEl.blur(); });
-  inputEl.addEventListener('blur', () => {
-    const prev = inputEl.dataset.prev ?? getVal();
-    let v = inputEl.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
-    if (!v) v = prev;
-    setVal(v, prev);
-    delete inputEl.dataset.prev;
-  });
-}
-
-function makeEditableNumber(inputEl, getVal, setVal) {
-  inputEl.addEventListener('focus', () => {
-    inputEl.dataset.prev = String(getVal());
-    inputEl.value = '';
-    setTimeout(() => { inputEl.focus(); inputEl.select?.(); }, 0);
-  });
-  inputEl.addEventListener('input', () => {
-    const v = inputEl.value.replace(/\D/g, '');
-    inputEl.value = v;
-  });
-  inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') inputEl.blur(); });
-  inputEl.addEventListener('blur', () => {
-    const prevStr = inputEl.dataset.prev ?? String(getVal());
-    const prevNum = toInt(prevStr, 0);
-    let vStr = inputEl.value.replace(/\D/g, '');
-    if (!vStr) {
-      setVal(prevNum, prevNum);
-    } else {
-      let v = toInt(vStr, prevNum);
-      if (v < 0) v = 0;
-      setVal(v, prevNum);
-    }
-    delete inputEl.dataset.prev;
-  });
+function bindUserMenu(root, _api) {
+  root.querySelector('#myData').onclick =
+    () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
 }
 
 /* ---------------------- UTILS ---------------------- */
 
-function clamp(v, a, b) { return Math.max(a, Math.min(b, Number(v) || 0)); }
-function toInt(v, d) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : d; }
-function toLetter(v, d) { const s = String(v || '').toUpperCase().replace(/[^A-Z]/g, ''); return s ? s[0] : d; }
-function escapeHtml(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s ?? '');
+  return d.innerHTML;
+}

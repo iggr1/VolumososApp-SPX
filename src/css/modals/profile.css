@@ -8,7 +8,7 @@
 /* reaproveita a grid do settings */
 .profile-modal .settings-list {
   display: grid;
-  gap: 24rem;
+  gap: 36rem;
 }
 
 .profile-modal .setting-row {
@@ -58,6 +58,35 @@
 .profile-modal .pill-input:disabled {
   opacity: .6;
   cursor: not-allowed;
+}
+
+#pf-pw-area {
+  display: flex;
+  flex-direction: column;
+  gap: 36rem;
+}
+
+.save-pass-button{
+  display: flex;
+  height: 120rem;
+  justify-content: center;
+  align-items: center;
+  gap: 12rem;
+  padding: 16rem 32rem;
+  background-color: var(--orange);
+  color: white;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  border: none;
+  border-radius: 80rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.save-pass-button:disabled {
+  background-color: var(--light-gray);
+  cursor: not-allowed;
+  color: var(--dark-gray);
 }
 
 /* responsivo */

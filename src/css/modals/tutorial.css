@@ -1,0 +1,100 @@
+/* src/css/modals/tutorial.css */
+
+.tutorial-modal {
+  display: grid;
+  gap: 24rem;
+}
+
+/* Lista de passos */
+.tutorial-list {
+  display: grid;
+  gap: 24rem;
+}
+
+/* Card de passo */
+.tutorial-step {
+  background: #fff;
+  border-radius: 44rem;
+  padding: 26rem;
+  box-shadow: 0 12rem 30rem rgba(0, 0, 0, 0.08);
+  display: grid;
+  gap: 18rem;
+}
+
+/* Cabeçalho do passo */
+.tutorial-step-head {
+  display: flex;
+  align-items: center;
+  gap: 16rem;
+}
+
+.tutorial-step-badge {
+  width: 72rem;
+  height: 72rem;
+  border-radius: 999rem;
+  background: var(--orange);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 40rem;
+  font-weight: var(--text-bold);
+  flex: 0 0 auto;
+}
+
+.tutorial-step-title {
+  font-size: 48rem;
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
+  line-height: 1.1;
+}
+
+/* “Imagem” */
+.tutorial-step-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 36rem;
+}
+
+/* Placeholder (quando não tem imagem real) */
+.tutorial-ph {
+  display: grid;
+  gap: 10rem;
+  place-items: center;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.55);
+  padding: 18rem;
+}
+
+.tutorial-ph-ic {
+  width: 120rem;
+  height: 120rem;
+  display: grid;
+  place-items: center;
+}
+
+.tutorial-ph-ic svg {
+  width: 96rem;
+  height: 96rem;
+  stroke-width: 1.6;
+}
+
+.tutorial-ph-txt {
+  font-size: 40rem;
+  font-weight: var(--text-bold);
+}
+
+/* Descrição */
+.tutorial-step-desc {
+  font-size: 44rem;
+  font-weight: var(--text-bold);
+  color: rgba(0, 0, 0, 0.55);
+  line-height: 1.2;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .tutorial-step-title { font-size: 44rem; }
+  .tutorial-step-desc { font-size: 40rem; }
+  .tutorial-step-image { min-height: 280rem; }
+}

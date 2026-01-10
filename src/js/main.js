@@ -4,9 +4,10 @@ import { QrScanner } from './scanner.js';
 import { verifyUserSession } from './utils/auth.js';
 import { openModal } from './modal.js';
 import { verifyBrCode } from './utils/package.js';
-import { verifyAlreadyInLocalPallet } from './utils/pallet.js';
+import { verifyAlreadyInLocalPallet, sendToLocalPallet } from './utils/pallet.js';
 import { showAlert } from './utils/alerts.js';
 import { isModalOpenOnScreen } from './utils/helper.js';
+import { getPreRoute } from './utils/preroute.js';
 
 setupTypography();
 
@@ -134,7 +135,7 @@ document.addEventListener('click', (e) => {
 });
 
 /* Adicionar BR manual / via scanner */
-document.addEventListener('click', (e) => {
+document.addEventListener('click', async (e) => {
   const btn = e.target.closest('.btn-add');
   if (!btn) return;
 
@@ -198,6 +199,40 @@ document.addEventListener('click', (e) => {
     return;
   }
 
+  try {
+    const pre = await getPreRoute(brCode);
+
+    // se tiver preroute, pula o modal e adiciona direto
+    if (pre.ok && pre.found && pre.route) {
+      const packageToAdd = {
+        brCode,
+        route: pre.route,
+        datetime: new Date().toISOString(),
+        userToken: localStorage.getItem('authToken')
+      };
+
+      await sendToLocalPallet(packageToAdd);
+
+      showAlert({
+        type: 'success',
+        title: 'Rota automática',
+        message: `Rota ${pre.route} aplicada via Pré-Route.`,
+        buttons: [],
+        durationMs: 1400,
+        dismissible: true,
+        collapseDelayMs: 120
+      });
+
+      // opcional: limpar input
+      try { brCodeInput.value = ''; } catch { }
+
+      return; // IMPORTANTÍSSIMO: não abre o modal
+    }
+  } catch (e) {
+    // se der erro na consulta, só cai pro fluxo normal
+    console.warn('[preroute] falha:', e);
+  }
+
   showAlert({
     type: 'success',
     title: 'Código BR válido',
@@ -208,6 +243,7 @@ document.addEventListener('click', (e) => {
     collapseDelayMs: 100,
   });
 
+  // fallback: modal manual
   openModal({ type: 'routeSelect' });
 });
 

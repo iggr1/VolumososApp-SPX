@@ -1,0 +1,219 @@
+/* src/css/modals/opdocs.css */
+
+.opdocs-modal {
+  display: grid;
+  gap: 28rem;
+}
+
+/* container interno (pra espaçar card + botão) */
+.opdocs-wrap {
+  display: grid;
+  gap: 36rem;
+}
+
+/* Card */
+.opdocs-card {
+  border-radius: 64rem;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 12rem 30rem rgba(0, 0, 0, 0.08);
+  border: 6rem dashed rgba(255, 74, 28, 0.55);
+}
+
+/* Header laranja */
+.opdocs-card-head {
+  background: var(--orange);
+  color: #fff;
+  padding: 26rem 40rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rem;
+}
+
+.opdocs-card-head-text {
+  font-size: 52rem;
+  font-weight: var(--text-bold);
+  letter-spacing: 0.2rem;
+}
+
+.opdocs-card-head-ext {
+  font-size: 46rem;
+  font-weight: var(--text-bold);
+  opacity: 0.95;
+}
+
+/* Dropzone */
+.opdocs-dropzone {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 34rem 34rem 44rem;
+  cursor: pointer;
+}
+
+.opdocs-dropzone:focus-visible {
+  outline: 6rem solid var(--orange);
+  outline-offset: 6rem;
+  border-radius: 44rem;
+}
+
+.opdocs-dropzone-inner {
+  min-height: 520rem;
+  border-radius: 44rem;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  background: #fff;
+  gap: 10rem;
+  padding: 24rem;
+}
+
+/* Drag state */
+.opdocs-dropzone.is-drag .opdocs-dropzone-inner {
+  background: rgba(255, 74, 28, 0.06);
+  border-color: rgba(255, 74, 28, 0.85);
+}
+
+/* Quando já tem arquivo */
+.opdocs-dropzone.has-file .opdocs-dropzone-inner {
+  border-color: rgba(46, 204, 113, 0.65);
+}
+
+/* Ícone */
+.opdocs-upload-icon {
+  width: 220rem;
+  height: 220rem;
+  display: grid;
+  place-items: center;
+  color: var(--dark-gray);
+}
+
+.opdocs-upload-icon svg {
+  width: 170rem;
+  height: 170rem;
+  stroke-width: 1.6;
+}
+
+/* Textos */
+.opdocs-dropzone-text {
+  margin-top: 6rem;
+  font-size: 50rem;
+  font-weight: var(--text-bold);
+  color: rgba(0, 0, 0, 0.55);
+  word-break: break-word;
+}
+
+.opdocs-dropzone-hint {
+  font-size: 42rem;
+  font-weight: var(--text-bold);
+  color: rgba(0, 0, 0, 0.35);
+}
+
+/* input escondido */
+.opdocs-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Botão ajuda */
+.opdocs-helpbtn {
+  display: flex;
+  height: 120rem;
+  justify-content: center;
+  align-items: center;
+  gap: 12rem;
+  padding: 16rem 32rem;
+  background-color: var(--orange);
+  color: white;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  border: none;
+  border-radius: 80rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.opdocs-helpbtn:hover { filter: brightness(0.98); }
+.opdocs-helpbtn:active { transform: translateY(2rem); }
+
+.opdocs-helpbtn:focus-visible {
+  outline: 6rem solid var(--orange);
+  outline-offset: 6rem;
+}
+
+.opdocs-help-ic {
+  width: 72rem;
+  height: 72rem;
+  display: grid;
+  place-items: center;
+}
+
+.opdocs-help-ic svg {
+  width: 64rem;
+  height: 64rem;
+  stroke-width: 2;
+}
+
+/* estado disabled pros botões */
+.opdocs-helpbtn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* opcional: diferenciar o IMPORTAR */
+.opdocs-helpbtn.opdocs-primary {
+  letter-spacing: 0.6rem;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .opdocs-card-head-text { font-size: 46rem; }
+  .opdocs-card-head-ext { font-size: 42rem; }
+  .opdocs-dropzone-inner { min-height: 460rem; }
+  .opdocs-dropzone-text { font-size: 46rem; }
+  .opdocs-dropzone-hint { font-size: 38rem; }
+  .opdocs-helpbtn { font-size: 46rem; }
+}
+
+.opdocs-summary{
+  display: grid;
+  gap: 14rem;
+  padding: 0 40rem 10rem;
+}
+
+.opdocs-summary-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12rem 0;
+  border-top: 2rem solid var(--light-gray);
+}
+
+.opdocs-summary-row .k{
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
+  font-size: var(--text-medium);
+}
+
+.opdocs-summary-row .v{
+  font-weight: var(--text-bold);
+  color: var(--orange);
+  font-size: var(--text-medium);
+}
+
+.opdocs-goodop{
+  display:flex;
+  gap: 12rem;
+  align-items:center;
+  justify-content:center;
+  padding: 18rem 16rem;
+  border-radius: 18rem;
+  color: var(--darker-gray);
+  font-weight: var(--text-bold);
+}
