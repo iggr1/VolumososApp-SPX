@@ -24,6 +24,11 @@ let scanLock = false;
 let scanner = null;
 let resumeLock = false;
 
+function focusInputIfAllowed() {
+  if (isModalOpenOnScreen()) return;
+  inputEl?.focus({ preventScroll: true });
+}
+
 async function stopCameraAndScanner() {
   try { scanner?.stop(); } catch { }
   try { camera.stop(); } catch { }
@@ -61,6 +66,24 @@ function setupLifecycleEvents() {
 
 (async () => {
   try {
+    if (inputEl) {
+      inputEl.setAttribute('inputmode', 'none');
+      inputEl.addEventListener('keydown', (event) => {
+        if (isModalOpenOnScreen()) return;
+        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Tab') {
+          event.preventDefault();
+          document.querySelector('.btn-add')?.click();
+        }
+      });
+      inputEl.addEventListener('blur', () => {
+        setTimeout(() => {
+          focusInputIfAllowed();
+        }, 0);
+      });
+    }
+
+    focusInputIfAllowed();
+
     // Garante permissão inicial para exibir labels e listar todas as câmeras
     await navigator.mediaDevices.getUserMedia({ video: true });
 
@@ -104,6 +127,11 @@ function setupLifecycleEvents() {
 
 document.addEventListener('DOMContentLoaded', () => {
   verifyUserSession();
+});
+
+document.addEventListener('click', (event) => {
+  if (event.target.closest('input, textarea, select, button, [contenteditable="true"]')) return;
+  focusInputIfAllowed();
 });
 
 /* Menu */
