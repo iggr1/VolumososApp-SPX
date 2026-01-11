@@ -7,7 +7,6 @@
   grid-template-rows: auto 1fr auto;
   /* badge | tabela | footer */
   gap: 28rem;
-  min-height: 60vh;
 }
 
 /* badge "PALLET ATUAL" */
@@ -201,12 +200,6 @@
   align-items: center;
 }
 
-@media (min-width: 420px) {
-  .pallet-footer {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 /* ===========================
    Botões (cores por estado)
    =========================== */
@@ -275,13 +268,6 @@
 
 .pallet-icon-btn[disabled] svg {
   stroke: #9e9e9e !important;
-}
-
-/* ========= (opcional) responsividade mínima ========= */
-@media (max-width: 419px) {
-  .pallet-footer-actions {
-    justify-content: flex-end;
-  }
 }
 
 .pallet-table {

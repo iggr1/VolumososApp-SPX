@@ -34,7 +34,7 @@
 
 /* inputs em formato de pílula */
 .profile-modal .pill-input {
-  width: 350rem;               /* mesmo width dos controles do settings */
+  width: 500rem;               /* mesmo width dos controles do settings */
   height: 120rem;
   border: 0;
   border-radius: 85rem;

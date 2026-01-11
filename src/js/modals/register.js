@@ -12,6 +12,7 @@ import { updateCounts } from "../utils/helper.js";
 import { getConfigs } from "../utils/config.js";
 import { enhanceSelect } from "../utils/uiSelect.js";
 import { apiGet } from "../api.js";
+import { openModal } from "../modal.js";
 
 export const meta = {
   title: "Criar Conta",
@@ -333,7 +334,7 @@ export default function render(_props = {}, api) {
     updateCounts();
 
     setLoading(false);
-    api.close("registered");
+    openModal({type: "avatar"});
   }
 
   submitButton.onclick = onSubmit;
