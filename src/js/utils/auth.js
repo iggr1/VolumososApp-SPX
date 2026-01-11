@@ -157,6 +157,16 @@ export async function loginRequest({ username, password }) {
       return null;
     }
 
+    if (data.status === 'pending') {
+      showAlert({
+        type: 'warning',
+        title: 'Usuário Pendente',
+        message: 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.',
+        durationMs: 5000
+      });
+      return null;
+    }
+
     setUserInfo(data.username, data.token, data.avatar_id);
     updateCounts();
     return true;
@@ -177,6 +187,20 @@ export async function loginRequest({ username, password }) {
       (msg.toLowerCase().includes('not allowed') || msg.toLowerCase().includes('usuário não tem acesso a este hub'))
     ) {
       msg = 'Você não possui acesso à este HUB. Contate sua liderança caso necessário.';
+    }
+
+    if (err?.status === 403 &&
+      typeof msg === 'string' &&
+      msg.toLowerCase().includes('usuário pendente')
+    ) {
+      msg = 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.';
+    }
+
+    if (err?.status === 403 &&
+      typeof msg === 'string' &&
+      msg.toLowerCase().includes('usuário não ativo')
+    ) {
+      msg = 'Seu usuário está desativado. Contate sua liderança para mais informações.';
     }
 
     showAlert({

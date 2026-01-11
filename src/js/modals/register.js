@@ -319,22 +319,27 @@ export default function render(_props = {}, api) {
       return setLoading(false);
     }
 
-    setUserInfo(data.username, data.token, data.avatar_id);
-    saveHubLocal(hub);
+    if (data.status === 'pending') {
+      showAlert({
+        type: 'warning',
+        title: 'Usuário Pendente',
+        message: 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.',
+        durationMs: 5000
+      });
+      return setLoading(false);
+    }
 
-    localStorage.setItem("authToken", data.token);
+    saveHubLocal(hub);
 
     showAlert({
       type: "success",
       title: "Conta criada!",
-      message: "Sua conta foi criada e você já está logado!",
+      message: "Agora faça login para acessar o sistema.",
+      durationMs: 2000
     });
 
-    getConfigs();
-    updateCounts();
-
     setLoading(false);
-    openModal({type: "avatar"});
+    openModal({ type: "login" })
   }
 
   submitButton.onclick = onSubmit;

@@ -116,7 +116,8 @@ export const apiDel  = (p, b) => apiRequest('DELETE', p, b);
 export const updateConfig  = (cfg)                  => apiPut('config', cfg);
 export const createUser    = (u)                    => apiPost('users', u);
 export const updateUser    = (username, b)          => apiPut(`users/${encodeURIComponent(username)}`, b);
-export const deleteUser    = (username)             => apiDel(`users/${encodeURIComponent(username)}`);
 export const getPallets    = (params)               => apiGet('pallets', params);
 export const deletePallet  = (pallet)               => apiDel('pallet', { pallet });
 export const deletePackage = (brCode, pallet)       => apiDel('package', { brCode, pallet });
+export const deleteUser    = (username)             => apiPost('users/action', { username, action:"delete" });
+export async function userAction({ username, action }) { return apiPost('users/action', { username, action });}

@@ -1,5 +1,6 @@
 // src/js/modals/users.js
-import { apiGet } from '../api.js';
+import { apiGet, apiPost } from '../api.js';
+import { showAlert, showConfirmAlert } from '../utils/alerts.js';
 
 export const meta = {
   title: 'Usuários',
@@ -81,7 +82,11 @@ export default function render(_props = {}, api) {
     const items = raw
       .slice()
       .sort((a, b) => String(a.username).localeCompare(String(b.username)))
-      .filter(u => !q || String(u.username).toLowerCase().includes(q) || String(u.role).toLowerCase().includes(q));
+      .filter(u => !q
+      || String(u.username).toLowerCase().includes(q)
+      || String(u.role).toLowerCase().includes(q)
+      || String(u.status || '').toLowerCase().includes(q)
+    );
 
     if (!items.length) {
       listEl.classList.remove('users-list--loading');
@@ -96,23 +101,97 @@ export default function render(_props = {}, api) {
     const rows = items.map(u => {
       const name = esc(u.username);
       const role = esc(u.role || '');
+      const status = String(u.status || 'active').toLowerCase();
       const avId = String(u.avatar_id || '0');
+
+      const roleClass = role === 'admin' ? 'is-admin' : 'is-user';
+
+      const statusLabel =
+        status === 'pending' ? 'pendente' :
+        status === 'inactive' ? 'inativo' :
+        'ativo';
+
+      const statusClass =
+        status === 'pending' ? 'is-pending' :
+        status === 'inactive' ? 'is-inactive' :
+        'is-active';
+
+      const actionBtn = status === 'pending'
+        ? `<button class="user-action user-action--allow" data-action="activate" data-username="${esc(u.username)}" type="button">
+            <i data-lucide="badge-check"></i><span>Permitir</span>
+          </button>`
+        : status === 'inactive'
+          ? `<button class="user-action user-action--activate" data-action="activate" data-username="${esc(u.username)}" type="button">
+              <i data-lucide="power"></i><span>Ativar</span>
+            </button>`
+          : '';
+
       return `
-        <button class="user-row" data-user='${esc(JSON.stringify(u))}'>
-          <img class="user-avatar" alt="" src="./src/assets/img/profile-images/${avId}.jpg" />
-          <div class="user-main">
-            <div class="user-name">${name}</div>
-            <div class="user-meta">
-              <span class="role-badge ${role === 'admin' ? 'is-admin' : 'is-user'}">${role}</span>
+        <div class="user-row" data-user='${esc(JSON.stringify(u))}'>
+          <div class="user-left">
+            <img class="user-avatar" alt="" src="./src/assets/img/profile-images/${avId}.jpg" />
+            <div class="user-main">
+              <div class="user-name">${name}</div>
+              <div class="user-meta">
+                <span class="role-badge ${roleClass}">${role}</span>
+                <span class="status-badge ${statusClass}">${statusLabel}</span>
+              </div>
             </div>
           </div>
-          <i data-lucide="chevron-right" class="chev"></i>
-        </button>
+
+          <div class="user-right">
+            ${actionBtn}
+            <i data-lucide="chevron-right"></i>
+          </div>
+        </div>
       `;
     }).join('');
 
+
     listEl.classList.remove('users-list--loading');
     listEl.innerHTML = rows;
+
+    // Ações (permitir/ativar)
+    listEl.querySelectorAll('.user-action').forEach(btn => {
+      btn.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        const username = btn.dataset.username || '';
+        const action = btn.dataset.action || '';
+
+        const label = btn.classList.contains('user-action--allow') ? 'Permitir' : 'Ativar';
+        const ok = await showConfirmAlert({
+          type: 'info',
+          title: `${label} usuário`,
+          message: `Tem certeza que deseja ${label.toLowerCase()} o usuário ${esc(username)}?`,
+          confirmText: label,
+          cancelText: 'Cancelar',
+        });
+
+        if (!ok) return;
+
+        btn.disabled = true;
+        btn.classList.add('is-loading');
+
+        try {
+          await apiPost('users/action', { username, action });
+          await load();
+
+          showAlert({
+            type: 'success',
+            title: 'Sucesso',
+            message: `Usuário ${esc(username)} ativo com sucesso.`,
+            durationMs: 3000
+          });
+        } catch (e) {
+          btn.disabled = false;
+          btn.classList.remove('is-loading');
+          alert(e?.message || 'Falha ao executar ação.');
+        }
+      });
+    });
+
 
     listEl.querySelectorAll('.user-row').forEach(btn => {
       btn.addEventListener('click', () => {
