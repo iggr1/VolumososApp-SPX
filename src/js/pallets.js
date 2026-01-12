@@ -94,17 +94,19 @@ function saveHubHistory(list) {
 function updateHubHistory(hubCode) {
   if (!hubCode) return;
   const current = state.hubHistory.length ? [...state.hubHistory] : getHubHistory();
-  const next = [hubCode, ...current.filter((code) => code !== hubCode)].slice(0, HUB_HISTORY_LIMIT);
+  const next = [hubCode, ...current.filter(code => code !== hubCode)].slice(0, HUB_HISTORY_LIMIT);
   state.hubHistory = next;
   saveHubHistory(next);
 }
 
 function getHubLabel(code) {
-  return state.hubs.find((hub) => hub.code === code)?.label || code;
+  return state.hubs.find(hub => hub.code === code)?.label || code;
 }
 
 function parseRoute(route = '') {
-  const match = String(route).toUpperCase().match(/([A-Z]+)[-\s]*(\d+)/);
+  const match = String(route)
+    .toUpperCase()
+    .match(/([A-Z]+)[-\s]*(\d+)/);
   if (!match) return { letter: route || '', number: Number.POSITIVE_INFINITY, raw: route };
   return { letter: match[1], number: Number(match[2]), raw: route };
 }
@@ -120,7 +122,9 @@ function sortPackages(list) {
 
 function buildFilterButtons(list) {
   filtersEl.innerHTML = '';
-  const letters = Array.from(new Set(list.map((p) => parseRoute(p.route).letter))).filter(Boolean).sort();
+  const letters = Array.from(new Set(list.map(p => parseRoute(p.route).letter)))
+    .filter(Boolean)
+    .sort();
 
   const addBtn = (label, value) => {
     const btn = document.createElement('button');
@@ -136,7 +140,7 @@ function buildFilterButtons(list) {
   };
 
   addBtn('Todas as rotas', 'all');
-  letters.forEach((letter) => addBtn(`Rota ${letter}`, letter));
+  letters.forEach(letter => addBtn(`Rota ${letter}`, letter));
 }
 
 function formatDate(value) {
@@ -168,7 +172,7 @@ function applyFilters(list) {
   const search = state.search.trim().toLowerCase();
   const normalizedRouteSearch = state.routeSearch.trim().toUpperCase().replace(/\s+/g, '');
 
-  return list.filter((item) => {
+  return list.filter(item => {
     const routeInfo = parseRoute(item.route);
     if (state.filterLetter !== 'all' && routeInfo.letter !== state.filterLetter) return false;
 
@@ -241,7 +245,7 @@ function renderRows() {
 
   emptyState.hidden = true;
 
-  sorted.forEach((pkg) => {
+  sorted.forEach(pkg => {
     const row = document.createElement('div');
     row.className = 'row';
 
@@ -348,7 +352,7 @@ function buildHubModal() {
 
   const selectedCode = hubSelect.value;
   const recentHubs = state.hubHistory
-    .map((code) => state.hubs.find((hub) => hub.code === code))
+    .map(code => state.hubs.find(hub => hub.code === code))
     .filter(Boolean);
 
   if (!recentHubs.length) {
@@ -357,7 +361,7 @@ function buildHubModal() {
     empty.textContent = 'Nenhum hub recente.';
     hubModalRecent.appendChild(empty);
   } else {
-    recentHubs.forEach((hub) => {
+    recentHubs.forEach(hub => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `hub-option ${hub.code === selectedCode ? 'active' : ''}`;
@@ -368,7 +372,7 @@ function buildHubModal() {
   }
 
   const sortedHubs = [...state.hubs].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
-  sortedHubs.forEach((hub) => {
+  sortedHubs.forEach(hub => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `hub-option ${hub.code === selectedCode ? 'active' : ''}`;
@@ -387,8 +391,8 @@ async function updatePackageStatus(pkg, status) {
     const payload = { hub, brCode, status };
     await apiPost('public/package/status', payload);
 
-    state.packages = state.packages.map((item) =>
-      item.brCode === brCode ? { ...item, status } : item,
+    state.packages = state.packages.map(item =>
+      item.brCode === brCode ? { ...item, status } : item
     );
     renderRows();
   } catch (err) {
@@ -439,7 +443,7 @@ async function loadHubs() {
     state.hubs = data.hubs;
     state.hubHistory = getHubHistory();
     hubSelect.innerHTML = '';
-    data.hubs.forEach((hub) => {
+    data.hubs.forEach(hub => {
       const opt = document.createElement('option');
       opt.value = hub.code;
       opt.textContent = hub.label;
@@ -449,7 +453,7 @@ async function loadHubs() {
     hubSelectNice?.refreshOptions();
 
     const saved = localStorage.getItem('hubCode');
-    const first = saved && data.hubs.find((h) => h.code === saved) ? saved : data.hubs[0]?.code;
+    const first = saved && data.hubs.find(h => h.code === saved) ? saved : data.hubs[0]?.code;
     if (first) {
       hubSelect.value = first;
       updateHubHistory(first);
@@ -484,7 +488,7 @@ function handleRouteSearch(value) {
 }
 
 function registerEvents() {
-  hubSelect.addEventListener('change', (ev) => {
+  hubSelect.addEventListener('change', ev => {
     const hubCode = ev.target.value;
     localStorage.setItem('hubCode', hubCode);
     updateHubHistory(hubCode);
@@ -495,9 +499,9 @@ function registerEvents() {
 
   refreshBtn.addEventListener('click', () => loadPackages(hubSelect.value));
 
-  searchInput.addEventListener('input', (ev) => handleSearch(ev.target.value));
+  searchInput.addEventListener('input', ev => handleSearch(ev.target.value));
 
-  routeSearchInput.addEventListener('input', (ev) => handleRouteSearch(ev.target.value));
+  routeSearchInput.addEventListener('input', ev => handleRouteSearch(ev.target.value));
 
   clearSearchBtn.addEventListener('click', () => {
     searchInput.value = '';
@@ -513,7 +517,7 @@ function registerEvents() {
 
   hubModalClose?.addEventListener('click', closeHubModal);
 
-  hubModal?.addEventListener('click', (ev) => {
+  hubModal?.addEventListener('click', ev => {
     if (ev.target?.matches?.('[data-modal-close]')) {
       closeHubModal();
     }
@@ -521,17 +525,17 @@ function registerEvents() {
 
   hubSelectButton?.addEventListener(
     'click',
-    (ev) => {
+    ev => {
       ev.preventDefault();
       ev.stopPropagation();
       hubSelectNice?.close();
       buildHubModal();
       openHubModal();
     },
-    true,
+    true
   );
 
-  document.addEventListener('keydown', (ev) => {
+  document.addEventListener('keydown', ev => {
     if (ev.key === 'Escape' && hubModal?.classList.contains('is-open')) {
       closeHubModal();
       return;
@@ -553,7 +557,7 @@ async function init() {
   initTheme();
   registerEvents();
   await loadHubs();
-  loadPackages(hubSelect.value)
+  loadPackages(hubSelect.value);
 }
 
 init();

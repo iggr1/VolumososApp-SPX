@@ -2,23 +2,23 @@
 import { showAlert } from '../utils/alerts.js';
 
 export const meta = {
-    title: 'Sobre o VolumososApp',
-    size: 'sm',
-    showBack: true,
-    showClose: true,
-    backdropClose: true,
-    escToClose: true,
-    initialFocus: '#about-root'
+  title: 'Sobre o VolumososApp',
+  size: 'sm',
+  showBack: true,
+  showClose: true,
+  backdropClose: true,
+  escToClose: true,
+  initialFocus: '#about-root',
 };
 
 export default function render(_props = {}, _api) {
-    const el = document.createElement('div');
-    el.id = 'about-root';
-    el.className = 'about-form';
+  const el = document.createElement('div');
+  el.id = 'about-root';
+  el.className = 'about-form';
 
-    const info = collectBuildInfo();
+  const info = collectBuildInfo();
 
-    el.innerHTML = `
+  el.innerHTML = `
     <div class="about-header">
       <div class="app-badge">
         <i data-lucide="info" aria-hidden="true"></i>
@@ -84,70 +84,73 @@ export default function render(_props = {}, _api) {
       </button>
   `;
 
-    // Ícones
-    try { window.lucide?.createIcons?.(); } catch { }
+  // Ícones
+  try {
+    window.lucide?.createIcons?.();
+  } catch {}
 
-    // Ações
-    el.querySelector('[data-action="copy"]')?.addEventListener('click', async () => {
-        const text = buildDiagnostics(info);
-        try {
-            await navigator.clipboard.writeText(text);
-            showAlert({
-                type: 'success',
-                title: 'Copiado',
-                message: 'Informações técnicas copiadas.',
-                durationMs: 1500
-            });
-        } catch {
-            showAlert({
-                type: 'warning',
-                title: 'Falhou ao copiar',
-                message: 'Não foi possível copiar. Selecione e copie manualmente.',
-                durationMs: 2500
-            });
-        }
-    });
+  // Ações
+  el.querySelector('[data-action="copy"]')?.addEventListener('click', async () => {
+    const text = buildDiagnostics(info);
+    try {
+      await navigator.clipboard.writeText(text);
+      showAlert({
+        type: 'success',
+        title: 'Copiado',
+        message: 'Informações técnicas copiadas.',
+        durationMs: 1500,
+      });
+    } catch {
+      showAlert({
+        type: 'warning',
+        title: 'Falhou ao copiar',
+        message: 'Não foi possível copiar. Selecione e copie manualmente.',
+        durationMs: 2500,
+      });
+    }
+  });
 
-    el.querySelector('[data-action="changelog"]')?.addEventListener('click', () => {
-        // ajuste o link ao seu repo
-        window.open('https://github.com/iggr1/VolumososApp-SPX/commits/main', '_blank', 'noopener');
-    });
+  el.querySelector('[data-action="changelog"]')?.addEventListener('click', () => {
+    // ajuste o link ao seu repo
+    window.open('https://github.com/iggr1/VolumososApp-SPX/commits/main', '_blank', 'noopener');
+  });
 
-    return el;
+  return el;
 }
 
 /* ---------------- helpers ---------------- */
 
 function collectBuildInfo() {
-    const byWindow = (window.APP_VERSION && String(window.APP_VERSION)) || '';
-    const byMeta = document.querySelector('meta[name="app-version"]')?.getAttribute('content') || '';
-    const byBody = document.body?.dataset?.version || '';
-    const version = byWindow || byMeta || byBody || '0.0.0';
+  const byWindow = (window.APP_VERSION && String(window.APP_VERSION)) || '';
+  const byMeta = document.querySelector('meta[name="app-version"]')?.getAttribute('content') || '';
+  const byBody = document.body?.dataset?.version || '';
+  const version = byWindow || byMeta || byBody || '0.0.0';
 
-    const build =
-        (window.APP_BUILD && String(window.APP_BUILD)) ||
-        document.querySelector('meta[name="app-build"]')?.getAttribute('content') ||
-        document.body?.dataset?.build || '-';
+  const build =
+    (window.APP_BUILD && String(window.APP_BUILD)) ||
+    document.querySelector('meta[name="app-build"]')?.getAttribute('content') ||
+    document.body?.dataset?.build ||
+    '-';
 
-    const env =
-        (window.APP_ENV && String(window.APP_ENV)) ||
-        document.querySelector('meta[name="app-env"]')?.getAttribute('content') ||
-        (location.hostname.includes('localhost') ? 'dev' : 'prod');
+  const env =
+    (window.APP_ENV && String(window.APP_ENV)) ||
+    document.querySelector('meta[name="app-env"]')?.getAttribute('content') ||
+    (location.hostname.includes('localhost') ? 'dev' : 'prod');
 
-    const ua = navigator.userAgent;
-    const size = `${window.innerWidth}×${window.innerHeight}`;
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const ua = navigator.userAgent;
+  const size = `${window.innerWidth}×${window.innerHeight}`;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
-    return { version, build, env, ua, size, tz };
+  return { version, build, env, ua, size, tz };
 }
 
 function buildDiagnostics(i) {
-    return [
-        `VolumososApp v${i.version} (${i.env})`,
-        `Build: ${i.build}`,
-        `UA: ${i.ua}`,
-        `Size: ${i.size}`,
-        `TZ: ${i.tz}`,
-        `URL: ${location.href}`
-    ].join('\n');
+  return [
+    `VolumososApp v${i.version} (${i.env})`,
+    `Build: ${i.build}`,
+    `UA: ${i.ua}`,
+    `Size: ${i.size}`,
+    `TZ: ${i.tz}`,
+    `URL: ${location.href}`,
+  ].join('\n');
 }

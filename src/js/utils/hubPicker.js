@@ -18,9 +18,9 @@ export function initHubPicker({ rootEl, hubs, savedHubId = '' }) {
   if (!rootEl) throw new Error('rootEl obrigatório em initHubPicker');
 
   const nativeSelect = rootEl.querySelector('.hub-native-select');
-  const displayBtn   = rootEl.querySelector('[data-hub-display]');
-  const displayLbl   = rootEl.querySelector('[data-hub-display-label]');
-  const listEl       = rootEl.querySelector('[data-hub-list]');
+  const displayBtn = rootEl.querySelector('[data-hub-display]');
+  const displayLbl = rootEl.querySelector('[data-hub-display-label]');
+  const listEl = rootEl.querySelector('[data-hub-list]');
 
   if (!nativeSelect || !displayBtn || !displayLbl || !listEl) {
     throw new Error('markup inválido para HubPicker');
@@ -113,14 +113,15 @@ export function initHubPicker({ rootEl, hubs, savedHubId = '' }) {
   }
 
   function toggleList() {
-    if (isOpen) closeList(); else openList();
+    if (isOpen) closeList();
+    else openList();
   }
 
   function setActiveIndex(idx) {
     const opts = getOptionEls();
     if (!opts.length) {
-        activeIndex = -1;
-        return;
+      activeIndex = -1;
+      return;
     }
     if (idx < 0) idx = 0;
     if (idx >= opts.length) idx = opts.length - 1;
@@ -190,7 +191,7 @@ export function initHubPicker({ rootEl, hubs, savedHubId = '' }) {
   // Eventos de teclado no botão fechado
   displayBtn.addEventListener('click', toggleList);
 
-  displayBtn.addEventListener('keydown', (ev) => {
+  displayBtn.addEventListener('keydown', ev => {
     switch (ev.key) {
       case 'ArrowDown':
       case 'Enter':
@@ -205,7 +206,7 @@ export function initHubPicker({ rootEl, hubs, savedHubId = '' }) {
   });
 
   // Eventos de teclado na lista aberta
-  listEl.addEventListener('keydown', (ev) => {
+  listEl.addEventListener('keydown', ev => {
     switch (ev.key) {
       case 'ArrowDown':
         ev.preventDefault();
@@ -244,7 +245,7 @@ export function initHubPicker({ rootEl, hubs, savedHubId = '' }) {
   });
 
   // Fecha se clicar fora
-  document.addEventListener('mousedown', (ev) => {
+  document.addEventListener('mousedown', ev => {
     if (!rootEl.contains(ev.target)) {
       closeList();
     }
@@ -285,6 +286,6 @@ export function initHubPicker({ rootEl, hubs, savedHubId = '' }) {
     },
     focus() {
       displayBtn.focus();
-    }
+    },
   };
 }

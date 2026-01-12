@@ -9,7 +9,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#profile-root'
+  initialFocus: '#profile-root',
 };
 
 export default function render(_props = {}, api) {
@@ -26,7 +26,7 @@ export default function render(_props = {}, api) {
     username: '',
     changePwOpen: false,
     newPass: '',
-    confirmPass: ''
+    confirmPass: '',
   };
 
   init().catch(err => {
@@ -42,7 +42,7 @@ export default function render(_props = {}, api) {
       title: 'Salvar alterações?',
       message: 'Deseja aplicar as mudanças nas suas informações?',
       okLabel: 'Salvar',
-      cancelLabel: 'Descartar'
+      cancelLabel: 'Descartar',
     });
 
     if (!wantSave) return true;
@@ -55,7 +55,7 @@ export default function render(_props = {}, api) {
         type: 'error',
         title: 'Falha ao salvar',
         message: e?.message || 'Erro inesperado.',
-        durationMs: 3000
+        durationMs: 3000,
       });
       return false;
     }
@@ -99,7 +99,7 @@ export default function render(_props = {}, api) {
     }
 
     // Enter navega e salva senha no último campo
-    root.addEventListener('keydown', (e) => {
+    root.addEventListener('keydown', e => {
       if (e.key !== 'Enter') return;
 
       const np = root.querySelector('#pf-newpass');
@@ -137,8 +137,18 @@ export default function render(_props = {}, api) {
       const cp = root.querySelector('#pf-confpass');
       const sp = root.querySelector('#pf-save-pw');
 
-      if (np) np.addEventListener('input', () => { state.newPass = np.value; markDirty(); syncSavePwBtn(root); });
-      if (cp) cp.addEventListener('input', () => { state.confirmPass = cp.value; markDirty(); syncSavePwBtn(root); });
+      if (np)
+        np.addEventListener('input', () => {
+          state.newPass = np.value;
+          markDirty();
+          syncSavePwBtn(root);
+        });
+      if (cp)
+        cp.addEventListener('input', () => {
+          state.confirmPass = cp.value;
+          markDirty();
+          syncSavePwBtn(root);
+        });
 
       if (sp) {
         syncSavePwBtn(root);
@@ -154,13 +164,14 @@ export default function render(_props = {}, api) {
 
             const container = root.querySelector('#pf-pw-container');
             if (container) container.innerHTML = pwBlockView({ open: false });
-            if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+            if (window.lucide?.createIcons)
+              lucide.createIcons({ attrs: { width: 22, height: 22 } });
           } catch (e) {
             await showAlert({
               type: 'error',
               title: 'Falha ao salvar',
               message: e?.message || 'Erro inesperado.',
-              durationMs: 3000
+              durationMs: 3000,
             });
           }
         };
@@ -191,7 +202,7 @@ export default function render(_props = {}, api) {
       type: 'success',
       title: 'Salvo',
       message: 'Senha atualizada.',
-      durationMs: 1600
+      durationMs: 1600,
     });
   }
 
@@ -203,7 +214,9 @@ export default function render(_props = {}, api) {
     dirty = false;
   }
 
-  function markDirty() { dirty = true; }
+  function markDirty() {
+    dirty = true;
+  }
 }
 
 /* --------------------- Views --------------------- */
@@ -292,4 +305,8 @@ function errorView(msg) {
 }
 
 /* --------------------- Utils --------------------- */
-function escapeHtml(v){ const d=document.createElement('div'); d.textContent=String(v??''); return d.innerHTML; }
+function escapeHtml(v) {
+  const d = document.createElement('div');
+  d.textContent = String(v ?? '');
+  return d.innerHTML;
+}

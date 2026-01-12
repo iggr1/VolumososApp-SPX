@@ -9,7 +9,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#menu-settings'
+  initialFocus: '#menu-settings',
 };
 
 export default function render(props = {}, api) {

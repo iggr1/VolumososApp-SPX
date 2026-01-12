@@ -1,164 +1,164 @@
 .settings-modal {
-    display: grid;
-    gap: 28rem;
+  display: grid;
+  gap: 28rem;
 }
 
 .settings-list {
-    display: grid;
-    gap: 36rem;
+  display: grid;
+  gap: 36rem;
 }
 
 .setting-row {
-    display: grid;
-    justify-content: space-between;
-    grid-template-columns: 1fr auto;
-    gap: 24rem;
-    align-items: center;
-    height: 120rem;
+  display: grid;
+  justify-content: space-between;
+  grid-template-columns: 1fr auto;
+  gap: 24rem;
+  align-items: center;
+  height: 120rem;
 }
 
 .setting-label {
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    color: var(--darker-gray);
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
 }
 
 .setting-row {
-    position: relative;
+  position: relative;
 }
 
 .setting-control {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
 }
 
 .setting-control .spinner {
-    display: none;
+  display: none;
 }
 
-.setting-row[data-loading="true"] .spinner {
-    display: block;
+.setting-row[data-loading='true'] .spinner {
+  display: block;
 }
 
 .setting-control svg {
-    fill: var(--orange);
+  fill: var(--orange);
 }
 
-.setting-row[data-loading="true"] .stepper,
-.setting-row[data-loading="true"] .pill-range {
-    visibility: hidden;
-    pointer-events: none;
-    opacity: 0;
+.setting-row[data-loading='true'] .stepper,
+.setting-row[data-loading='true'] .pill-range {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
 }
 
 .stepper {
-    display: inline-flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 28rem;
-    background: var(--light-gray);
-    border-radius: 85rem;
-    height: 120rem;
-    width: 350rem;
-    padding: 0 32rem;
+  display: inline-flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 28rem;
+  background: var(--light-gray);
+  border-radius: 85rem;
+  height: 120rem;
+  width: 350rem;
+  padding: 0 32rem;
 }
 
 .stepper .step {
-    width: 60rem;
-    height: 60rem;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--darker-gray);
-    cursor: pointer;
-    font-size: 40rem;
-    line-height: 1;
+  width: 60rem;
+  height: 60rem;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--darker-gray);
+  cursor: pointer;
+  font-size: 40rem;
+  line-height: 1;
 }
 
 .stepper .step-val {
-    min-width: 80rem;
-    text-align: center;
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    display: block;
+  min-width: 80rem;
+  text-align: center;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  display: block;
 }
 
 /* ranges em pílula */
 .pill-range {
-    display: inline-flex;
-    justify-content: space-around;
-    align-items: center;
-    gap: 24rem;
-    background: var(--light-gray);
-    border-radius: 85rem;
-    height: 120rem;
-    width: 350rem;
-    padding: 0 32rem;
+  display: inline-flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 24rem;
+  background: var(--light-gray);
+  border-radius: 85rem;
+  height: 120rem;
+  width: 350rem;
+  padding: 0 32rem;
 }
 
 .pill-input {
-    width: 100rem;
-    text-align: center;
-    border: 0;
-    background: transparent;
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    color: var(--darker-gray);
+  width: 100rem;
+  text-align: center;
+  border: 0;
+  background: transparent;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
 }
 
 .pill-input {
-    pointer-events: auto;
+  pointer-events: auto;
 }
 
 .pill-input.letter {
-    text-transform: uppercase;
+  text-transform: uppercase;
 }
 
 .dash {
-    color: var(--dark-gray);
-    font-weight: var(--text-bold);
+  color: var(--dark-gray);
+  font-weight: var(--text-bold);
 }
 
 /* links estilo menu */
 .settings-button {
-    width: 100%;
-    height: 120rem;
-    border-radius: 85rem;
-    background: var(--light-gray);
-    color: var(--darker-gray);
-    display: flex;
-    align-items: center;
-    gap: 20rem;
-    padding: 0 40rem;
-    font-size: var(--text-medium);
-    cursor: pointer;
+  width: 100%;
+  height: 120rem;
+  border-radius: 85rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  display: flex;
+  align-items: center;
+  gap: 20rem;
+  padding: 0 40rem;
+  font-size: var(--text-medium);
+  cursor: pointer;
 }
 
 .settings-button:hover {
-    background: #dcdcdc;
+  background: #dcdcdc;
 }
 
 .settings-button svg {
-    width: 60rem;
-    height: 60rem;
-    stroke: var(--orange);
+  width: 60rem;
+  height: 60rem;
+  stroke: var(--orange);
 }
 
 .settings-button .chev {
-    margin-left: auto;
+  margin-left: auto;
 }
 
 .settings-button:focus-visible {
-    outline: 6rem solid var(--orange);
-    outline-offset: 4rem;
+  outline: 6rem solid var(--orange);
+  outline-offset: 4rem;
 }
 
 /* ===== Switch ON/OFF com texto interno (lado oposto ao knob) ===== */
 .switch-io {
-  --h: 120rem;           /* altura do trilho */
-  --w: 340rem;           /* largura do trilho */
-  --pad: 28rem;          /* respiro interno p/ textos */
+  --h: 120rem; /* altura do trilho */
+  --w: 340rem; /* largura do trilho */
+  --pad: 28rem; /* respiro interno p/ textos */
   --knob: calc(var(--h) - 24rem);
   --bg-off: var(--light-gray);
   --bg-on: var(--light-gray);
@@ -190,13 +190,13 @@
   height: var(--h);
   background: var(--bg-off);
   border-radius: calc(var(--h) / 2);
-  box-shadow: inset 0 0 0 2rem rgba(0,0,0,.04);
+  box-shadow: inset 0 0 0 2rem rgba(0, 0, 0, 0.04);
   transition: background 160ms ease;
 }
 
 /* knob */
 .switch-io .track::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 20rem; /* posição OFF */
@@ -205,8 +205,10 @@
   border-radius: 50%;
   background: #fff;
   transform: translate(0, -50%);
-  transition: transform 180ms ease, box-shadow 180ms ease;
-  box-shadow: 0 4rem 10rem rgba(0,0,0,.12);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+  box-shadow: 0 4rem 10rem rgba(0, 0, 0, 0.12);
 }
 
 /* textos internos */
@@ -217,16 +219,22 @@
   font-size: var(--text-medium);
   font-weight: var(--text-bold);
   color: var(--txt);
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
   opacity: 0;
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
   pointer-events: none;
   margin: 0 10rem;
 }
 
 /* "ON" fica à ESQUERDA; "OFF" fica à DIREITA */
-.switch-io .text.on  { left:  var(--pad); }
-.switch-io .text.off { right: var(--pad); }
+.switch-io .text.on {
+  left: var(--pad);
+}
+.switch-io .text.off {
+  right: var(--pad);
+}
 
 /* foco acessível */
 .switch-io > input:focus-visible + .track {
@@ -235,7 +243,9 @@
 }
 
 /* HOVER */
-.switch-io:hover .track::before { box-shadow: 0 6rem 14rem rgba(0,0,0,.16); }
+.switch-io:hover .track::before {
+  box-shadow: 0 6rem 14rem rgba(0, 0, 0, 0.16);
+}
 
 /* ===== ESTADOS ===== */
 /* ON: knob à direita, fundo ativo, texto "ON" (à esquerda) visível */
@@ -248,17 +258,17 @@
 }
 
 /* mostrar texto correto no lado oposto do knob */
-.switch-io > input:not(:checked) + .track .text.off { 
-  opacity: 1; 
-  transform: translateY(-50%) scale(1.0);
+.switch-io > input:not(:checked) + .track .text.off {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
-.switch-io > input:checked + .track .text.on { 
-  opacity: 1; 
-  transform: translateY(-50%) scale(1.0);
+.switch-io > input:checked + .track .text.on {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 /* opcional: leve retração no texto oculto */
 .switch-io > input:not(:checked) + .track .text.on,
 .switch-io > input:checked + .track .text.off {
-  transform: translateY(-50%) scale(.98);
+  transform: translateY(-50%) scale(0.98);
 }

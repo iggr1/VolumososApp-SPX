@@ -64,7 +64,7 @@ export default function render(_props = {}, api) {
     try {
       // espera que o backend tenha GET /users -> [{username, role, created_at, avatar_id}]
       const data = await apiGet('users');
-      raw = Array.isArray(data) ? data : (Array.isArray(data?.users) ? data.users : []);
+      raw = Array.isArray(data) ? data : Array.isArray(data?.users) ? data.users : [];
     } catch (e) {
       raw = [];
       listEl.innerHTML = `<div class="users-empty">
@@ -82,11 +82,15 @@ export default function render(_props = {}, api) {
     const items = raw
       .slice()
       .sort((a, b) => String(a.username).localeCompare(String(b.username)))
-      .filter(u => !q
-      || String(u.username).toLowerCase().includes(q)
-      || String(u.role).toLowerCase().includes(q)
-      || String(u.status || '').toLowerCase().includes(q)
-    );
+      .filter(
+        u =>
+          !q ||
+          String(u.username).toLowerCase().includes(q) ||
+          String(u.role).toLowerCase().includes(q) ||
+          String(u.status || '')
+            .toLowerCase()
+            .includes(q)
+      );
 
     if (!items.length) {
       listEl.classList.remove('users-list--loading');
@@ -98,35 +102,33 @@ export default function render(_props = {}, api) {
       return;
     }
 
-    const rows = items.map(u => {
-      const name = esc(u.username);
-      const role = esc(u.role || '');
-      const status = String(u.status || 'active').toLowerCase();
-      const avId = String(u.avatar_id || '0');
+    const rows = items
+      .map(u => {
+        const name = esc(u.username);
+        const role = esc(u.role || '');
+        const status = String(u.status || 'active').toLowerCase();
+        const avId = String(u.avatar_id || '0');
 
-      const roleClass = role === 'admin' ? 'is-admin' : 'is-user';
+        const roleClass = role === 'admin' ? 'is-admin' : 'is-user';
 
-      const statusLabel =
-        status === 'pending' ? 'pendente' :
-        status === 'inactive' ? 'inativo' :
-        'ativo';
+        const statusLabel =
+          status === 'pending' ? 'pendente' : status === 'inactive' ? 'inativo' : 'ativo';
 
-      const statusClass =
-        status === 'pending' ? 'is-pending' :
-        status === 'inactive' ? 'is-inactive' :
-        'is-active';
+        const statusClass =
+          status === 'pending' ? 'is-pending' : status === 'inactive' ? 'is-inactive' : 'is-active';
 
-      const actionBtn = status === 'pending'
-        ? `<button class="user-action user-action--allow" data-action="activate" data-username="${esc(u.username)}" type="button">
+        const actionBtn =
+          status === 'pending'
+            ? `<button class="user-action user-action--allow" data-action="activate" data-username="${esc(u.username)}" type="button">
             <i data-lucide="badge-check"></i><span>Permitir</span>
           </button>`
-        : status === 'inactive'
-          ? `<button class="user-action user-action--activate" data-action="activate" data-username="${esc(u.username)}" type="button">
+            : status === 'inactive'
+              ? `<button class="user-action user-action--activate" data-action="activate" data-username="${esc(u.username)}" type="button">
               <i data-lucide="power"></i><span>Ativar</span>
             </button>`
-          : '';
+              : '';
 
-      return `
+        return `
         <div class="user-row" data-user='${esc(JSON.stringify(u))}'>
           <div class="user-left">
             <img class="user-avatar" alt="" src="./src/assets/img/profile-images/${avId}.jpg" />
@@ -145,15 +147,15 @@ export default function render(_props = {}, api) {
           </div>
         </div>
       `;
-    }).join('');
-
+      })
+      .join('');
 
     listEl.classList.remove('users-list--loading');
     listEl.innerHTML = rows;
 
     // Ações (permitir/ativar)
     listEl.querySelectorAll('.user-action').forEach(btn => {
-      btn.addEventListener('click', async (ev) => {
+      btn.addEventListener('click', async ev => {
         ev.preventDefault();
         ev.stopPropagation();
 
@@ -182,7 +184,7 @@ export default function render(_props = {}, api) {
             type: 'success',
             title: 'Sucesso',
             message: `Usuário ${esc(username)} ativo com sucesso.`,
-            durationMs: 3000
+            durationMs: 3000,
           });
         } catch (e) {
           btn.disabled = false;
@@ -191,7 +193,6 @@ export default function render(_props = {}, api) {
         }
       });
     });
-
 
     listEl.querySelectorAll('.user-row').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -204,10 +205,15 @@ export default function render(_props = {}, api) {
   }
 
   function openEditor(props) {
-    import('../modal.js').then(m => m.openModal({ type: 'userEdit', props: {
-      ...props,
-      onChanged: () => load()
-    }}));
+    import('../modal.js').then(m =>
+      m.openModal({
+        type: 'userEdit',
+        props: {
+          ...props,
+          onChanged: () => load(),
+        },
+      })
+    );
   }
 
   function skeleton() {
@@ -216,5 +222,9 @@ export default function render(_props = {}, api) {
     </div>`;
   }
 
-  function esc(v){ const d=document.createElement('div'); d.textContent=String(v??''); return d.innerHTML; }
+  function esc(v) {
+    const d = document.createElement('div');
+    d.textContent = String(v ?? '');
+    return d.innerHTML;
+  }
 }

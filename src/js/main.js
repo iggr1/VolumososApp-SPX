@@ -30,8 +30,12 @@ function focusInputIfAllowed() {
 }
 
 async function stopCameraAndScanner() {
-  try { scanner?.stop(); } catch { }
-  try { camera.stop(); } catch { }
+  try {
+    scanner?.stop();
+  } catch {}
+  try {
+    camera.stop();
+  } catch {}
 }
 
 async function resumeCameraFlow(forceRestart = false) {
@@ -68,7 +72,7 @@ function setupLifecycleEvents() {
   try {
     if (inputEl) {
       inputEl.setAttribute('inputmode', 'none');
-      inputEl.addEventListener('keydown', (event) => {
+      inputEl.addEventListener('keydown', event => {
         if (isModalOpenOnScreen()) return;
         if (event.key === 'Enter' || event.key === ' ' || event.key === 'Tab') {
           event.preventDefault();
@@ -94,7 +98,7 @@ function setupLifecycleEvents() {
       video: camera.getVideo(),
       camEl,
       scanEl,
-      onResult: (val) => {
+      onResult: val => {
         if (scanLock || isModalOpenOnScreen()) return;
         scanLock = true;
 
@@ -102,8 +106,10 @@ function setupLifecycleEvents() {
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         document.querySelector('.btn-add')?.click();
 
-        setTimeout(() => { scanLock = false; }, 500); // debounce
-      }
+        setTimeout(() => {
+          scanLock = false;
+        }, 500); // debounce
+      },
     });
 
     // Integra: toda troca de câmera vai parar e reiniciar o scanner automaticamente
@@ -129,13 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
   verifyUserSession();
 });
 
-document.addEventListener('click', (event) => {
+document.addEventListener('click', event => {
   if (event.target.closest('input, textarea, select, button, [contenteditable="true"]')) return;
   focusInputIfAllowed();
 });
 
 /* Menu */
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   const btn = e.target.closest('.btn-menu');
   if (!btn) return;
   openModal({
@@ -143,27 +149,27 @@ document.addEventListener('click', (e) => {
     props: {
       onSettings: () => {
         openModal({ type: 'settings' });
-      }
-    }
+      },
+    },
   });
 });
 
 /* Botão pallet atual */
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   const btnCurrentPallet = e.target.closest('.btn-current-pallet');
   if (!btnCurrentPallet) return;
   openModal({ type: 'currentPallet' });
 });
 
 /* Botão todos pallets */
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   const btnAllPallets = e.target.closest('.btn-all-pallets');
   if (!btnAllPallets) return;
   openModal({ type: 'allPallets' });
 });
 
 /* Adicionar BR manual / via scanner */
-document.addEventListener('click', async (e) => {
+document.addEventListener('click', async e => {
   const btn = e.target.closest('.btn-add');
   if (!btn) return;
 
@@ -236,7 +242,7 @@ document.addEventListener('click', async (e) => {
         brCode,
         route: pre.route,
         datetime: new Date().toISOString(),
-        userToken: localStorage.getItem('authToken')
+        userToken: localStorage.getItem('authToken'),
       };
 
       await sendToLocalPallet(packageToAdd);
@@ -248,11 +254,13 @@ document.addEventListener('click', async (e) => {
         buttons: [],
         durationMs: 1400,
         dismissible: true,
-        collapseDelayMs: 120
+        collapseDelayMs: 120,
       });
 
       // opcional: limpar input
-      try { brCodeInput.value = ''; } catch { }
+      try {
+        brCodeInput.value = '';
+      } catch {}
 
       return; // IMPORTANTÍSSIMO: não abre o modal
     }
@@ -276,7 +284,7 @@ document.addEventListener('click', async (e) => {
 });
 
 /* Botão info */
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   const btn = e.target.closest('.btn-info');
   if (!btn) return;
   openModal({ type: 'about' });

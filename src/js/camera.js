@@ -35,7 +35,7 @@ export class CameraController {
 
   isStreamLive() {
     const tracks = this.stream?.getVideoTracks?.() || [];
-    return tracks.some((t) => t.readyState === 'live');
+    return tracks.some(t => t.readyState === 'live');
   }
 
   /**
@@ -59,11 +59,9 @@ export class CameraController {
 
   bindUI() {
     if (this.selectBtn) {
-      this.selectBtn.addEventListener('click', (e) => {
+      this.selectBtn.addEventListener('click', e => {
         e.stopPropagation();
-        this.selector.classList.contains('show')
-          ? this.hideSelector()
-          : this.showSelector();
+        this.selector.classList.contains('show') ? this.hideSelector() : this.showSelector();
       });
     }
 
@@ -80,20 +78,20 @@ export class CameraController {
   // ---------- ENUMERATE ----------
   async enumerate() {
     let all = await navigator.mediaDevices.enumerateDevices();
-    this.allDevices = all.filter((d) => d.kind === 'videoinput');
+    this.allDevices = all.filter(d => d.kind === 'videoinput');
 
     if (!this.allDevices.length) {
       throw new Error('Nenhuma câmera disponível');
     }
 
     // desbloqueia labels se necessario
-    const hasLabels = this.allDevices.some((d) => d.label && d.label.trim());
+    const hasLabels = this.allDevices.some(d => d.label && d.label.trim());
     if (!hasLabels) {
       try {
         const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        tmp.getTracks().forEach((t) => t.stop());
+        tmp.getTracks().forEach(t => t.stop());
         all = await navigator.mediaDevices.enumerateDevices();
-        this.allDevices = all.filter((d) => d.kind === 'videoinput');
+        this.allDevices = all.filter(d => d.kind === 'videoinput');
       } catch {
         // se falhar, segue com o que tiver
       }
@@ -113,7 +111,7 @@ export class CameraController {
       li.textContent = d.label || `Câmera ${i + 1}`;
       if (i === this.currentIdx) li.classList.add('active');
 
-      li.addEventListener('click', async (e) => {
+      li.addEventListener('click', async e => {
         e.stopPropagation();
         await this.start(i);
         this.hideSelector();
@@ -173,7 +171,7 @@ export class CameraController {
     this.video.srcObject = stream;
 
     // garante que o video está pronto
-    await new Promise((resolve) => {
+    await new Promise(resolve => {
       if (this.video.readyState >= 2 && !this.video.paused) return resolve();
       const onMeta = () => {
         this.video.removeEventListener('loadedmetadata', onMeta);
@@ -198,7 +196,8 @@ export class CameraController {
       const caps = track.getCapabilities?.() || {};
       const adv = [];
       if (caps.focusMode?.includes?.('continuous')) adv.push({ focusMode: 'continuous' });
-      if (typeof caps.focusDistance?.max === 'number') adv.push({ focusDistance: caps.focusDistance.max });
+      if (typeof caps.focusDistance?.max === 'number')
+        adv.push({ focusDistance: caps.focusDistance.max });
       if (adv.length) await track.applyConstraints({ advanced: adv });
     } catch {
       // ignora se não suportar
@@ -218,7 +217,7 @@ export class CameraController {
   stop() {
     if (this.stream) {
       try {
-        this.stream.getTracks().forEach((t) => t.stop());
+        this.stream.getTracks().forEach(t => t.stop());
       } catch {}
       this.stream = null;
     }

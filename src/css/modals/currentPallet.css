@@ -36,7 +36,7 @@
   border-radius: 28rem;
   overflow: hidden;
   background: var(--white);
-  box-shadow: 0 2rem 0 rgba(0, 0, 0, .03);
+  box-shadow: 0 2rem 0 rgba(0, 0, 0, 0.03);
 }
 
 .pallet-table.is-selecting {
@@ -162,13 +162,13 @@
   position: relative;
 }
 
-.pchk input:checked+span {
+.pchk input:checked + span {
   background: var(--orange);
   border-color: var(--orange);
 }
 
-.pchk input:checked+span::after {
-  content: "";
+.pchk input:checked + span::after {
+  content: '';
   position: absolute;
   left: 8rem;
   top: 3rem;
@@ -186,7 +186,12 @@
 .pallet-footer {
   position: sticky;
   bottom: 0;
-  background: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, .92) 24%, rgba(255, 255, 255, 0));
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 1),
+    rgba(255, 255, 255, 0.92) 24%,
+    rgba(255, 255, 255, 0)
+  );
   padding-top: 18rem;
   display: grid;
   gap: 30rem;

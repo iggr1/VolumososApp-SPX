@@ -9,7 +9,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#pallet-root'
+  initialFocus: '#pallet-root',
 };
 
 const LS_KEY = 'currentPallet';
@@ -77,13 +77,17 @@ export default function render(_props = {}, modalApi) {
   function tableHeader(withChecks) {
     return `
       <div class="pallet-thead">
-        ${withChecks ? `
+        ${
+          withChecks
+            ? `
           <div class="th th-check">
             <label class="pchk">
               <input id="chk-all" type="checkbox" ${selected.size && selected.size === items.length ? 'checked' : ''}/>
               <span aria-hidden="true"></span>
             </label>
-          </div>` : ''}
+          </div>`
+            : ''
+        }
         <div class="th th-br">Código BR</div>
         <div class="th th-route">Rota</div>
       </div>
@@ -94,13 +98,17 @@ export default function render(_props = {}, modalApi) {
     const checked = selected.has(i) ? 'checked' : '';
     return `
       <div class="tr" data-i="${i}">
-        ${selecting ? `
+        ${
+          selecting
+            ? `
           <div class="td td-check">
             <label class="pchk">
               <input type="checkbox" data-i="${i}" ${checked}/>
               <span aria-hidden="true"></span>
             </label>
-          </div>` : ''}
+          </div>`
+            : ''
+        }
         <div class="td td-br">${esc(item.brCode)}</div>
         <div class="td td-route">${esc(item.route)}</div>
       </div>
@@ -120,7 +128,7 @@ export default function render(_props = {}, modalApi) {
   function bindEvents() {
     const table = el.querySelector('.pallet-table');
     if (table) {
-      const prevent = (e) => e.preventDefault();
+      const prevent = e => e.preventDefault();
       table.addEventListener('selectstart', prevent, { passive: false });
       table.addEventListener('dragstart', prevent, { passive: false });
     }
@@ -140,17 +148,18 @@ export default function render(_props = {}, modalApi) {
     tbody.addEventListener('click', onRowClick);
 
     // Checkboxes
-    tbody.addEventListener('change', (e) => {
+    tbody.addEventListener('change', e => {
       const cb = e.target.closest('input[type="checkbox"][data-i]');
       if (!cb) return;
       const idx = Number(cb.dataset.i);
-      if (cb.checked) selected.add(idx); else selected.delete(idx);
+      if (cb.checked) selected.add(idx);
+      else selected.delete(idx);
       if (selected.size === 0) selecting = false;
       paint();
     });
 
     // Header “selecionar tudo”
-    el.querySelector('#chk-all')?.addEventListener('change', (e) => {
+    el.querySelector('#chk-all')?.addEventListener('change', e => {
       if (e.target.checked) selected = new Set(items.map((_, i) => i));
       else selected.clear();
       paint();
@@ -173,7 +182,9 @@ export default function render(_props = {}, modalApi) {
       paint();
     }, 450);
   }
-  function onPressEnd() { clearTimeout(longPressTimer); }
+  function onPressEnd() {
+    clearTimeout(longPressTimer);
+  }
 
   function onRowClick(e) {
     // se clicou no checkbox/label, deixa o handler de 'change' cuidar
@@ -198,7 +209,7 @@ export default function render(_props = {}, modalApi) {
       title: 'Excluir selecionados?',
       message: `Deseja excluir ${qtt} pacote${qtt > 1 ? 's' : ''} do pallet atual?`,
       okLabel: 'Excluir',
-      cancelLabel: 'Cancelar'
+      cancelLabel: 'Cancelar',
     });
     if (!ok) return;
 
@@ -217,7 +228,7 @@ export default function render(_props = {}, modalApi) {
       type: 'success',
       title: 'Excluído',
       message: 'Itens removidos do pallet.',
-      durationMs: 1400
+      durationMs: 1400,
     });
 
     updateCounts();
@@ -233,7 +244,7 @@ export default function render(_props = {}, modalApi) {
       title: 'Enviar novo pallet?',
       message: `Enviar ${qtt} pacote${qtt > 1 ? 's' : ''} para a fila de sincronização e limpar o pallet atual?`,
       okLabel: 'Enviar',
-      cancelLabel: 'Cancelar'
+      cancelLabel: 'Cancelar',
     });
     if (!ok) return;
 
@@ -247,16 +258,17 @@ export default function render(_props = {}, modalApi) {
       paint();
 
       if (typeof _props.onFinish === 'function') {
-        try { _props.onFinish(); } catch (_) { }
+        try {
+          _props.onFinish();
+        } catch (_) {}
       }
     } catch (e) {
       await showAlert({
         type: 'error',
         title: 'Falha ao enviar',
         message: e?.message || 'Erro inesperado.',
-        durationMs: 2000
+        durationMs: 2000,
       });
-
     }
 
     modalApi.close({ instant: true, bypassBefore: false });
@@ -274,7 +286,7 @@ export default function render(_props = {}, modalApi) {
         type: 'warning',
         title: 'ID inválido',
         message: 'Informe um número de pallet válido (ex.: 12).',
-        durationMs: 1600
+        durationMs: 1600,
       });
       return;
     }
@@ -285,7 +297,7 @@ export default function render(_props = {}, modalApi) {
       title: 'Enviar para pallet existente?',
       message: `Enviar ${qtt} pacote${qtt > 1 ? 's' : ''} para o pallet #${palletId} e limpar o pallet atual?`,
       okLabel: 'Enviar',
-      cancelLabel: 'Cancelar'
+      cancelLabel: 'Cancelar',
     });
     if (!ok) return;
 
@@ -305,18 +317,20 @@ export default function render(_props = {}, modalApi) {
         type: 'success',
         title: 'Enviado',
         message: `${qtt} pacote${qtt > 1 ? 's' : ''} enviados para o pallet #${palletId}.`,
-        durationMs: 1600
+        durationMs: 1600,
       });
 
       if (typeof _props.onFinish === 'function') {
-        try { _props.onFinish({ targetPallet: palletId }); } catch (_) { }
+        try {
+          _props.onFinish({ targetPallet: palletId });
+        } catch (_) {}
       }
     } catch (e) {
       await showAlert({
         type: 'error',
         title: 'Falha ao enviar',
         message: e?.message || 'Erro inesperado.',
-        durationMs: 2000
+        durationMs: 2000,
       });
     }
 
@@ -324,7 +338,9 @@ export default function render(_props = {}, modalApi) {
   }
 
   // ---- helpers ------------------------------------------------------------
-  function canDelete() { return selecting && selected.size > 0; }
+  function canDelete() {
+    return selecting && selected.size > 0;
+  }
 
   function refreshIcons() {
     if (window.lucide?.createIcons) {
@@ -353,12 +369,19 @@ function loadItems() {
     const raw = localStorage.getItem(LS_KEY);
     const arr = raw ? JSON.parse(raw) : [];
     return Array.isArray(arr) ? arr : [];
-  } catch (_) { return []; }
+  } catch (_) {
+    return [];
+  }
 }
 function saveItems(arr) {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(arr || [])); }
-  catch (_) { }
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(arr || []));
+  } catch (_) {}
 }
 
 /* utils */
-function esc(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
+function esc(v) {
+  const d = document.createElement('div');
+  d.textContent = String(v ?? '');
+  return d.innerHTML;
+}

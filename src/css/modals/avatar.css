@@ -27,7 +27,9 @@
   border-radius: 50%;
   background: var(--light-gray);
   cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
   outline: none;
 }
 
@@ -36,7 +38,7 @@
 }
 
 .avatar-item:active {
-  transform: translateY(-1rem) scale(.995);
+  transform: translateY(-1rem) scale(0.995);
 }
 
 .avatar-item:focus-visible {
@@ -51,7 +53,7 @@
   border-radius: 50%;
   object-fit: cover;
   display: block;
-  box-shadow: 0 10rem 30rem rgba(0, 0, 0, .15);
+  box-shadow: 0 10rem 30rem rgba(0, 0, 0, 0.15);
 }
 
 .avatar-item .checkmark {
@@ -65,10 +67,12 @@
   color: var(--white);
   display: grid;
   place-items: center;
-  box-shadow: 0 8rem 22rem rgba(0, 0, 0, .22);
+  box-shadow: 0 8rem 22rem rgba(0, 0, 0, 0.22);
   opacity: 0;
-  transform: scale(.85);
-  transition: opacity .12s ease, transform .12s ease;
+  transform: scale(0.85);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
 }
 
 .avatar-item .checkmark svg,
@@ -79,18 +83,18 @@
 }
 
 .avatar-item.selected,
-.avatar-item[aria-selected="true"] {
-  box-shadow: 0 14rem 40rem rgba(0, 0, 0, .18);
+.avatar-item[aria-selected='true'] {
+  box-shadow: 0 14rem 40rem rgba(0, 0, 0, 0.18);
 }
 
 .avatar-item.selected img,
-.avatar-item[aria-selected="true"] img {
+.avatar-item[aria-selected='true'] img {
   outline: 6rem solid var(--orange);
   outline-offset: -6rem;
 }
 
 .avatar-item.selected .checkmark,
-.avatar-item[aria-selected="true"] .checkmark {
+.avatar-item[aria-selected='true'] .checkmark {
   opacity: 1;
   transform: scale(1);
 }

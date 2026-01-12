@@ -1,31 +1,31 @@
 .menu-modal {
-    padding: 10rem 0;
+  padding: 10rem 0;
 }
 
 .menu-list {
-    display: grid;
-    gap: 20rem;
+  display: grid;
+  gap: 20rem;
 }
 
 .menu-button {
-    --btn-bg: var(--light-gray);
-    --btn-bg-hover: #dcdcdc;
-    --btn-color: var(--darker-gray);
-    --pill-padding-x: 40rem;
-    justify-content: flex-start;
+  --btn-bg: var(--light-gray);
+  --btn-bg-hover: #dcdcdc;
+  --btn-color: var(--darker-gray);
+  --pill-padding-x: 40rem;
+  justify-content: flex-start;
 }
 
 .menu-button svg {
-    width: 60rem;
-    height: 60rem;
-    stroke: var(--orange);
+  width: 60rem;
+  height: 60rem;
+  stroke: var(--orange);
 }
 
 .menu-button--danger {
-    --btn-color: var(--red);
-    --btn-bg-hover: #f3d6d6;
+  --btn-color: var(--red);
+  --btn-bg-hover: #f3d6d6;
 }
 
 .menu-button--danger svg {
-    stroke: var(--red) !important;
+  stroke: var(--red) !important;
 }

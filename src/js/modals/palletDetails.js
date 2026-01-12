@@ -9,7 +9,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#pallet-view-root'
+  initialFocus: '#pallet-view-root',
 };
 
 export default function render(props = {}, _api) {
@@ -46,7 +46,7 @@ export default function render(props = {}, _api) {
       bodyTop: body?.scrollTop || 0,
       bodyLeft: body?.scrollLeft || 0,
       tableTop: table?.scrollTop || 0,
-      tableLeft: table?.scrollLeft || 0
+      tableLeft: table?.scrollLeft || 0,
     };
   }
 
@@ -78,12 +78,16 @@ export default function render(props = {}, _api) {
 
       <div class="pallet-table ${selecting ? 'is-selecting' : ''}">
         <div class="pallet-thead">
-          ${selecting ? `<div class="th th-check">
+          ${
+            selecting
+              ? `<div class="th th-check">
               <label class="pchk">
                 <input id="chk-all" type="checkbox" ${selected.size && selected.size === items.length ? 'checked' : ''} ${loading ? 'disabled' : ''}/>
                 <span aria-hidden="true"></span>
               </label>
-            </div>` : ''}
+            </div>`
+              : ''
+          }
           <div class="th th-br">Código BR</div>
           <div class="th th-route">Rota</div>
         </div>
@@ -92,12 +96,16 @@ export default function render(props = {}, _api) {
           ${items.length ? items.map(rowTpl).join('') : emptyTpl()}
         </div>
 
-        ${loading ? `
+        ${
+          loading
+            ? `
           <div class="pallet-loading-overlay" aria-busy="true" aria-live="polite">
             <div class="spinner" role="status" aria-label="${esc(loadingLabel)}"></div>
             <span class="loading-text">${esc(loadingLabel)}</span>
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
 
       <div class="pallet-footer">
@@ -121,12 +129,16 @@ export default function render(props = {}, _api) {
     const checked = selected.has(i) ? 'checked' : '';
     return `
       <div class="tr" data-i="${i}">
-        ${selecting ? `<div class="td td-check">
+        ${
+          selecting
+            ? `<div class="td td-check">
           <label class="pchk">
             <input type="checkbox" data-i="${i}" ${checked} ${loading ? 'disabled' : ''}/>
             <span aria-hidden="true"></span>
           </label>
-        </div>` : ''}
+        </div>`
+            : ''
+        }
         <div class="td td-br">${esc(row.brcode)}</div>
         <div class="td td-route">${esc(row.route)}</div>
       </div>
@@ -147,8 +159,8 @@ export default function render(props = {}, _api) {
     const table = el.querySelector('.pallet-table');
 
     if (table) {
-      table.addEventListener('selectstart', (e) => e.preventDefault(), { passive: false });
-      table.addEventListener('dragstart', (e) => e.preventDefault(), { passive: false });
+      table.addEventListener('selectstart', e => e.preventDefault(), { passive: false });
+      table.addEventListener('dragstart', e => e.preventDefault(), { passive: false });
     }
     if (loading) return; // enquanto carregando, não liga handlers de interação
 
@@ -162,7 +174,7 @@ export default function render(props = {}, _api) {
     tbody.addEventListener('click', onRowClick);
 
     // Clique/troca no checkbox da linha
-    tbody.addEventListener('change', (e) => {
+    tbody.addEventListener('change', e => {
       const cb = e.target;
       if (!(cb instanceof HTMLInputElement)) return;
       if (!cb.matches('input[type="checkbox"][data-i]')) return;
@@ -178,12 +190,12 @@ export default function render(props = {}, _api) {
     });
 
     // Previne bubbling do label/checkbox
-    tbody.addEventListener('click', (e) => {
+    tbody.addEventListener('click', e => {
       if (e.target.closest('.pchk')) e.stopPropagation();
     });
 
     // Header "selecionar tudo"
-    el.querySelector('#chk-all')?.addEventListener('change', (e) => {
+    el.querySelector('#chk-all')?.addEventListener('change', e => {
       if (e.target.checked) selected = new Set(items.map((_, i) => i));
       else selected.clear();
       paint();
@@ -205,7 +217,9 @@ export default function render(props = {}, _api) {
       paint();
     }, 450);
   }
-  function onPressEnd() { clearTimeout(longPressTimer); }
+  function onPressEnd() {
+    clearTimeout(longPressTimer);
+  }
 
   function onRowClick(e) {
     if (e.target.closest('.pchk')) return;
@@ -230,7 +244,7 @@ export default function render(props = {}, _api) {
       title: 'Excluir selecionados?',
       message: `Excluir ${qtt} pacote${qtt > 1 ? 's' : ''} do pallet ${palletId}?`,
       okLabel: 'Excluir',
-      cancelLabel: 'Cancelar'
+      cancelLabel: 'Cancelar',
     });
     if (!ok) return;
 
@@ -239,7 +253,10 @@ export default function render(props = {}, _api) {
     try {
       const result = await deletePackagesByIndices(items, selected, palletId);
 
-      const { items: nextItems } = dropItemsByIndices(items, Array.from(selected).sort((a, b) => a - b));
+      const { items: nextItems } = dropItemsByIndices(
+        items,
+        Array.from(selected).sort((a, b) => a - b)
+      );
       items = nextItems;
       selected.clear();
       selecting = false;
@@ -252,13 +269,24 @@ export default function render(props = {}, _api) {
           ? 'Itens removidos.'
           : `Removidos: ${result.ok}/${result.total}. Falhas: ${result.failed.length}.`;
 
-      await showAlert({ type: result.failed.length ? 'warning' : 'success', title: 'Excluir', message: msg, durationMs: 1500 });
+      await showAlert({
+        type: result.failed.length ? 'warning' : 'success',
+        title: 'Excluir',
+        message: msg,
+        durationMs: 1500,
+      });
     } catch (e) {
       setLoading(false);
       await showAlert({ type: 'error', title: 'Erro', message: e?.message || 'Falha ao excluir.' });
     }
   }
 
-  function canDelete() { return selecting && selected.size > 0; }
-  function esc(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
+  function canDelete() {
+    return selecting && selected.size > 0;
+  }
+  function esc(v) {
+    const d = document.createElement('div');
+    d.textContent = String(v ?? '');
+    return d.innerHTML;
+  }
 }

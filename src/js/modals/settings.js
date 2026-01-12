@@ -7,7 +7,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#settings-root'
+  initialFocus: '#settings-root',
 };
 
 export default function render(_props = {}, api) {
@@ -18,7 +18,7 @@ export default function render(_props = {}, api) {
   el.className = 'settings-modal';
   el.innerHTML = loadingView();
 
-  init().catch((e) => {
+  init().catch(e => {
     el.innerHTML = errorView(e?.message || 'Falha ao carregar dados.');
     if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   });
@@ -45,7 +45,9 @@ export default function render(_props = {}, api) {
     }
 
     // guest ou indefinido
-    el.innerHTML = errorView('Acesso negado: usuários convidados não podem acessar as configurações.');
+    el.innerHTML = errorView(
+      'Acesso negado: usuários convidados não podem acessar as configurações.'
+    );
     if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   }
 }
@@ -119,23 +121,23 @@ function userMenuView() {
 /* ---------------------- BINDINGS ---------------------- */
 
 function bindAdminMenu(root, api) {
-  root.querySelector('#myData').onclick =
-    () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
+  root.querySelector('#myData').onclick = () =>
+    import('../modal.js').then(m => m.openModal({ type: 'profile' }));
 
-  root.querySelector('#manageUsers').onclick =
-    () => import('../modal.js').then(m => m.openModal({ type: 'users' }));
+  root.querySelector('#manageUsers').onclick = () =>
+    import('../modal.js').then(m => m.openModal({ type: 'users' }));
 
-  root.querySelector('#hubSettings').onclick =
-    () => import('../modal.js').then(m => m.openModal({ type: 'hub_settings' }));
+  root.querySelector('#hubSettings').onclick = () =>
+    import('../modal.js').then(m => m.openModal({ type: 'hub_settings' }));
 
   // vamos implementar depois — por enquanto só avisa ou não faz nada
-  root.querySelector('#opDocs').onclick = 
-    () => import('../modal.js').then(m => m.openModal({ type: 'opdocs' }));
+  root.querySelector('#opDocs').onclick = () =>
+    import('../modal.js').then(m => m.openModal({ type: 'opdocs' }));
 }
 
 function bindUserMenu(root, _api) {
-  root.querySelector('#myData').onclick =
-    () => import('../modal.js').then(m => m.openModal({ type: 'profile' }));
+  root.querySelector('#myData').onclick = () =>
+    import('../modal.js').then(m => m.openModal({ type: 'profile' }));
 }
 
 /* ---------------------- UTILS ---------------------- */

@@ -22,13 +22,15 @@ export class QrScanner {
 
     // detector & captura
     this.detector = null;
-    this.mode = 'none';              // 'native' | 'zxing'
-    this._busy = false;              // evita decodes concorrentes
-    this._capture = null;            // ImageCapture
-    this._trackId = null;            // para detectar troca de track
+    this.mode = 'none'; // 'native' | 'zxing'
+    this._busy = false; // evita decodes concorrentes
+    this._capture = null; // ImageCapture
+    this._trackId = null; // para detectar troca de track
   }
 
-  setTTL(ms) { this.lastValueTTL = Math.max(0, +ms || 0); }
+  setTTL(ms) {
+    this.lastValueTTL = Math.max(0, +ms || 0);
+  }
 
   clearLastValue() {
     this.lastValue = '';
@@ -40,7 +42,7 @@ export class QrScanner {
   }
 
   _remember(val, tNow) {
-    if (val === this.lastValue && (tNow - this.lastValueAt) < this.lastValueTTL) return false;
+    if (val === this.lastValue && tNow - this.lastValueAt < this.lastValueTTL) return false;
     this.lastValue = val;
     this.lastValueAt = tNow;
     if (this.lastValueTimer) clearTimeout(this.lastValueTimer);
@@ -55,7 +57,8 @@ export class QrScanner {
       this.detector = new window.BarcodeDetector({ formats: ['qr_code'] });
       this.mode = 'native';
     } else {
-      const { BrowserQRCodeReader } = await import('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.4/+esm');
+      const { BrowserQRCodeReader } =
+        await import('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.4/+esm');
       this.detector = new BrowserQRCodeReader();
       this.mode = 'zxing';
     }
@@ -70,7 +73,7 @@ export class QrScanner {
     // se trocou o track, recria o ImageCapture
     if (id && id !== this._trackId) {
       this._trackId = id;
-      this._capture = (window.ImageCapture && track) ? new ImageCapture(track) : null;
+      this._capture = window.ImageCapture && track ? new ImageCapture(track) : null;
     }
   }
 
@@ -82,16 +85,18 @@ export class QrScanner {
     const scanR = this.scanEl.getBoundingClientRect();
 
     const scale = Math.max(camR.width / vw, camR.height / vh);
-    const dispW = vw * scale, dispH = vh * scale;
-    const offX = (camR.width - dispW) / 2, offY = (camR.height - dispH) / 2;
+    const dispW = vw * scale,
+      dispH = vh * scale;
+    const offX = (camR.width - dispW) / 2,
+      offY = (camR.height - dispH) / 2;
 
-    const relLeft = (scanR.left - camR.left - offX);
-    const relTop = (scanR.top - camR.top - offY);
+    const relLeft = scanR.left - camR.left - offX;
+    const relTop = scanR.top - camR.top - offY;
 
-    let sx = relLeft / dispW * vw;
-    let sy = relTop / dispH * vh;
-    let sw = scanR.width / dispW * vw;
-    let sh = scanR.height / dispH * vh;
+    let sx = (relLeft / dispW) * vw;
+    let sy = (relTop / dispH) * vh;
+    let sw = (scanR.width / dispW) * vw;
+    let sh = (scanR.height / dispH) * vh;
 
     sx = Math.max(0, Math.min(vw - 1, sx));
     sy = Math.max(0, Math.min(vh - 1, sy));
@@ -107,26 +112,32 @@ export class QrScanner {
       try {
         const frame = await this._capture.grabFrame();
         // recorta usando canvas para gerar bitmap final
-        this.off.width  = Math.min(800, Math.max(320, Math.round(sh)));
+        this.off.width = Math.min(800, Math.max(320, Math.round(sh)));
         this.off.height = this.off.width;
         const scale = Math.max(this.off.width / sw, this.off.height / sh);
-        const dw = sw * scale, dh = sh * scale;
-        const dx = (this.off.width - dw) / 2, dy = (this.off.height - dh) / 2;
+        const dw = sw * scale,
+          dh = sh * scale;
+        const dx = (this.off.width - dw) / 2,
+          dy = (this.off.height - dh) / 2;
 
         const ctx = this.ctx;
         ctx.clearRect(0, 0, this.off.width, this.off.height);
         ctx.drawImage(frame, sx, sy, sw, sh, dx, dy, dw, dh);
 
         return await createImageBitmap(this.off);
-      } catch { /* cai pro fallback abaixo */ }
+      } catch {
+        /* cai pro fallback abaixo */
+      }
     }
 
     // 2) fallback: recorta do <video> via canvas
-    this.off.width  = Math.min(800, Math.max(320, Math.round(sh)));
+    this.off.width = Math.min(800, Math.max(320, Math.round(sh)));
     this.off.height = this.off.width;
     const scale = Math.max(this.off.width / sw, this.off.height / sh);
-    const dw = sw * scale, dh = sh * scale;
-    const dx = (this.off.width - dw) / 2, dy = (this.off.height - dh) / 2;
+    const dw = sw * scale,
+      dh = sh * scale;
+    const dx = (this.off.width - dw) / 2,
+      dy = (this.off.height - dh) / 2;
     this.ctx.clearRect(0, 0, this.off.width, this.off.height);
     this.ctx.drawImage(this.video, sx, sy, sw, sh, dx, dy, dw, dh);
 
@@ -140,13 +151,13 @@ export class QrScanner {
 
   async start() {
     await this.ensureDetector();
-    this.stop();            // limpa loop anterior
-    this._trackId = null;   // força recriar ImageCapture no primeiro frame
+    this.stop(); // limpa loop anterior
+    this._trackId = null; // força recriar ImageCapture no primeiro frame
     this._busy = false;
     this.ticking = true;
     this.lastTick = 0;
 
-    const loop = async (tNow) => {
+    const loop = async tNow => {
       if (!this.ticking) return;
 
       const stream = this.video.srcObject;
@@ -155,12 +166,13 @@ export class QrScanner {
         this.ticking = false;
         return;
       }
-      if (this.video.readyState < 2) {  // HAVE_CURRENT_DATA
+      if (this.video.readyState < 2) {
+        // HAVE_CURRENT_DATA
         return requestAnimationFrame(loop);
       }
 
       try {
-        if (!this._busy && (!this.lastTick || (tNow - this.lastTick) > 120)) {
+        if (!this._busy && (!this.lastTick || tNow - this.lastTick > 120)) {
           this._busy = true;
           this.lastTick = tNow;
 
@@ -186,11 +198,13 @@ export class QrScanner {
           } else {
             // ZXing: decodifica do canvas (já desenhado em _grabBitmap fallback)
             // garante que canvas está atualizado
-            this.off.width  = Math.min(800, Math.max(320, Math.round(sh)));
+            this.off.width = Math.min(800, Math.max(320, Math.round(sh)));
             this.off.height = this.off.width;
             const scale = Math.max(this.off.width / sw, this.off.height / sh);
-            const dw = sw * scale, dh = sh * scale;
-            const dx = (this.off.width - dw) / 2, dy = (this.off.height - dh) / 2;
+            const dw = sw * scale,
+              dh = sh * scale;
+            const dx = (this.off.width - dw) / 2,
+              dy = (this.off.height - dh) / 2;
             this.ctx.clearRect(0, 0, this.off.width, this.off.height);
             this.ctx.drawImage(this.video, sx, sy, sw, sh, dx, dy, dw, dh);
 

@@ -1,4 +1,4 @@
-import { apiGet } from "../api.js";
+import { apiGet } from '../api.js';
 
 const CONFIG_CACHE_MS = 5 * 60 * 1000;
 let lastConfig = null;
@@ -9,21 +9,23 @@ export async function fetchConfig(options = {}) {
   const { force = false } = options;
 
   const now = Date.now();
-  if (!force && lastConfig && (now - lastConfigAt) < CONFIG_CACHE_MS) {
+  if (!force && lastConfig && now - lastConfigAt < CONFIG_CACHE_MS) {
     return lastConfig;
   }
 
   if (configInFlight) return configInFlight;
 
   configInFlight = apiGet('config')
-    .then((cfg) => {
+    .then(cfg => {
       if (cfg) {
         lastConfig = cfg;
         lastConfigAt = Date.now();
       }
       return cfg;
     })
-    .finally(() => { configInFlight = null; });
+    .finally(() => {
+      configInFlight = null;
+    });
 
   return configInFlight;
 }

@@ -22,7 +22,7 @@ export default function render(props = {}, api) {
     username: orig.username,
     role: orig.role,
     status: orig.status,
-    newPassword: ''
+    newPassword: '',
   };
 
   let dirty = false;
@@ -46,7 +46,7 @@ export default function render(props = {}, api) {
       title: 'Salvar alterações?',
       message: 'Deseja salvar as mudanças deste usuário?',
       okLabel: 'Salvar',
-      cancelLabel: 'Descartar'
+      cancelLabel: 'Descartar',
     });
 
     if (!wantSave) return true;
@@ -59,7 +59,7 @@ export default function render(props = {}, api) {
         type: 'error',
         title: 'Falha ao salvar',
         message: e?.message || 'Erro inesperado.',
-        durationMs: 3000
+        durationMs: 3000,
       });
       return false;
     }
@@ -84,14 +84,22 @@ export default function render(props = {}, api) {
       uEl.setAttribute('disabled', 'true');
     }
 
-    pEl?.addEventListener('input', () => { state.newPassword = pEl.value; markDirty(); });
+    pEl?.addEventListener('input', () => {
+      state.newPassword = pEl.value;
+      markDirty();
+    });
 
     saveBtn?.addEventListener('click', async () => {
       try {
         await doSave();
         await afterChange('Salvo');
       } catch (e) {
-        await showAlert({ type: 'error', title: 'Erro', message: e?.message || 'Falha ao salvar', durationMs: 3000 });
+        await showAlert({
+          type: 'error',
+          title: 'Erro',
+          message: e?.message || 'Falha ao salvar',
+          durationMs: 3000,
+        });
       }
     });
 
@@ -107,7 +115,7 @@ export default function render(props = {}, api) {
           ? 'O usuário perderá acesso ao sistema (token será revogado).'
           : 'O usuário voltará a ter acesso ao sistema.',
         okLabel: label,
-        cancelLabel: 'Cancelar'
+        cancelLabel: 'Cancelar',
       });
       if (!ok) return;
 
@@ -118,9 +126,19 @@ export default function render(props = {}, api) {
         refreshStatusUI(root, state.status);
         if (typeof props.onChanged === 'function') props.onChanged();
 
-        await showAlert({ type: 'success', title: 'OK', message: `Usuário ${label.toLowerCase()}do.`, durationMs: 1200 });
+        await showAlert({
+          type: 'success',
+          title: 'OK',
+          message: `Usuário ${label.toLowerCase()}do.`,
+          durationMs: 1200,
+        });
       } catch (e) {
-        await showAlert({ type: 'error', title: 'Erro', message: e?.message || 'Falha ao alterar status', durationMs: 3000 });
+        await showAlert({
+          type: 'error',
+          title: 'Erro',
+          message: e?.message || 'Falha ao alterar status',
+          durationMs: 3000,
+        });
       }
     });
 
@@ -130,7 +148,7 @@ export default function render(props = {}, api) {
         title: 'Excluir usuário?',
         message: `Essa ação não pode ser desfeita.`,
         okLabel: 'Excluir',
-        cancelLabel: 'Cancelar'
+        cancelLabel: 'Cancelar',
       });
       if (!ok) return;
 
@@ -139,14 +157,18 @@ export default function render(props = {}, api) {
         deleted = true;
         await afterChange('Excluído');
       } catch (e) {
-        await showAlert({ type: 'error', title: 'Erro', message: e?.message || 'Falha ao excluir', durationMs: 3000 });
+        await showAlert({
+          type: 'error',
+          title: 'Erro',
+          message: e?.message || 'Falha ao excluir',
+          durationMs: 3000,
+        });
       }
     });
   }
 
   function hasChanges() {
-    return state.role !== orig.role
-      || !!state.newPassword;
+    return state.role !== orig.role || !!state.newPassword;
   }
 
   async function doSave() {
@@ -169,16 +191,28 @@ export default function render(props = {}, api) {
     state.newPassword = '';
     dirty = false;
 
-    await showAlert({ type: 'info', title: 'Usuário salvo!', message: 'As mudanças foram aplicadas.', durationMs: 1200 });
+    await showAlert({
+      type: 'info',
+      title: 'Usuário salvo!',
+      message: 'As mudanças foram aplicadas.',
+      durationMs: 1200,
+    });
   }
 
   async function afterChange(msg) {
-    await showAlert({ type: 'success', title: msg, message: 'Operação concluída.', durationMs: 1200 });
+    await showAlert({
+      type: 'success',
+      title: msg,
+      message: 'Operação concluída.',
+      durationMs: 1200,
+    });
     if (typeof props.onChanged === 'function') props.onChanged();
     import('../modal.js').then(m => m.openModal({ type: 'users' }));
   }
 
-  function markDirty() { dirty = true; }
+  function markDirty() {
+    dirty = true;
+  }
 
   function refreshStatusUI(root, status) {
     const $ = s => root.querySelector(s);
@@ -216,7 +250,7 @@ export default function render(props = {}, api) {
     const list = wrap.querySelector('.ui-select-list');
 
     list.innerHTML = '';
-    Array.from(sel.options).forEach((op) => {
+    Array.from(sel.options).forEach(op => {
       const li = document.createElement('li');
       li.className = 'ui-option';
       li.role = 'option';
@@ -229,7 +263,12 @@ export default function render(props = {}, api) {
         stateRef.role = op.value;
         markDirty();
       };
-      li.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); } };
+      li.onkeydown = e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          li.click();
+        }
+      };
       list.appendChild(li);
     });
 
@@ -278,9 +317,10 @@ function view(s) {
 
       <div class="ue-footer">
         <button id="ue-toggle-status" class="ue-btn ${isActive ? 'ue-btn--danger' : 'ue-btn--primary'}">
-          ${isActive
-            ? `<i data-lucide="user-x"></i><span>Desativar</span>`
-            : `<i data-lucide="user-check"></i><span>Ativar</span>`
+          ${
+            isActive
+              ? `<i data-lucide="user-x"></i><span>Desativar</span>`
+              : `<i data-lucide="user-check"></i><span>Ativar</span>`
           }
         </button>
 
@@ -304,9 +344,16 @@ function enhanceSelect(root, selectId) {
   const btn = wrap.querySelector('.ui-select-btn');
   const list = wrap.querySelector('.ui-select-list');
 
-  function open(v) { wrap.setAttribute('aria-expanded', 'true'); if (v) focusCurrent(); }
-  function close() { wrap.setAttribute('aria-expanded', 'false'); }
-  function toggle() { wrap.getAttribute('aria-expanded') === 'true' ? close() : open(true); }
+  function open(v) {
+    wrap.setAttribute('aria-expanded', 'true');
+    if (v) focusCurrent();
+  }
+  function close() {
+    wrap.setAttribute('aria-expanded', 'false');
+  }
+  function toggle() {
+    wrap.getAttribute('aria-expanded') === 'true' ? close() : open(true);
+  }
   function pick(value, label) {
     if (!value) return;
     sel.value = value;
@@ -317,7 +364,8 @@ function enhanceSelect(root, selectId) {
     close();
   }
   function focusCurrent() {
-    const cur = list.querySelector('.ui-option[aria-selected="true"]') || list.querySelector('.ui-option');
+    const cur =
+      list.querySelector('.ui-option[aria-selected="true"]') || list.querySelector('.ui-option');
     cur?.focus();
   }
 
@@ -325,10 +373,17 @@ function enhanceSelect(root, selectId) {
   if (init) btn.querySelector('.label').textContent = init.textContent;
 
   btn.onclick = toggle;
-  document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-  btn.onkeydown = (e) => {
-    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(true); }
+  document.addEventListener('click', e => {
+    if (!wrap.contains(e.target)) close();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') close();
+  });
+  btn.onkeydown = e => {
+    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      open(true);
+    }
   };
 
   return { pick, open, close };
@@ -338,9 +393,13 @@ function enhanceSelect(root, selectId) {
 function normalizeUser(u = {}) {
   return {
     username: String(u.username || ''),
-    role: (u.role === 'admin' ? 'admin' : 'user'),
-    status: String(u.status || 'active').toLowerCase()
+    role: u.role === 'admin' ? 'admin' : 'user',
+    status: String(u.status || 'active').toLowerCase(),
   };
 }
 
-function esc(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
+function esc(v) {
+  const d = document.createElement('div');
+  d.textContent = String(v ?? '');
+  return d.innerHTML;
+}

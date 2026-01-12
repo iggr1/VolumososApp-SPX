@@ -10,114 +10,113 @@ let lastRemoteCount = null;
 let lastRemoteAt = 0;
 
 export function updateCounts(options = {}) {
-    const { skipRemote = false, forceRemote = false } = options;
+  const { skipRemote = false, forceRemote = false } = options;
 
-    setCountsLoading(true);
+  setCountsLoading(true);
 
-    const currentEl = document.querySelector('.current-pallet-count');
-    const allEl = document.querySelector('.all-pallets-count');
+  const currentEl = document.querySelector('.current-pallet-count');
+  const allEl = document.querySelector('.all-pallets-count');
 
-    // ----- contador do pallet atual (localStorage) -----
-    let n = 0;
-    try {
-        const items = JSON.parse(localStorage.getItem('currentPallet')) || [];
-        n = Array.isArray(items) ? items.length : 0;
-    } catch (_) {
-        n = 0;
-    }
+  // ----- contador do pallet atual (localStorage) -----
+  let n = 0;
+  try {
+    const items = JSON.parse(localStorage.getItem('currentPallet')) || [];
+    n = Array.isArray(items) ? items.length : 0;
+  } catch (_) {
+    n = 0;
+  }
 
-    // troca o spinner pelo texto do pallet atual
-    if (currentEl) {
-        currentEl.textContent = `${n} pacote${n === 1 ? '' : 's'}`;
-    }
+  // troca o spinner pelo texto do pallet atual
+  if (currentEl) {
+    currentEl.textContent = `${n} pacote${n === 1 ? '' : 's'}`;
+  }
 
-    // ----- contador de todos os pallets (API) -----
-    if (!allEl) {
-        setCountsLoading(false);
-        return;
-    }
+  // ----- contador de todos os pallets (API) -----
+  if (!allEl) {
+    setCountsLoading(false);
+    return;
+  }
 
-    if (skipRemote) {
-        setCountsLoading(false);
-        return;
-    }
+  if (skipRemote) {
+    setCountsLoading(false);
+    return;
+  }
 
-    const now = Date.now();
-    const isCacheFresh = !forceRemote
-        && lastRemoteCount !== null
-        && (now - lastRemoteAt) < REMOTE_CACHE_MS;
+  const now = Date.now();
+  const isCacheFresh =
+    !forceRemote && lastRemoteCount !== null && now - lastRemoteAt < REMOTE_CACHE_MS;
 
-    if (isCacheFresh) {
-        renderRemoteCount(lastRemoteCount);
-        setCountsLoading(false);
-        return;
-    }
+  if (isCacheFresh) {
+    renderRemoteCount(lastRemoteCount);
+    setCountsLoading(false);
+    return;
+  }
 
-    debounceRemoteFetch();
+  debounceRemoteFetch();
 }
 
 function debounceRemoteFetch() {
-    if (remoteTimer) return;
-    remoteTimer = setTimeout(fetchRemoteCount, REMOTE_DEBOUNCE_MS);
+  if (remoteTimer) return;
+  remoteTimer = setTimeout(fetchRemoteCount, REMOTE_DEBOUNCE_MS);
 }
 
 async function fetchRemoteCount() {
-    remoteTimer = null;
+  remoteTimer = null;
 
-    if (remoteInFlight) return remoteInFlight;
+  if (remoteInFlight) return remoteInFlight;
 
-    remoteInFlight = (async () => {
-        try {
-            const res = await apiGet('pallets/count');
-            const c = toInt(res?.count, 0);
-            lastRemoteCount = c;
-            lastRemoteAt = Date.now();
-            renderRemoteCount(c);
-        } catch (_) {
-            renderRemoteCount(null, true);
-        } finally {
-            setCountsLoading(false);
-            remoteInFlight = null;
-        }
-    })();
+  remoteInFlight = (async () => {
+    try {
+      const res = await apiGet('pallets/count');
+      const c = toInt(res?.count, 0);
+      lastRemoteCount = c;
+      lastRemoteAt = Date.now();
+      renderRemoteCount(c);
+    } catch (_) {
+      renderRemoteCount(null, true);
+    } finally {
+      setCountsLoading(false);
+      remoteInFlight = null;
+    }
+  })();
 
-    return remoteInFlight;
+  return remoteInFlight;
 }
 
 function renderRemoteCount(count, errored = false) {
-    const allEl = document.querySelector('.all-pallets-count');
-    if (!allEl) return;
+  const allEl = document.querySelector('.all-pallets-count');
+  if (!allEl) return;
 
-    if (errored) {
-        allEl.textContent = '—';
-        return;
-    }
+  if (errored) {
+    allEl.textContent = '—';
+    return;
+  }
 
-    const c = toInt(count, 0);
-    allEl.textContent = `${c} pallet${c === 1 ? '' : 's'}`;
+  const c = toInt(count, 0);
+  allEl.textContent = `${c} pallet${c === 1 ? '' : 's'}`;
 }
 
 function toInt(v, d = 0) {
-    const n = parseInt(v, 10);
-    return Number.isFinite(n) ? n : d;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : d;
 }
 
 // Coloca/retoma o SVG de loading nos dois contadores.
 // Quando isLoading=true, injeta o mesmo SVG inline usado no index.html.
 // Quando isLoading=false, não faz nada: quem finaliza é quem escreve o texto.
 function setCountsLoading(isLoading) {
-    const currentEl = document.querySelector('.current-pallet-count');
-    const allEl = document.querySelector('.all-pallets-count');
+  const currentEl = document.querySelector('.current-pallet-count');
+  const allEl = document.querySelector('.all-pallets-count');
 
-    if (!isLoading) return;
+  if (!isLoading) return;
 
-    if (currentEl) currentEl.innerHTML = counterSpinnerSVG();
-    if (allEl) allEl.innerHTML = counterSpinnerSVG();
+  if (currentEl) currentEl.innerHTML = counterSpinnerSVG();
+  if (allEl) allEl.innerHTML = counterSpinnerSVG();
 }
 
 // SVG idêntico ao usado no index.html para os contadores de pallets
 function counterSpinnerSVG() {
-    return `
+  return `
     <svg width="24" height="24" fill="var(--orange)" viewBox="0 0 24 24"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <style>
@@ -136,17 +135,23 @@ function counterSpinnerSVG() {
 }
 
 export function isModalOpenOnScreen() {
-    const el = document.querySelector('body > .modal-root.show')
-        || document.querySelector('.modal-backdrop.show');
+  const el =
+    document.querySelector('body > .modal-root.show') ||
+    document.querySelector('.modal-backdrop.show');
 
-    if (!el) return false;
+  if (!el) return false;
 
-    const cs = getComputedStyle(el);
-    if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
+  const cs = getComputedStyle(el);
+  if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return false;
 
-    const r = el.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
 
-    return r.width > 0 && r.height > 0 &&
-        r.bottom > 0 && r.right > 0 &&
-        r.top < innerHeight && r.left < innerWidth;
+  return (
+    r.width > 0 &&
+    r.height > 0 &&
+    r.bottom > 0 &&
+    r.right > 0 &&
+    r.top < innerHeight &&
+    r.left < innerWidth
+  );
 }

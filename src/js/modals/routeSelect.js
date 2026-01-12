@@ -9,14 +9,15 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#route-root'
+  initialFocus: '#route-root',
 };
 
 export default function render(props = {}, api) {
   // --- estado ---------------------------------------------------------------
   const ranges = readRanges();
-  const brCode =
-    String(props.brCode || document.querySelector('.brcode-input')?.value || '').trim();
+  const brCode = String(
+    props.brCode || document.querySelector('.brcode-input')?.value || ''
+  ).trim();
 
   const state = {
     step: 'letter',
@@ -24,7 +25,7 @@ export default function render(props = {}, api) {
     numberStr: '',
   };
 
-  api.setBack((_handle) => {
+  api.setBack(_handle => {
     if (state.step === 'number') {
       state.step = 'letter';
       paint();
@@ -72,9 +73,7 @@ export default function render(props = {}, api) {
   function letterKeys() {
     const letters = lettersFromRange(ranges.letterFrom, ranges.letterTo);
     return letters
-      .map(
-        (L) => `<button class="route-key" data-k="${L}" aria-label="Letra ${L}">${L}</button>`
-      )
+      .map(L => `<button class="route-key" data-k="${L}" aria-label="Letra ${L}">${L}</button>`)
       .join('');
   }
 
@@ -109,7 +108,7 @@ export default function render(props = {}, api) {
     el.querySelector('.route-kbd')?.addEventListener('click', onKeyClick);
 
     // Enter confirma quando estiver no passo de número e válido
-    el.addEventListener('keydown', (ev) => {
+    el.addEventListener('keydown', ev => {
       if (state.step === 'number' && (ev.key === 'Enter' || ev.key === 'NumpadEnter')) {
         const canAdd = isValidRoute(state.letter, state.numberStr, ranges);
         if (canAdd) onAddClick();
@@ -158,7 +157,7 @@ export default function render(props = {}, api) {
       await showAlert({
         type: 'warning',
         title: 'Rota inválida',
-        message: 'Escolha uma letra e um número dentro do intervalo permitido.'
+        message: 'Escolha uma letra e um número dentro do intervalo permitido.',
       });
       return;
     }
@@ -167,7 +166,7 @@ export default function render(props = {}, api) {
       brCode,
       route: `${state.letter}-${parseInt(state.numberStr, 10)}`,
       datetime: new Date().toISOString(),
-      userToken: localStorage.getItem('authToken')
+      userToken: localStorage.getItem('authToken'),
     };
 
     sendToLocalPallet(packageToAdd);
@@ -195,21 +194,28 @@ function readRanges() {
 
   const [lfRaw, ltRaw] = letterRange.split('-');
   let letterFrom = toLetter(lfRaw, 'A');
-  let letterTo   = toLetter(ltRaw, letterFrom);
+  let letterTo = toLetter(ltRaw, letterFrom);
   if (letterFrom.charCodeAt(0) > letterTo.charCodeAt(0)) {
-    const t = letterFrom; letterFrom = letterTo; letterTo = t;
+    const t = letterFrom;
+    letterFrom = letterTo;
+    letterTo = t;
   }
 
   const [nMinRaw, nMaxRaw] = numberRange.split('-');
   let numMin = toInt(nMinRaw, 1);
   let numMax = toInt(nMaxRaw, numMin);
-  if (numMin > numMax) { const t = numMin; numMin = numMax; numMax = t; }
+  if (numMin > numMax) {
+    const t = numMin;
+    numMin = numMax;
+    numMax = t;
+  }
 
   return { letterFrom, letterTo, numMin, numMax, maxPackages };
 }
 
 function lettersFromRange(from, to) {
-  const a = from.charCodeAt(0), b = to.charCodeAt(0);
+  const a = from.charCodeAt(0),
+    b = to.charCodeAt(0);
   const out = [];
   for (let i = a; i <= b; i++) out.push(String.fromCharCode(i));
   return out;
@@ -229,8 +235,7 @@ function isValidRoute(letter, numberStr, ranges) {
   const L = letter.toUpperCase();
   const code = L.charCodeAt(0);
   const inLetters =
-    code >= ranges.letterFrom.charCodeAt(0) &&
-    code <= ranges.letterTo.charCodeAt(0);
+    code >= ranges.letterFrom.charCodeAt(0) && code <= ranges.letterTo.charCodeAt(0);
 
   const n = Number(numberStr);
   const inNumbers = Number.isFinite(n) && n >= ranges.numMin && n <= ranges.numMax;
@@ -249,7 +254,9 @@ function toInt(v, d) {
   return Number.isFinite(n) ? n : d;
 }
 function toLetter(v, d) {
-  const s = String(v || '').toUpperCase().replace(/[^A-Z]/g, '');
+  const s = String(v || '')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '');
   return s ? s[0] : d;
 }
 function escapeHtml(v) {

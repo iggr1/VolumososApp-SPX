@@ -94,7 +94,13 @@
 
 /* Mobile */
 @media (max-width: 480px) {
-  .tutorial-step-title { font-size: 44rem; }
-  .tutorial-step-desc { font-size: 40rem; }
-  .tutorial-step-image { min-height: 280rem; }
+  .tutorial-step-title {
+    font-size: 44rem;
+  }
+  .tutorial-step-desc {
+    font-size: 40rem;
+  }
+  .tutorial-step-image {
+    min-height: 280rem;
+  }
 }

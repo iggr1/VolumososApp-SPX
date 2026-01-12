@@ -1,108 +1,108 @@
 .about-form {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 30rem;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 30rem;
 }
 
 /* ---------- header ---------- */
 .about-header {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .about-header .app-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 30rem;
-    padding: 20rem 50rem;
-    border-radius: 99rem;
-    background: var(--light-gray);
-    color: var(--darker-gray);
-    width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 30rem;
+  padding: 20rem 50rem;
+  border-radius: 99rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  width: 100%;
 }
 
 .about-header .app-badge svg {
-    width: 50rem;
-    height: 50rem;
-    flex: 0 0 50rem;
-    stroke: var(--orange);
+  width: 50rem;
+  height: 50rem;
+  flex: 0 0 50rem;
+  stroke: var(--orange);
 }
 
 .about-header .app-id {
-    display: grid;
-    gap: .2rem;
+  display: grid;
+  gap: 0.2rem;
 }
 
 .about-header .app-name {
-    font-weight: var(--text-bold, 600);
-    font-size: calc(var(--text-medium, 1.4rem) + .2rem);
-    line-height: 1.2;
+  font-weight: var(--text-bold, 600);
+  font-size: calc(var(--text-medium, 1.4rem) + 0.2rem);
+  line-height: 1.2;
 }
 
 .about-header .app-version {
-    font-size: var(--text-medium, 1.4rem);
-    color: color-mix(in srgb, var(--darker-gray, #374151) 55%, transparent);
+  font-size: var(--text-medium, 1.4rem);
+  color: color-mix(in srgb, var(--darker-gray, #374151) 55%, transparent);
 }
 
 .about-section {
-    padding: 30rem 50rem;
-    border-radius: 30rem;
-    background: var(--white, #fff);
+  padding: 30rem 50rem;
+  border-radius: 30rem;
+  background: var(--white, #fff);
 }
 
 .about-section h3 {
-    display: inline-flex;
-    align-items: center;
-    gap: 30rem;
-    margin: 0 0 20rem 0;
-    font-weight: var(--text-bold);
-    font-size: var(--text-medium);
-    color: var(--darker-gray);
+  display: inline-flex;
+  align-items: center;
+  gap: 30rem;
+  margin: 0 0 20rem 0;
+  font-weight: var(--text-bold);
+  font-size: var(--text-medium);
+  color: var(--darker-gray);
 }
 
 .about-section h3 svg {
-    width: 50rem;
-    height: 50rem;
-    stroke: var(--orange);
+  width: 50rem;
+  height: 50rem;
+  stroke: var(--orange);
 }
 
 .about-section p,
 .about-section ul {
-    font-size: var(--text-medium);
-    color: var(--dark-gray);
+  font-size: var(--text-medium);
+  color: var(--dark-gray);
 }
 
 .about-section ul {
-    padding-left: 30rem;
-    list-style: disc;
+  padding-left: 30rem;
+  list-style: disc;
 }
 
 .about-section .kv {
-    display: flex;
-    flex-direction: column;
-    gap: 20rem;
-    margin-top: 10rem;
-    font-size: var(--text-medium);
+  display: flex;
+  flex-direction: column;
+  gap: 20rem;
+  margin-top: 10rem;
+  font-size: var(--text-medium);
 }
 
-.about-section .kv>div:nth-child(odd) {
-    color: var(--orange);
+.about-section .kv > div:nth-child(odd) {
+  color: var(--orange);
 }
 
 .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20rem;
-    width: 100%;
-    height: 120rem;
-    border-radius: 85rem;
-    color: var(--white);
-    cursor: pointer;
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    letter-spacing: 2rem;
-    text-transform: uppercase;
-    background: var(--btn-bg, var(--orange));
-    transition: background .15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rem;
+  width: 100%;
+  height: 120rem;
+  border-radius: 85rem;
+  color: var(--white);
+  cursor: pointer;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  letter-spacing: 2rem;
+  text-transform: uppercase;
+  background: var(--btn-bg, var(--orange));
+  transition: background 0.15s ease;
 }

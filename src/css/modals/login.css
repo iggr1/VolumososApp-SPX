@@ -1,146 +1,150 @@
 /* Login modal */
 .login-form {
-    display: grid;
-    gap: 50rem;
+  display: grid;
+  gap: 50rem;
 }
 
 .login-field {
-    display: grid;
-    gap: 12rem;
+  display: grid;
+  gap: 12rem;
 }
 
 .login-label {
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    color: var(--darker-gray);
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
 }
 
 /* select com seta */
 .login-select-wrap {
-    position: relative;
+  position: relative;
 }
 
 .login-select-wrap::after {
-    content: "";
-    position: absolute;
-    right: 50rem;
-    top: 50%;
-    transform: translateY(-50%) rotate(45deg);
-    width: 16rem;
-    height: 16rem;
-    border-right: 4rem solid var(--orange);
-    border-bottom: 4rem solid var(--orange);
-    pointer-events: none;
+  content: '';
+  position: absolute;
+  right: 50rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 16rem;
+  height: 16rem;
+  border-right: 4rem solid var(--orange);
+  border-bottom: 4rem solid var(--orange);
+  pointer-events: none;
 }
 
 /* botão principal */
 .login-actions {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 20rem;
-    margin-top: 50rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20rem;
+  margin-top: 50rem;
 }
 
 .btn-eye {
-    height: 100%;
-    aspect-ratio: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: var(--light-gray);
-    border-radius: 80rem;
+  height: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--light-gray);
+  border-radius: 80rem;
 }
 
 .btn-eye svg {
-    stroke: var(--orange);
-    width: 50rem;
-    height: 50rem;
+  stroke: var(--orange);
+  width: 50rem;
+  height: 50rem;
 }
 
 .input-with-append {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rem;
 }
 
 .login-btn,
 .register-create-btn,
 .guest-btn {
-    --pill-padding-x: 50rem;
+  --pill-padding-x: 50rem;
 }
 
 .login-btn {
-    --btn-bg: var(--orange);
-    --btn-bg-hover: var(--dark-orange);
-    --btn-color: var(--white);
+  --btn-bg: var(--orange);
+  --btn-bg-hover: var(--dark-orange);
+  --btn-color: var(--white);
 }
 
-.register-create-btn, .guest-btn {
-    --btn-bg: var(--light-gray);
-    --btn-bg-hover: #dcdcdc;
-    --btn-color: var(--darker-gray);
+.register-create-btn,
+.guest-btn {
+  --btn-bg: var(--light-gray);
+  --btn-bg-hover: #dcdcdc;
+  --btn-color: var(--darker-gray);
 }
 
-.login-btn--orange, .register-create-btn--orange, .guest-btn--orange {
-    --btn-bg: var(--orange);
-    --btn-bg-hover: var(--dark-orange);
-    --btn-color: var(--white);
+.login-btn--orange,
+.register-create-btn--orange,
+.guest-btn--orange {
+  --btn-bg: var(--orange);
+  --btn-bg-hover: var(--dark-orange);
+  --btn-color: var(--white);
 }
 
 .login-btn svg {
-    color: var(--white);
+  color: var(--white);
 }
 
 .register-create-btn svg {
-    color: var(--orange);
+  color: var(--orange);
 }
 
 .guest-btn svg {
-    color: var(--orange);
+  color: var(--orange);
 }
 
 .login-btn--loading svg {
-    display: none;
+  display: none;
 }
 
 .register-create-btn--loading svg {
-    display: none;
+  display: none;
 }
 
 .guest-btn--loading svg {
-    display: none;
+  display: none;
 }
 
 .login-btn--loading::before {
-    content: '';
-    width: 30rem;
-    height: 30rem;
-    border: 5rem solid var(--white);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: inline-block;
+  content: '';
+  width: 30rem;
+  height: 30rem;
+  border: 5rem solid var(--white);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
 }
 
-.register-create-btn--loading::before, .guest-btn--loading::before {
-    content: '';
-    width: 30rem;
-    height: 30rem;
-    border: 5rem solid var(--orange);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    display: inline-block;
+.register-create-btn--loading::before,
+.guest-btn--loading::before {
+  content: '';
+  width: 30rem;
+  height: 30rem;
+  border: 5rem solid var(--orange);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

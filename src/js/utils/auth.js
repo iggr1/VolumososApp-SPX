@@ -4,7 +4,7 @@ import { getConfigs } from './config.js';
 import { updateCounts } from './helper.js';
 import { apiPost, apiGet } from '../api.js';
 
-const $ = (selector) => document.querySelector(selector);
+const $ = selector => document.querySelector(selector);
 
 /**
  * HUB atual (só code/label; URL base agora vem do api.js)
@@ -68,7 +68,7 @@ export async function verifyUserSession() {
       buttons: [],
       durationMs: 5000,
       dismissible: false,
-      collapseDelayMs: 150
+      collapseDelayMs: 150,
     });
 
     openModal({ type: 'login' });
@@ -80,10 +80,7 @@ export async function verifyUserSession() {
   const now = Date.now();
   const skewMs = 30 * 1000;
 
-  const isValid =
-    !!token &&
-    Number.isFinite(authExpires) &&
-    (now + skewMs) < authExpires;
+  const isValid = !!token && Number.isFinite(authExpires) && now + skewMs < authExpires;
 
   if (isValid) {
     setUserInfo(userData?.username, token, userData?.avatar_id);
@@ -96,9 +93,8 @@ export async function verifyUserSession() {
       buttons: [],
       durationMs: 2000,
       dismissible: false,
-      collapseDelayMs: 150
+      collapseDelayMs: 150,
     });
-
   } else {
     localStorage.removeItem('authToken');
   }
@@ -134,7 +130,7 @@ export async function fetchUserData() {
       buttons: [],
       durationMs: 5000,
       dismissible: false,
-      collapseDelayMs: 150
+      collapseDelayMs: 150,
     });
     openModal({ type: 'login' });
     return null;
@@ -152,7 +148,7 @@ export async function loginRequest({ username, password }) {
         type: 'error',
         title: 'Falha na autenticação!',
         message: 'Verifique suas credenciais e tente novamente.',
-        durationMs: 4000
+        durationMs: 4000,
       });
       return null;
     }
@@ -162,7 +158,7 @@ export async function loginRequest({ username, password }) {
         type: 'warning',
         title: 'Usuário Pendente',
         message: 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.',
-        durationMs: 5000
+        durationMs: 5000,
       });
       return null;
     }
@@ -170,33 +166,32 @@ export async function loginRequest({ username, password }) {
     setUserInfo(data.username, data.token, data.avatar_id);
     updateCounts();
     return true;
-
   } catch (err) {
     let msg = err?.data?.error || err?.message || 'Falha ao autenticar!';
-    if (
-      err?.status === 403 &&
-      typeof msg === 'string' &&
-      msg.toLowerCase().includes('forbidden')
-    ) {
+    if (err?.status === 403 && typeof msg === 'string' && msg.toLowerCase().includes('forbidden')) {
       msg = 'Usuário ou senha inválidos, verifique e tente novamente.';
       // ou qualquer mensagem que você quiser colocar aqui
     }
-    
-    if (err?.status === 403 &&
+
+    if (
+      err?.status === 403 &&
       typeof msg === 'string' &&
-      (msg.toLowerCase().includes('not allowed') || msg.toLowerCase().includes('usuário não tem acesso a este hub'))
+      (msg.toLowerCase().includes('not allowed') ||
+        msg.toLowerCase().includes('usuário não tem acesso a este hub'))
     ) {
       msg = 'Você não possui acesso à este HUB. Contate sua liderança caso necessário.';
     }
 
-    if (err?.status === 403 &&
+    if (
+      err?.status === 403 &&
       typeof msg === 'string' &&
       msg.toLowerCase().includes('usuário pendente')
     ) {
       msg = 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.';
     }
 
-    if (err?.status === 403 &&
+    if (
+      err?.status === 403 &&
       typeof msg === 'string' &&
       msg.toLowerCase().includes('usuário não ativo')
     ) {
@@ -207,7 +202,7 @@ export async function loginRequest({ username, password }) {
       type: 'error',
       title: 'Falha ao autenticar!',
       message: msg,
-      durationMs: 4000
+      durationMs: 4000,
     });
 
     return null;
@@ -233,7 +228,7 @@ export async function fetchUserRole() {
       buttons: [],
       durationMs: 5000,
       dismissible: false,
-      collapseDelayMs: 150
+      collapseDelayMs: 150,
     });
     openModal({ type: 'login' });
 
@@ -268,7 +263,7 @@ export async function guestLoginUser() {
       type: 'error',
       title: 'Falha ao autenticar!',
       message: data.error,
-      durationMs: 3000
+      durationMs: 3000,
     });
     return null;
   }
@@ -283,13 +278,12 @@ export async function guestLoginUser() {
  * Valida se é um email corporativo permitido.
  */
 export function isValidCorporateEmail(str) {
-  const lower = String(str || '').trim().toLowerCase();
+  const lower = String(str || '')
+    .trim()
+    .toLowerCase();
   const basic = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lower);
   if (!basic) return false;
-  return (
-    lower.endsWith('@shopee.com') ||
-    lower.endsWith('@shopeemobile-external.com')
-  );
+  return lower.endsWith('@shopee.com') || lower.endsWith('@shopeemobile-external.com');
 }
 
 /**
@@ -301,13 +295,13 @@ export function normalizeIdentifier(rawIdent) {
   if (!isValidCorporateEmail(ident)) {
     return {
       ok: false,
-      error: 'Informe um e-mail corporativo válido (@shopee.com ou @shopeemobile-external.com).'
+      error: 'Informe um e-mail corporativo válido (@shopee.com ou @shopeemobile-external.com).',
     };
   }
 
   return {
     ok: true,
-    ident
+    ident,
   };
 }
 

@@ -8,7 +8,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#all-pallets-root'
+  initialFocus: '#all-pallets-root',
 };
 
 export default function render(_props = {}, api) {
@@ -18,12 +18,12 @@ export default function render(_props = {}, api) {
   el.tabIndex = -1; // permite keydown no container
 
   // Evita arrastar “ghost image” e seleção não intencional
-  el.addEventListener('dragstart', (e) => e.preventDefault());
-  el.addEventListener('selectstart', (e) => {
+  el.addEventListener('dragstart', e => e.preventDefault());
+  el.addEventListener('selectstart', e => {
     if (!(e.target.closest && e.target.closest('.allow-select'))) e.preventDefault();
   });
   // bloqueia menu de contexto em long-press/right-click em tiles
-  el.addEventListener('contextmenu', (e) => {
+  el.addEventListener('contextmenu', e => {
     if (e.target.closest && e.target.closest('.allpallets-item')) e.preventDefault();
   });
 
@@ -34,7 +34,9 @@ export default function render(_props = {}, api) {
   let longPressFiredAt = 0;
 
   paintLoading();
-  load().then(paint).catch((e) => paintError(e?.message || 'Falha ao carregar'));
+  load()
+    .then(paint)
+    .catch(e => paintError(e?.message || 'Falha ao carregar'));
 
   return el;
 
@@ -51,7 +53,11 @@ export default function render(_props = {}, api) {
   function paintLoading() {
     el.innerHTML = `
       <div class="allpallets-grid allpallets-grid--loading" role="grid" aria-busy="true">
-        ${Array.from({ length: 12 }).map(() => `<div class="allpallets-item skeleton" role="gridcell" aria-hidden="true"></div>`).join('')}
+        ${Array.from({ length: 12 })
+          .map(
+            () => `<div class="allpallets-item skeleton" role="gridcell" aria-hidden="true"></div>`
+          )
+          .join('')}
       </div>
       <div class="allpallets-footer">
         <button class="allpallets-modal-btn" id="allpallets-selectall" disabled>
@@ -82,17 +88,27 @@ export default function render(_props = {}, api) {
     `;
     el.querySelector('#allpallets-retry')?.addEventListener('click', async () => {
       paintLoading();
-      try { await load(); paint(); } catch (e) { paintError(e?.message || 'Erro'); }
+      try {
+        await load();
+        paint();
+      } catch (e) {
+        paintError(e?.message || 'Erro');
+      }
     });
     if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   }
 
   function paint() {
-    const ids = data.map(p => Number(p.pallet)).filter(Number.isFinite).sort((a, b) => a - b);
+    const ids = data
+      .map(p => Number(p.pallet))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
 
     el.innerHTML = `
       <div class="allpallets-grid" role="grid" aria-rowcount="${ids.length}">
-        ${ids.map(id => `
+        ${ids
+          .map(
+            id => `
           <button
             class="allpallets-item ${selected.has(id) ? 'is-selected' : ''}"
             role="gridcell"
@@ -102,12 +118,17 @@ export default function render(_props = {}, api) {
           >
             <span class="allpallets-label">${id}</span>
           </button>
-        `).join('')}
-        ${!ids.length ? `
+        `
+          )
+          .join('')}
+        ${
+          !ids.length
+            ? `
           <div class="allpallets-empty" role="note">
             <i data-lucide="package"></i>
             <p>Nenhum pallet encontrado.</p>
-          </div>` : ''
+          </div>`
+            : ''
         }
       </div>
 
@@ -141,7 +162,7 @@ export default function render(_props = {}, api) {
     el.querySelector('#allpallets-delete')?.addEventListener('click', onDeleteSelected);
 
     // atalho Ctrl/Cmd + A
-    el.addEventListener('keydown', (ev) => {
+    el.addEventListener('keydown', ev => {
       if ((ev.ctrlKey || ev.metaKey) && (ev.key === 'a' || ev.key === 'A')) {
         ev.preventDefault();
         onSelectAllToggle();
@@ -172,12 +193,22 @@ export default function render(_props = {}, api) {
     }, LONG_MS);
   }
 
-  function onPointerUp() { clearLongPress(); }
-  function clearLongPress() { if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } }
+  function onPointerUp() {
+    clearLongPress();
+  }
+  function clearLongPress() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
 
   function onClick(e) {
     // ignora o click “fantasma” logo após long-press
-    if (Date.now() - longPressFiredAt < 300) { longPressFiredAt = 0; return; }
+    if (Date.now() - longPressFiredAt < 300) {
+      longPressFiredAt = 0;
+      return;
+    }
 
     const id = idFromEventTarget(e.target);
     if (id == null) return;
@@ -250,7 +281,8 @@ export default function render(_props = {}, api) {
 
   function onSelectAllToggle() {
     const ids = Array.from(el.querySelectorAll('.allpallets-item'))
-      .map(b => Number(b.dataset.id)).filter(Number.isFinite);
+      .map(b => Number(b.dataset.id))
+      .filter(Number.isFinite);
     if (!ids.length) return;
 
     const selectAll = selected.size !== ids.length;
@@ -268,18 +300,20 @@ export default function render(_props = {}, api) {
   function openDetails(id) {
     const grp = data.find(p => Number(p.pallet) === id);
     if (!grp) return;
-    import('../modal.js').then(m => m.openModal({
-      type: 'palletDetails',
-      props: {
-        pallet: id,
-        items: (grp.packages || []).map(normalizeItem),
-        onChanged: (newItems) => {
-          const idx = data.findIndex(p => Number(p.pallet) === id);
-          if (idx >= 0) data[idx] = { pallet: id, packages: newItems.map(denormalizeItem) };
-          paint();
-        }
-      }
-    }));
+    import('../modal.js').then(m =>
+      m.openModal({
+        type: 'palletDetails',
+        props: {
+          pallet: id,
+          items: (grp.packages || []).map(normalizeItem),
+          onChanged: newItems => {
+            const idx = data.findIndex(p => Number(p.pallet) === id);
+            if (idx >= 0) data[idx] = { pallet: id, packages: newItems.map(denormalizeItem) };
+            paint();
+          },
+        },
+      })
+    );
   }
 
   async function onPrintSelected() {
@@ -291,13 +325,13 @@ export default function render(_props = {}, api) {
         type: 'success',
         title: 'Impressão',
         message: `Etiquetas enviadas para ${ids.length} pallet(s).`,
-        durationMs: 1600
+        durationMs: 1600,
       });
     } catch (e) {
       await showAlert({
         type: 'error',
         title: 'Falha ao imprimir',
-        message: e?.message || 'Não foi possível imprimir as etiquetas.'
+        message: e?.message || 'Não foi possível imprimir as etiquetas.',
       });
     }
   }
@@ -311,14 +345,19 @@ export default function render(_props = {}, api) {
       title: 'Excluir selecionados?',
       message: `Isso excluirá ${ids.length} pallet(s): ${ids.join(', ')}.`,
       okLabel: 'Excluir',
-      cancelLabel: 'Cancelar'
+      cancelLabel: 'Cancelar',
     });
     if (!ok) return;
 
     try {
       paintLoading();
       await deletePallets(ids);
-      await showAlert({ type: 'success', title: 'Excluído', message: 'Pallet(s) removido(s).', durationMs: 1400 });
+      await showAlert({
+        type: 'success',
+        title: 'Excluído',
+        message: 'Pallet(s) removido(s).',
+        durationMs: 1400,
+      });
       selected.clear();
       await load();
       paint();
@@ -335,7 +374,7 @@ export default function render(_props = {}, api) {
       route: p.route || '',
       pallet: p.pallet || '',
       datetime: p.dateTime || p.datetime || '',
-      user: p.userName || p.user || ''
+      user: p.userName || p.user || '',
     };
   }
   function denormalizeItem(p) {
@@ -344,8 +383,12 @@ export default function render(_props = {}, api) {
       route: p.route,
       pallet: p.pallet,
       dateTime: p.datetime,
-      userName: p.user
+      userName: p.user,
     };
   }
-  function esc(v) { const d = document.createElement('div'); d.textContent = String(v ?? ''); return d.innerHTML; }
+  function esc(v) {
+    const d = document.createElement('div');
+    d.textContent = String(v ?? '');
+    return d.innerHTML;
+  }
 }

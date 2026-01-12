@@ -7,7 +7,7 @@ const COL_CORRIDOR = 'Corridor Cage';
 const ENDPOINT_IMPORT = 'opdocs/routes/import';
 
 function stripBOM(s) {
-  return s && s.charCodeAt(0) === 0xFEFF ? s.slice(1) : s;
+  return s && s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
 }
 
 function firstNonEmptyLine(text) {
@@ -21,12 +21,14 @@ function firstNonEmptyLine(text) {
 
 function detectDelimiter(headerLine) {
   const commas = (headerLine.match(/,/g) || []).length;
-  const semis  = (headerLine.match(/;/g) || []).length;
+  const semis = (headerLine.match(/;/g) || []).length;
   return semis > commas ? ';' : ',';
 }
 
 function normalizeHeader(h) {
-  return String(h ?? '').trim().replace(/\s+/g, ' ');
+  return String(h ?? '')
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
 // split CSV line respeitando aspas
@@ -98,7 +100,7 @@ export async function extractRoutesFromCTsCsv(file) {
     return {
       ok: false,
       error: 'missing_columns',
-      message: `CSV não contém as colunas: "${COL_SPX_TN}" e "${COL_CORRIDOR}".`
+      message: `CSV não contém as colunas: "${COL_SPX_TN}" e "${COL_CORRIDOR}".`,
     };
   }
 
@@ -111,7 +113,10 @@ export async function extractRoutesFromCTsCsv(file) {
     const trimmed = raw.trim();
     if (!trimmed) continue;
 
-    if (!foundHeader) { foundHeader = true; continue; }
+    if (!foundHeader) {
+      foundHeader = true;
+      continue;
+    }
 
     // ignora linhas “fantasma” (só separadores/aspas/espaços)
     const onlyDelims = trimmed.replace(new RegExp(`[${delimiter}\\s"]`, 'g'), '');
@@ -130,7 +135,11 @@ export async function extractRoutesFromCTsCsv(file) {
   }
 
   if (!rows.length) {
-    return { ok: false, error: 'no_rows', message: 'Nenhuma linha válida encontrada (SPX TN + Corridor Cage).' };
+    return {
+      ok: false,
+      error: 'no_rows',
+      message: 'Nenhuma linha válida encontrada (SPX TN + Corridor Cage).',
+    };
   }
 
   // dedupe por spx_tn (mantém o último corridor encontrado)
@@ -167,7 +176,7 @@ export async function importRoutesFromCTsCsv(file, options = {}) {
     const resp = await apiPut(ENDPOINT_IMPORT, {
       source: 'cts_csv',
       total: chunk.length,
-      rows: chunk
+      rows: chunk,
     });
 
     serverResponses.push(resp);
@@ -178,7 +187,7 @@ export async function importRoutesFromCTsCsv(file, options = {}) {
         chunk: i + 1,
         totalChunks: chunks.length,
         sent,
-        total: rows.length
+        total: rows.length,
       });
     }
   }
@@ -189,6 +198,6 @@ export async function importRoutesFromCTsCsv(file, options = {}) {
     batchSize,
     totalChunks: chunks.length,
     sent,
-    serverResponses
+    serverResponses,
   };
 }

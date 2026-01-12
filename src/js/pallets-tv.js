@@ -21,7 +21,9 @@ const state = {
 };
 
 function parseRoute(route = '') {
-  const match = String(route).toUpperCase().match(/([A-Z]+)[-\s]*(\d+)/);
+  const match = String(route)
+    .toUpperCase()
+    .match(/([A-Z]+)[-\s]*(\d+)/);
   if (!match) return { letter: route || '', number: Number.POSITIVE_INFINITY, raw: route };
   return { letter: match[1], number: Number(match[2]), raw: route };
 }
@@ -68,7 +70,7 @@ function updateSummary() {
       else acc.onpallet += 1;
       return acc;
     },
-    { onpallet: 0, assigned: 0, removed: 0 },
+    { onpallet: 0, assigned: 0, removed: 0 }
   );
 
   if (totalEl) totalEl.textContent = total;
@@ -85,7 +87,8 @@ function buildBars(container, items, max) {
   if (!items.length) {
     const empty = document.createElement('div');
     empty.className = 'tv-bar-row';
-    empty.innerHTML = '<span class="tv-bar-label">--</span><div class="tv-bar-track"></div><span class="tv-bar-value">0</span>';
+    empty.innerHTML =
+      '<span class="tv-bar-label">--</span><div class="tv-bar-track"></div><span class="tv-bar-value">0</span>';
     container.appendChild(empty);
     return;
   }
@@ -143,7 +146,7 @@ function buildRouteColumns(container, groupedByLetter) {
     return;
   }
 
-  letters.forEach((letter) => {
+  letters.forEach(letter => {
     const routesMap = groupedByLetter.get(letter);
 
     const list = [...routesMap.entries()]
@@ -205,7 +208,7 @@ function renderCharts() {
   // ===== rotas por letra (C-12, D-1...) =====
   const grouped = new Map();
 
-  state.packages.forEach((pkg) => {
+  state.packages.forEach(pkg => {
     const routeInfo = parseRoute(pkg.route || '');
     const letter = routeInfo.letter || 'OUTROS';
     const routeLabel = routeLabelFromPkg(pkg);
@@ -221,7 +224,7 @@ function renderCharts() {
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
 
-  const maxLetters = Math.max(...letterList.map((item) => item.value));
+  const maxLetters = Math.max(...letterList.map(item => item.value));
   buildBars(lettersEl, letterList, maxLetters || 1);
 
   buildRouteColumns(routesEl, grouped);

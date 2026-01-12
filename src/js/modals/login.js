@@ -1,7 +1,7 @@
-import { showAlert } from "../utils/alerts.js";
-import { loginRequest, guestLoginUser, saveHubLocal as saveHubFromAuth } from "../utils/auth.js";
-import { enhanceSelect } from "../utils/uiSelect.js";
-import { apiGet } from "../api.js";
+import { showAlert } from '../utils/alerts.js';
+import { loginRequest, guestLoginUser, saveHubLocal as saveHubFromAuth } from '../utils/auth.js';
+import { enhanceSelect } from '../utils/uiSelect.js';
+import { apiGet } from '../api.js';
 
 export const meta = {
   title: 'Login',
@@ -10,7 +10,7 @@ export const meta = {
   showClose: false,
   backdropClose: false,
   escToClose: false,
-  initialFocus: '#login-hub'
+  initialFocus: '#login-hub',
 };
 
 export default function render(_props = {}, api) {
@@ -72,17 +72,19 @@ export default function render(_props = {}, api) {
     </div>
   `;
 
-  try { window.lucide?.createIcons?.(); } catch { }
+  try {
+    window.lucide?.createIcons?.();
+  } catch {}
 
   const niceSelect = enhanceSelect(el, 'login-hub');
 
-  initHubs().catch((e) => {
+  initHubs().catch(e => {
     console.error(e);
     showAlert({
       type: 'error',
       title: 'Erro ao carregar HUBs',
       message: e?.message || 'Não foi possível carregar a lista de HUBs.',
-      durationMs: 4000
+      durationMs: 4000,
     });
   });
 
@@ -132,12 +134,9 @@ export default function render(_props = {}, api) {
         list
           .filter(h => h.code)
           .sort((a, b) =>
-            String(a.label || a.name || a.code)
-              .localeCompare(String(b.label || b.name || b.code))
+            String(a.label || a.name || a.code).localeCompare(String(b.label || b.name || b.code))
           )
-          .map(h =>
-            `<option value="${h.code}">${h.label || h.name || h.code}</option>`
-          )
+          .map(h => `<option value="${h.code}">${h.label || h.name || h.code}</option>`)
       )
       .join('');
     sel.innerHTML = options;
@@ -153,7 +152,7 @@ export default function render(_props = {}, api) {
     if (!hub) return;
     saveHubFromAuth({
       code: hub.code,
-      label: hub.label
+      label: hub.label,
     });
   }
 
@@ -197,7 +196,9 @@ export default function render(_props = {}, api) {
   }
 
   el.querySelector('#login-submit').onclick = onSubmit;
-  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') onSubmit(); });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') onSubmit();
+  });
 
   // ======= Olho da senha (toggle) =======
   const passInput = el.querySelector('#login-pass');
@@ -212,7 +213,9 @@ export default function render(_props = {}, api) {
       i.setAttribute('data-lucide', name);
       toggleBtn.innerHTML = '';
       toggleBtn.appendChild(i);
-      try { window.lucide?.createIcons?.(); } catch { }
+      try {
+        window.lucide?.createIcons?.();
+      } catch {}
     }
   }
 
@@ -225,12 +228,12 @@ export default function render(_props = {}, api) {
 
   let lastSel = null;
 
-  toggleBtn.addEventListener('pointerdown', (e) => {
+  toggleBtn.addEventListener('pointerdown', e => {
     e.preventDefault();
     lastSel = {
       start: passInput.selectionStart,
       end: passInput.selectionEnd,
-      dir: passInput.selectionDirection
+      dir: passInput.selectionDirection,
     };
   });
 
@@ -241,7 +244,9 @@ export default function render(_props = {}, api) {
     const s = lastSel?.start ?? passInput.value.length;
     const e = lastSel?.end ?? s;
     requestAnimationFrame(() => {
-      try { passInput.setSelectionRange(s, e, lastSel?.dir || 'none'); } catch { }
+      try {
+        passInput.setSelectionRange(s, e, lastSel?.dir || 'none');
+      } catch {}
     });
   });
 
@@ -249,7 +254,7 @@ export default function render(_props = {}, api) {
 
   // ====== ABRIR MODAL DE REGISTRO / GUEST ======
   const registerBtn = el.querySelector('#register-create');
-  const guestBtn    = el.querySelector('#guest-login');
+  const guestBtn = el.querySelector('#guest-login');
 
   guestBtn.addEventListener('click', async () => {
     const guestButton = el.querySelector('#guest-login');

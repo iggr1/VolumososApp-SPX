@@ -25,14 +25,16 @@
   width: 100%;
   max-width: 100%;
   color: #fff;
-  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   color-scheme: dark;
   pointer-events: auto;
 
   opacity: 0;
   transform: translateX(100%) scale(0.1);
   animation: slideIn 300ms ease-in-out forwards;
-  transition: transform 300ms ease-in-out, opacity 300ms ease-in-out;
+  transition:
+    transform 300ms ease-in-out,
+    opacity 300ms ease-in-out;
 }
 
 .notification-alert.hidden {
@@ -41,23 +43,27 @@
   width: 100%;
 }
 
-.notification-alert { --h: auto; }
+.notification-alert {
+  --h: auto;
+}
 
 .notification-alert.collapsing {
   animation: none !important;
   overflow: hidden;
   max-height: var(--h);
   transition:
-    max-height .28s ease,
-    margin     .28s ease,
-    padding    .28s ease,
-    opacity    .2s ease;
+    max-height 0.28s ease,
+    margin 0.28s ease,
+    padding 0.28s ease,
+    opacity 0.2s ease;
 }
 
 .notification-alert.collapsing.hidden {
   max-height: 0;
-  margin-top: 0; margin-bottom: 0;
-  padding-top: 0; padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
   opacity: 0;
 }
 
@@ -65,13 +71,24 @@
 .notification-alert::after {
   content: '';
   position: absolute;
-  top: 0; left: 0;
-  height: 3px; width: 0;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
   background: var(--color, #4ea1ff);
   animation: progress var(--progress-duration, 5s) linear forwards;
 }
-.notification-alert.paused::after { animation-play-state: paused; }
-@keyframes progress { from{width:0;} to{width:100%;} }
+.notification-alert.paused::after {
+  animation-play-state: paused;
+}
+@keyframes progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
 
 /* Conteúdo */
 .notification-title {
@@ -90,15 +107,21 @@
 
 .notification-close {
   position: absolute;
-  right: 0; top: 0;
-  transform: translate(8px,-8px);
-  width: 28px; height: 28px;
-  border: 0; border-radius: 50%;
+  right: 0;
+  top: 0;
+  transform: translate(8px, -8px);
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
   background: transparent;
-  color: #fff; font: 700 18px/1 system-ui;
+  color: #fff;
+  font: 700 18px/1 system-ui;
   cursor: pointer;
 }
-.notification-close:focus-visible { outline: 3px solid var(--color); }
+.notification-close:focus-visible {
+  outline: 3px solid var(--color);
+}
 
 .notification-message {
   font-size: 16px;
@@ -122,21 +145,37 @@
   border-radius: 4px;
   cursor: pointer;
 }
-.notification-buttons button:hover { filter: brightness(1.1); }
-.notification-buttons button:focus-visible { outline: 3px solid var(--color); }
+.notification-buttons button:hover {
+  filter: brightness(1.1);
+}
+.notification-buttons button:focus-visible {
+  outline: 3px solid var(--color);
+}
 
 /* Animações */
 @keyframes slideIn {
-  0% {opacity:0; transform:translateX(100%) scale(0.1);}
-  100% {opacity:1; transform:translateX(0) scale(1);}
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 @keyframes slideOut {
-  0% {opacity:1; transform:translateX(0) scale(1);}
-  100% {opacity:0; transform:translateX(100%) scale(0.1);}
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.1);
+  }
 }
 
 /* Mobile */
-@media (max-width:768px) {
+@media (max-width: 768px) {
   .notification-container {
     top: 15px;
     left: 50%;
@@ -153,12 +192,24 @@
     animation: slideUp 300ms ease-in-out forwards;
   }
   @keyframes slideDown {
-    0% {opacity:0; transform:translateY(-100%) scale(0.8);}
-    100% {opacity:1; transform:translateY(0) scale(1);}
+    0% {
+      opacity: 0;
+      transform: translateY(-100%) scale(0.8);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
   @keyframes slideUp {
-    0% {opacity:1; transform:translateY(0) scale(1);}
-    100% {opacity:0; transform:translateY(-100%) scale(0.8);}
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-100%) scale(0.8);
+    }
   }
 }
 

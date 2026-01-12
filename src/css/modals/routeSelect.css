@@ -3,186 +3,188 @@
    =========================== */
 
 .route-select-modal {
-    display: flex;
-    gap: 40rem;
-    height: 100%;
-    max-height: 100vh;
-    min-height: 0;
-    overflow: hidden;
-    flex-direction: column;
+  display: flex;
+  gap: 40rem;
+  height: 100%;
+  max-height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  flex-direction: column;
 }
 
 @supports (height: 100dvh) {
-    .route-select-modal {
-        max-height: 100dvh;
-    }
+  .route-select-modal {
+    max-height: 100dvh;
+  }
 }
 
 /* topo: título já vem do header do modal */
 .route-header {
-    display: grid;
-    place-items: center;
-    gap: 40rem;
+  display: grid;
+  place-items: center;
+  gap: 40rem;
 }
 
 /* cápsula com BR code */
 .route-br-badge {
-    min-height: 56rem;
-    padding: 20rem 30rem;
-    border-radius: 999rem;
-    background: var(--light-gray);
-    color: var(--darker-gray);
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  min-height: 56rem;
+  padding: 20rem 30rem;
+  border-radius: 999rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* visor da rota (A - 35) */
 .route-display {
-    position: relative;
-    height: 180rem;
-    border: 4rem solid var(--orange);
-    border-radius: 60rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 32rem;
-    background: var(--white);
-    padding: 0 40rem;
+  position: relative;
+  height: 180rem;
+  border: 4rem solid var(--orange);
+  border-radius: 60rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32rem;
+  background: var(--white);
+  padding: 0 40rem;
 }
 
 .route-letter,
 .route-number {
-    min-width: 80rem;
-    text-align: center;
-    font-size: 60rem;
-    font-weight: var(--text-bold);
-    color: var(--darker-gray);
+  min-width: 80rem;
+  text-align: center;
+  font-size: 60rem;
+  font-weight: var(--text-bold);
+  color: var(--darker-gray);
 }
 
 .route-dash {
-    font-size: var(--text-large);
-    font-weight: var(--text-bold);
-    color: var(--dark-gray);
-    line-height: 1;
+  font-size: var(--text-large);
+  font-weight: var(--text-bold);
+  color: var(--dark-gray);
+  line-height: 1;
 }
 
 /* teclado -------------------------------------------------- */
 .route-kbd {
-    display: flex;
-    justify-items: center;
-    gap: 22rem;
-    row-gap: 32rem;
-    padding: 2rem 6rem 0;
+  display: flex;
+  justify-items: center;
+  gap: 22rem;
+  row-gap: 32rem;
+  padding: 2rem 6rem 0;
 
-    /* make the keyboard area the ONLY scrollable region */
-    block-size: 100%;
-    min-block-size: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+  /* make the keyboard area the ONLY scrollable region */
+  block-size: 100%;
+  min-block-size: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 
-    align-content: start;
-    grid-auto-rows: max-content;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
+  align-content: start;
+  grid-auto-rows: max-content;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .route-key {
-    width: 250rem;
-    height: 250rem;
-    border: 0;
-    border-radius: 60rem;
-    background: var(--light-gray);
-    color: var(--darker-gray);
-    font-size: 80rem;
-    font-weight: var(--text-bold);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform .08s ease, background .12s ease, box-shadow .12s ease;
-    box-shadow: 0 2rem 0 rgba(0, 0, 0, .04);
-    touch-action: manipulation;
+  width: 250rem;
+  height: 250rem;
+  border: 0;
+  border-radius: 60rem;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  font-size: 80rem;
+  font-weight: var(--text-bold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    background 0.12s ease,
+    box-shadow 0.12s ease;
+  box-shadow: 0 2rem 0 rgba(0, 0, 0, 0.04);
+  touch-action: manipulation;
 }
 
 .route-key:hover {
-    background: #e6e6e6;
+  background: #e6e6e6;
 }
 
 .route-key:active {
-    transform: translateY(2rem);
+  transform: translateY(2rem);
 }
 
 .route-key--spacer {
-    background: transparent;
-    box-shadow: none;
-    pointer-events: none;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .route-key--icon {
-    background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 .route-key--icon svg {
-    width: 80rem;
-    height: 80rem;
-    stroke: var(--orange);
+  width: 80rem;
+  height: 80rem;
+  stroke: var(--orange);
 }
 
 .route-key--primary,
-.route-key[data-act="add"] {
-    background: var(--white) !important;
+.route-key[data-act='add'] {
+  background: var(--white) !important;
 }
 
 .route-key--add svg {
-    stroke: var(--orange);
+  stroke: var(--orange);
 }
 
-.route-key[data-act="add"][disabled] {
-    background: #ffffff !important;
-    color: #9e9e9e !important;
-    cursor: not-allowed;
+.route-key[data-act='add'][disabled] {
+  background: #ffffff !important;
+  color: #9e9e9e !important;
+  cursor: not-allowed;
 }
 
-.route-key[data-act="add"][disabled] svg {
-    stroke: var(--dark-gray);
+.route-key[data-act='add'][disabled] svg {
+  stroke: var(--dark-gray);
 }
 
 /* rodapé / CTA -------------------------------------------- */
 .route-footer {
-    margin-top: 4rem;
-    display: grid;
+  margin-top: 4rem;
+  display: grid;
 
-    /* keep the button visible; respect mobile safe areas */
-    position: sticky;
-    bottom: 0;
-    background: var(--white);
-    padding-bottom: max(16rem, env(safe-area-inset-bottom));
-    z-index: 2;
+  /* keep the button visible; respect mobile safe areas */
+  position: sticky;
+  bottom: 0;
+  background: var(--white);
+  padding-bottom: max(16rem, env(safe-area-inset-bottom));
+  z-index: 2;
 }
 
 .route-btn {
-    --pill-height: 150rem;
-    --pill-padding-x: 50rem;
-    --pill-gap: 18rem;
-    --pill-letter-spacing: 2rem;
-    --pill-font-weight: var(--text-bold);
-    --btn-bg: var(--orange);
-    --btn-bg-hover: var(--dark-orange);
-    --btn-color: var(--white);
-    --btn-bg-disabled: #dcdcdc;
-    --btn-color-disabled: #9e9e9e;
-    text-transform: uppercase;
-    touch-action: manipulation;
+  --pill-height: 150rem;
+  --pill-padding-x: 50rem;
+  --pill-gap: 18rem;
+  --pill-letter-spacing: 2rem;
+  --pill-font-weight: var(--text-bold);
+  --btn-bg: var(--orange);
+  --btn-bg-hover: var(--dark-orange);
+  --btn-color: var(--white);
+  --btn-bg-disabled: #dcdcdc;
+  --btn-color-disabled: #9e9e9e;
+  text-transform: uppercase;
+  touch-action: manipulation;
 }
 
 .route-btn i {
-    width: 36rem;
-    height: 36rem;
-    stroke: currentColor;
+  width: 36rem;
+  height: 36rem;
+  stroke: currentColor;
 }
-

@@ -1,618 +1,618 @@
-@import url("https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&display=swap');
 
 * {
-    font-family: "Jost", sans-serif;
-    box-sizing: border-box;
-    border: none;
-    margin: 0;
-    padding: 0;
-    outline: none;
-    background: none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-focus-ring-color: transparent;
+  font-family: 'Jost', sans-serif;
+  box-sizing: border-box;
+  border: none;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-focus-ring-color: transparent;
 }
 
 body {
-    width: 100dvw;
-    height: 100dvh;
-    overflow: hidden;
+  width: 100dvw;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 #app {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .wrap-x,
 .wrap-y {
-    aspect-ratio: 1.5/2;
-    overflow: hidden;
+  aspect-ratio: 1.5/2;
+  overflow: hidden;
 }
 
 .wrap-x {
-    display: flex;
-    /* align-items: center; */
-    height: 100%;
-    max-width: 100%;
+  display: flex;
+  /* align-items: center; */
+  height: 100%;
+  max-width: 100%;
 }
 
 .wrap-x .wrap-y {
-    width: 100%;
+  width: 100%;
 }
 
 .screen {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* top bar */
 .bar {
-    width: 100%;
-    height: 5%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20rem;
-    background-color: #ef4c29;
-    border-radius: 0rem;
-    padding: 40rem 50rem;
+  width: 100%;
+  height: 5%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20rem;
+  background-color: #ef4c29;
+  border-radius: 0rem;
+  padding: 40rem 50rem;
 }
 
 .logo {
-    width: 100rem;
+  width: 100rem;
 }
 
 .logo img {
-    scale: 1.5;
+  scale: 1.5;
 }
 
 .title {
-    font-size: var(--text-large);
-    font-weight: var(--text-bold);
-    color: var(--white);
+  font-size: var(--text-large);
+  font-weight: var(--text-bold);
+  color: var(--white);
 }
 
 .btn-info {
-    width: 80rem;
-    height: 80rem;
-    background-color: transparent;
-    border-radius: 50%;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    cursor: pointer;
+  width: 80rem;
+  height: 80rem;
+  background-color: transparent;
+  border-radius: 50%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  cursor: pointer;
 }
 
 .btn-info svg {
-    width: 60%;
-    height: 60%;
-    stroke: var(--white);
+  width: 60%;
+  height: 60%;
+  stroke: var(--white);
 }
 
 /* header */
 .header {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 50rem;
-    border-radius: 0rem;
-    background-color: var(--white);
-    padding: 50rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 50rem;
+  border-radius: 0rem;
+  background-color: var(--white);
+  padding: 50rem;
 }
 
 .header .user {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 50rem;
-    max-width: 85%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 50rem;
+  max-width: 85%;
 }
 
 .header .user .user-info {
-    max-width: calc(100% - 190rem);
+  max-width: calc(100% - 190rem);
 }
 
 .header .user .user-info span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .header .avatar {
-    width: 140rem;
-    height: 140rem;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2rem solid var(--orange);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
+  width: 140rem;
+  height: 140rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2rem solid var(--orange);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .header .avatar img {
-    width: 100%;
+  width: 100%;
 }
 
 .header .user-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 10rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10rem;
 }
 
 .header .username {
-    font-size: var(--text-large);
-    font-weight: var(--text-bold);
-    color: var(--black);
+  font-size: var(--text-large);
+  font-weight: var(--text-bold);
+  color: var(--black);
 }
 
 .header .username svg {
-    fill: var(--orange);
+  fill: var(--orange);
 }
 
 .header .hub {
-    font-size: var(--text-small);
-    font-weight: var(--text-bold);
-    color: var(--orange);
+  font-size: var(--text-small);
+  font-weight: var(--text-bold);
+  color: var(--orange);
 }
 
 .btn-menu {
-    width: 80rem;
-    height: 80rem;
-    background-color: transparent;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    max-width: 15%;
+  width: 80rem;
+  height: 80rem;
+  background-color: transparent;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  max-width: 15%;
 }
 
 .btn-menu svg {
-    width: 100%;
-    height: 100%;
-    stroke: var(--black);
+  width: 100%;
+  height: 100%;
+  stroke: var(--black);
 }
 
 /* camera */
 .cam {
-    width: 100%;
-    height: 2500rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: var(--black);
-    position: relative;
-    overflow: hidden;
+  width: 100%;
+  height: 2500rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--black);
+  position: relative;
+  overflow: hidden;
 }
 
 .cam .cam-controls {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    margin: 20rem 0;
-    justify-content: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: 20rem 0;
+  justify-content: center;
 }
 
 .cam .cam-controls .label {
-    font-size: var(--text-small);
-    font-weight: var(--text-bold);
-    color: var(--light-gray);
+  font-size: var(--text-small);
+  font-weight: var(--text-bold);
+  color: var(--light-gray);
 }
 
 .cam video {
-    width: 100%;
-    height: 100% !important;
-    object-fit: cover;
-    position: absolute;
-    inset: 0;
-    object-fit: cover;
-    z-index: 0;
+  width: 100%;
+  height: 100% !important;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  z-index: 0;
 }
 
 .cam .cam-controls .scan {
-    height: 95%;
-    border: 5rem solid var(--light-gray);
-    border-radius: 85rem;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    aspect-ratio: 1 / 1;
-    padding: 20rem;
+  height: 95%;
+  border: 5rem solid var(--light-gray);
+  border-radius: 85rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  aspect-ratio: 1 / 1;
+  padding: 20rem;
 }
 
 .cam .cam-controls .scan .line {
-    width: 110%;
-    height: 5rem;
-    background-color: var(--orange);
-    position: absolute;
-    animation: moveLine 0.8s linear infinite alternate;
+  width: 110%;
+  height: 5rem;
+  background-color: var(--orange);
+  position: absolute;
+  animation: moveLine 0.8s linear infinite alternate;
 }
 
 @keyframes moveLine {
-    0% {
-        top: -5rem;
-    }
+  0% {
+    top: -5rem;
+  }
 
-    100% {
-        top: 100%;
-    }
+  100% {
+    top: 100%;
+  }
 }
 
 .cam .cam-ctrl {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 50rem;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 50rem;
 }
 
 .cam-ctrl .cam-select {
-    background-color: transparent;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    gap: 20rem;
-    height: 100%;
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  gap: 20rem;
+  height: 100%;
 }
 
 .cam-ctrl .cam-select span {
-    font-size: var(--text-medium);
-    font-weight: var(--text-normal);
-    color: var(--white);
+  font-size: var(--text-medium);
+  font-weight: var(--text-normal);
+  color: var(--white);
 }
 
 .cam-ctrl .cam-select svg {
-    width: 50rem;
-    height: 50rem;
-    stroke: var(--white);
+  width: 50rem;
+  height: 50rem;
+  stroke: var(--white);
 }
 
 .cam-selector {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: min(90%, 800rem);
-    max-height: 500rem;
-    overflow: auto;
-    list-style: none;
-    margin: 0;
-    padding: 20rem;
-    background: rgba(17, 17, 17, .95);
-    border: 1rem solid #333;
-    border-radius: 80rem;
-    z-index: 99;
-    display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90%, 800rem);
+  max-height: 500rem;
+  overflow: auto;
+  list-style: none;
+  margin: 0;
+  padding: 20rem;
+  background: rgba(17, 17, 17, 0.95);
+  border: 1rem solid #333;
+  border-radius: 80rem;
+  z-index: 99;
+  display: none;
 }
 
 .cam-selector.show {
-    display: block;
+  display: block;
 }
 
 .cam-selector li {
-    padding: 28rem 36rem;
-    font-size: var(--text-medium);
-    color: #fff;
-    cursor: pointer;
-    white-space: nowrap;
+  padding: 28rem 36rem;
+  font-size: var(--text-medium);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .cam-selector li:hover {
-    background: #222;
+  background: #222;
 }
 
 .cam-selector li.active {
-    color: var(--orange);
-    font-weight: var(--text-bold);
+  color: var(--orange);
+  font-weight: var(--text-bold);
 }
 
 .cam-ctrl .cam-flip {
-    width: 80rem;
-    height: 80rem;
-    background-color: transparent;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
+  width: 80rem;
+  height: 80rem;
+  background-color: transparent;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .cam-ctrl .cam-flip svg {
-    width: 60%;
-    height: 60%;
-    stroke: var(--white);
+  width: 60%;
+  height: 60%;
+  stroke: var(--white);
 }
 
 .cam-video.mirror {
-    transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 
 .cam .label,
 .cam .scan,
 .cam .cam-ctrl {
-    position: relative;
-    z-index: 1;
+  position: relative;
+  z-index: 1;
 }
 
 /* panel */
 .panel {
-    width: 100%;
-    height: 80%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 50rem;
-    padding: 50rem;
+  width: 100%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 50rem;
+  padding: 50rem;
 }
 
 .panel .input {
-    width: 100%;
-    height: 170rem;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 50rem;
+  width: 100%;
+  height: 170rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 50rem;
 }
 
 .panel .input input {
-    width: 100%;
-    height: 100%;
-    background-color: var(--light-gray);
-    border-radius: 85rem;
-    font-size: var(--text-medium);
-    font-weight: var(--text-normal);
-    color: var(--black);
-    padding: 0 50rem;
+  width: 100%;
+  height: 100%;
+  background-color: var(--light-gray);
+  border-radius: 85rem;
+  font-size: var(--text-medium);
+  font-weight: var(--text-normal);
+  color: var(--black);
+  padding: 0 50rem;
 }
 
 .panel .input .btn-add {
-    height: 170rem;
-    width: 170rem;
-    background-color: var(--orange);
-    border-radius: 85rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    flex-shrink: 0;
+  height: 170rem;
+  width: 170rem;
+  background-color: var(--orange);
+  border-radius: 85rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .panel .input .btn-add svg {
-    width: 80rem;
-    height: 80rem;
-    stroke: var(--white);
+  width: 80rem;
+  height: 80rem;
+  stroke: var(--white);
 }
 
 .panel .btn-current-pallet,
 .panel .btn-all-pallets {
-    width: 100%;
-    height: 170rem;
-    background-color: var(--orange);
-    border-radius: 85rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    gap: 50rem;
-    padding: 50rem;
+  width: 100%;
+  height: 170rem;
+  background-color: var(--orange);
+  border-radius: 85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  gap: 50rem;
+  padding: 50rem;
 }
 
 .panel .btn-current-pallet .local-wrap span,
 .panel .btn-all-pallets .all-wrap span {
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    color: var(--white);
-    text-align: left;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--white);
+  text-align: left;
 }
 
 .panel .local-wrap,
 .panel .all-wrap {
-    width: 100%;
-    height: 70rem;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  width: 100%;
+  height: 70rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .panel .local-wrap .count-wrap,
 .panel .all-wrap .count-wrap {
-    display: flex;
-    height: 100%;
-    align-items: center;
-    background-color: var(--white);
-    border-radius: 50rem;
-    padding: 30rem;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  background-color: var(--white);
+  border-radius: 50rem;
+  padding: 30rem;
 }
 
 .panel .local-wrap .count-wrap span,
 .panel .all-wrap .count-wrap span {
-    font-size: var(--text-small);
-    font-weight: var(--text-bold);
-    color: var(--orange);
+  font-size: var(--text-small);
+  font-weight: var(--text-bold);
+  color: var(--orange);
 }
 
 .panel .btn-current-pallet svg,
 .panel .btn-all-pallets svg {
-    width: 80rem;
-    height: 80rem;
-    stroke: var(--white);
-    flex-shrink: 0;
+  width: 80rem;
+  height: 80rem;
+  stroke: var(--white);
+  flex-shrink: 0;
 }
 
 .panel .btn-current-pallet span,
 .panel .btn-all-pallets span {
-    font-size: var(--text-medium);
-    font-weight: var(--text-bold);
-    color: var(--white);
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  color: var(--white);
 }
 
 .panel .current-pallet-count,
 .panel .all-pallets-count {
-    height: 50rem;
-    background-color: var(--white);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20rem;
-    flex-shrink: 0;
+  height: 50rem;
+  background-color: var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rem;
+  flex-shrink: 0;
 }
 
 /* ====== variaveis basicas (fallbacks, caso nao estejam definidas) ====== */
 :root {
-    --white: #fff;
-    --black: #111;
-    --orange: #ef4c29;
-    --light-gray: #f2f2f2;
-    --text-small: 28rem;
-    --text-medium: 36rem;
-    --text-large: 48rem;
-    --text-normal: 400;
-    --text-bold: 700;
+  --white: #fff;
+  --black: #111;
+  --orange: #ef4c29;
+  --light-gray: #f2f2f2;
+  --text-small: 28rem;
+  --text-medium: 36rem;
+  --text-large: 48rem;
+  --text-normal: 400;
+  --text-bold: 700;
 }
 
 /* ====== layout seguro em aparelhos com notch ====== */
 body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* barra superior respeitando safe-area */
 .bar {
-    padding-left: calc(50rem + env(safe-area-inset-left));
-    padding-right: calc(50rem + env(safe-area-inset-right));
+  padding-left: calc(50rem + env(safe-area-inset-left));
+  padding-right: calc(50rem + env(safe-area-inset-right));
 }
 
 /* ====== video: ajustes iOS/Safari e clique na UI acima do video ====== */
 .cam video {
-    pointer-events: none;
-    /* deixa botoes clicaveis acima do video */
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    /* ajuda a evitar tearing em iOS */
-    background: #000;
+  pointer-events: none;
+  /* deixa botoes clicaveis acima do video */
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  /* ajuda a evitar tearing em iOS */
+  background: #000;
 }
 
 /* ====== seletor de cameras: secoes e acessibilidade ====== */
 .cam-selector {
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .cam-selector li {
-    padding: 32rem 40rem;
-    line-height: 1.2;
+  padding: 32rem 40rem;
+  line-height: 1.2;
 }
 
 .cam-selector li.section {
-    font-size: 22rem;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    opacity: .7;
-    cursor: default;
-    padding: 24rem 40rem 12rem;
+  font-size: 22rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  cursor: default;
+  padding: 24rem 40rem 12rem;
 }
 
-.cam-selector li[aria-selected="true"],
+.cam-selector li[aria-selected='true'],
 .cam-selector li.active {
-    color: var(--orange);
-    font-weight: var(--text-bold);
+  color: var(--orange);
+  font-weight: var(--text-bold);
 }
 
 /* toque confortável nos itens */
 @media (hover: none) {
-    .cam-selector li {
-        padding: 36rem 44rem;
-    }
+  .cam-selector li {
+    padding: 36rem 44rem;
+  }
 }
 
 /* modal central com safe-area */
 .cam-selector {
-    padding: calc(20rem + env(safe-area-inset-top)) 20rem calc(20rem + env(safe-area-inset-bottom));
-    box-shadow: 0 30rem 120rem rgba(0, 0, 0, .5);
+  padding: calc(20rem + env(safe-area-inset-top)) 20rem calc(20rem + env(safe-area-inset-bottom));
+  box-shadow: 0 30rem 120rem rgba(0, 0, 0, 0.5);
 }
 
 /* ====== animacao da linha do scanner com transform (mais suave) ====== */
 .cam .cam-controls .scan {
-    position: relative;
-    overflow: hidden;
-    /* garante que a linha nao vaze */
+  position: relative;
+  overflow: hidden;
+  /* garante que a linha nao vaze */
 }
 
 /* ====== controles da camera: alinhamento em telas pequenas ====== */
 .cam .cam-ctrl {
-    gap: 40rem;
-    padding: 30rem 20rem;
+  gap: 40rem;
+  padding: 30rem 20rem;
 }
 
 .cam-ctrl .cam-select span {
-    max-width: 48vw;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  max-width: 48vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ====== orientacao paisagem: da mais altura ao video/scan ====== */
 @media (orientation: landscape) {
-    .cam {
-        height: 100%;
-    }
+  .cam {
+    height: 100%;
+  }
 
-    .cam .cam-controls {
-        margin: 10rem 0;
-    }
+  .cam .cam-controls {
+    margin: 10rem 0;
+  }
 
-    .cam .cam-controls .scan {
-        max-width: 80vh;
-    }
+  .cam .cam-controls .scan {
+    max-width: 80vh;
+  }
 }
 
 /* ====== refinamentos visuais ====== */
 .logo img {
-    display: block;
+  display: block;
 }
 
 .cam-video.mirror {
-    transform: scaleX(-1);
+  transform: scaleX(-1);
 }
 
 .panel .input input::placeholder {
-    color: #666;
+  color: #666;
 }
 
 /* botao flutuante mais “clicavel” em mobile */
 .btn-menu,
 .btn-info,
 .cam-ctrl .cam-flip {
-    touch-action: manipulation;
+  touch-action: manipulation;
 }
 
 /* ====== estados focus visiveis sem baguncar layout ====== */
 :focus-visible {
-    outline: 4rem solid rgba(239, 76, 41, .35);
-    outline-offset: 4rem;
-    border-radius: 12rem;
+  outline: 4rem solid rgba(239, 76, 41, 0.35);
+  outline-offset: 4rem;
+  border-radius: 12rem;
 }

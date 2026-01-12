@@ -3,30 +3,30 @@ import {
   publicRegisterUser,
   normalizeIdentifier,
   saveHubLocal,
-  requestEmailVerification
-} from "../utils/auth.js";
+  requestEmailVerification,
+} from '../utils/auth.js';
 
-import { showAlert } from "../utils/alerts.js";
-import { enhanceSelect } from "../utils/uiSelect.js";
-import { apiGet } from "../api.js";
-import { openModal } from "../modal.js";
+import { showAlert } from '../utils/alerts.js';
+import { enhanceSelect } from '../utils/uiSelect.js';
+import { apiGet } from '../api.js';
+import { openModal } from '../modal.js';
 
 export const meta = {
-  title: "Criar Conta",
-  size: "sm",
+  title: 'Criar Conta',
+  size: 'sm',
   showBack: true,
   showClose: false,
   backdropClose: false,
   escToClose: false,
-  initialFocus: "#reg-hub",
+  initialFocus: '#reg-hub',
 };
 
 export default function render(_props = {}, api) {
-  api.setBackTo("login");
+  api.setBackTo('login');
 
   const hubIndex = new Map();
-  const el = document.createElement("div");
-  el.className = "register-form";
+  const el = document.createElement('div');
+  el.className = 'register-form';
 
   el.innerHTML = `
     <!-- HUB SELECT -->
@@ -100,20 +100,22 @@ export default function render(_props = {}, api) {
     </div>
   `;
 
-  try { window.lucide?.createIcons?.(); } catch {}
+  try {
+    window.lucide?.createIcons?.();
+  } catch {}
 
   // -------------------------------------------------------------------
   // REFERÊNCIAS
   // -------------------------------------------------------------------
-  const identInput = el.querySelector("#reg-user");
-  const submitButton = el.querySelector("#reg-submit");
-  const emailCodeField = el.querySelector("#email-code-field");
-  const emailCodeInput = el.querySelector("#reg-email-code");
-  const resendCodeBtn = el.querySelector("#reg-resend-code");
-  const passInput = el.querySelector("#reg-pass");
-  const passConfirmInput = el.querySelector("#reg-pass-confirm");
-  const togglePassBtn = el.querySelector("#toggle-pass-main");
-  const togglePassConfirmBtn = el.querySelector("#toggle-pass-confirm");
+  const identInput = el.querySelector('#reg-user');
+  const submitButton = el.querySelector('#reg-submit');
+  const emailCodeField = el.querySelector('#email-code-field');
+  const emailCodeInput = el.querySelector('#reg-email-code');
+  const resendCodeBtn = el.querySelector('#reg-resend-code');
+  const passInput = el.querySelector('#reg-pass');
+  const passConfirmInput = el.querySelector('#reg-pass-confirm');
+  const togglePassBtn = el.querySelector('#toggle-pass-main');
+  const togglePassConfirmBtn = el.querySelector('#toggle-pass-confirm');
 
   let lastEmailIdent = null;
   let awaitingCode = false;
@@ -122,8 +124,8 @@ export default function render(_props = {}, api) {
   // LOADING STATE
   // -------------------------------------------------------------------
   function setLoading(isLoading) {
-    submitButton.classList.toggle("register-btn--loading", isLoading);
-    document.querySelector(".modal")?.classList?.toggle("loading", isLoading);
+    submitButton.classList.toggle('register-btn--loading', isLoading);
+    document.querySelector('.modal')?.classList?.toggle('loading', isLoading);
   }
 
   // -------------------------------------------------------------------
@@ -131,14 +133,16 @@ export default function render(_props = {}, api) {
   // -------------------------------------------------------------------
   function swapIcon(btn, name) {
     if (window.lucide?.icons?.[name]?.toSvg) {
-      btn.innerHTML = window.lucide.icons[name].toSvg({ "aria-hidden": "true" });
+      btn.innerHTML = window.lucide.icons[name].toSvg({ 'aria-hidden': 'true' });
     } else {
-      let i = btn.querySelector("[data-lucide]") || document.createElement("i");
-      i.setAttribute("aria-hidden", "true");
-      i.setAttribute("data-lucide", name);
-      btn.innerHTML = "";
+      let i = btn.querySelector('[data-lucide]') || document.createElement('i');
+      i.setAttribute('aria-hidden', 'true');
+      i.setAttribute('data-lucide', name);
+      btn.innerHTML = '';
       btn.appendChild(i);
-      try { window.lucide?.createIcons?.(); } catch {}
+      try {
+        window.lucide?.createIcons?.();
+      } catch {}
     }
   }
 
@@ -146,15 +150,15 @@ export default function render(_props = {}, api) {
     if (!input || !btn) return;
 
     function setVisible(show) {
-      input.type = show ? "text" : "password";
-      btn.setAttribute("aria-pressed", String(show));
-      btn.setAttribute("aria-label", show ? labelHide : labelShow);
-      swapIcon(btn, show ? "eye-off" : "eye");
+      input.type = show ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', String(show));
+      btn.setAttribute('aria-label', show ? labelHide : labelShow);
+      swapIcon(btn, show ? 'eye-off' : 'eye');
     }
 
     let lastSelection = null;
 
-    btn.addEventListener("pointerdown", (e) => {
+    btn.addEventListener('pointerdown', e => {
       e.preventDefault();
       lastSelection = {
         start: input.selectionStart,
@@ -163,14 +167,16 @@ export default function render(_props = {}, api) {
       };
     });
 
-    btn.addEventListener("click", () => {
-      const willShow = input.type === "password";
+    btn.addEventListener('click', () => {
+      const willShow = input.type === 'password';
       setVisible(willShow);
 
       const s = lastSelection?.start ?? input.value.length;
       const e = lastSelection?.end ?? s;
       requestAnimationFrame(() => {
-        try { input.setSelectionRange(s, e, lastSelection?.dir || "none"); } catch {}
+        try {
+          input.setSelectionRange(s, e, lastSelection?.dir || 'none');
+        } catch {}
       });
     });
 
@@ -180,49 +186,49 @@ export default function render(_props = {}, api) {
   setupToggle({
     input: passInput,
     btn: togglePassBtn,
-    labelShow: "Mostrar senha",
-    labelHide: "Ocultar senha",
+    labelShow: 'Mostrar senha',
+    labelHide: 'Ocultar senha',
   });
 
   setupToggle({
     input: passConfirmInput,
     btn: togglePassConfirmBtn,
-    labelShow: "Mostrar senha",
-    labelHide: "Ocultar senha",
+    labelShow: 'Mostrar senha',
+    labelHide: 'Ocultar senha',
   });
 
   // -------------------------------------------------------------------
   // VALIDAR CAMPOS
   // -------------------------------------------------------------------
   function validateInputs() {
-    const hubCode = el.querySelector("#reg-hub").value;
+    const hubCode = el.querySelector('#reg-hub').value;
     const rawEmail = identInput.value.trim();
-    const pass = el.querySelector("#reg-pass").value;
-    const pass2 = el.querySelector("#reg-pass-confirm").value;
+    const pass = el.querySelector('#reg-pass').value;
+    const pass2 = el.querySelector('#reg-pass-confirm').value;
 
     if (!hubCode || !rawEmail || !pass || !pass2) {
       showAlert({
-        type: "error",
-        title: "Campos incompletos",
-        message: "Preencha todos os campos obrigatórios.",
+        type: 'error',
+        title: 'Campos incompletos',
+        message: 'Preencha todos os campos obrigatórios.',
       });
       return null;
     }
 
     if (pass.length < 6) {
       showAlert({
-        type: "error",
-        title: "Senha muito curta",
-        message: "A senha deve ter ao menos 6 caracteres.",
+        type: 'error',
+        title: 'Senha muito curta',
+        message: 'A senha deve ter ao menos 6 caracteres.',
       });
       return null;
     }
 
     if (pass !== pass2) {
       showAlert({
-        type: "error",
-        title: "Senhas não conferem",
-        message: "As senhas são diferentes.",
+        type: 'error',
+        title: 'Senhas não conferem',
+        message: 'As senhas são diferentes.',
       });
       return null;
     }
@@ -230,8 +236,8 @@ export default function render(_props = {}, api) {
     const norm = normalizeIdentifier(rawEmail);
     if (!norm.ok) {
       showAlert({
-        type: "error",
-        title: "E-mail inválido",
+        type: 'error',
+        title: 'E-mail inválido',
         message: norm.error,
       });
       return null;
@@ -240,9 +246,9 @@ export default function render(_props = {}, api) {
     const hub = hubIndex.get(hubCode);
     if (!hub) {
       showAlert({
-        type: "error",
-        title: "HUB inválido",
-        message: "Selecione um HUB válido.",
+        type: 'error',
+        title: 'HUB inválido',
+        message: 'Selecione um HUB válido.',
       });
       return null;
     }
@@ -269,20 +275,20 @@ export default function render(_props = {}, api) {
 
       if (!res?.ok) {
         showAlert({
-          type: "error",
-          title: "Erro",
-          message: res?.error || "Falha ao enviar código.",
+          type: 'error',
+          title: 'Erro',
+          message: res?.error || 'Falha ao enviar código.',
         });
         return setLoading(false);
       }
 
       awaitingCode = true;
       emailCodeField.hidden = false;
-      submitButton.querySelector("span").textContent = "Confirmar código";
+      submitButton.querySelector('span').textContent = 'Confirmar código';
 
       showAlert({
-        type: "info",
-        title: "Código enviado",
+        type: 'info',
+        title: 'Código enviado',
         message: `Um código foi enviado para ${email}`,
       });
 
@@ -293,9 +299,9 @@ export default function render(_props = {}, api) {
     const code = emailCodeInput.value.trim();
     if (!code) {
       showAlert({
-        type: "error",
-        title: "Código obrigatório",
-        message: "Digite o código enviado ao seu e-mail.",
+        type: 'error',
+        title: 'Código obrigatório',
+        message: 'Digite o código enviado ao seu e-mail.',
       });
       return setLoading(false);
     }
@@ -309,9 +315,9 @@ export default function render(_props = {}, api) {
 
     if (!data?.ok) {
       showAlert({
-        type: "error",
-        title: "Falha ao criar conta",
-        message: data?.error || "Erro desconhecido.",
+        type: 'error',
+        title: 'Falha ao criar conta',
+        message: data?.error || 'Erro desconhecido.',
       });
       return setLoading(false);
     }
@@ -327,7 +333,7 @@ export default function render(_props = {}, api) {
       message: isPending
         ? 'Seu usuário ficou pendente. Peça a liberação com sua liderança/analista e depois faça login.'
         : 'Conta criada com sucesso. Agora faça login.',
-      durationMs: 4000
+      durationMs: 4000,
     });
 
     // ✅ troca o modal atual pelo login (sem depender do openModal importado)
@@ -340,26 +346,26 @@ export default function render(_props = {}, api) {
   // -------------------------------------------------------------------
   // HUB SELECT — agora via backend
   // -------------------------------------------------------------------
-  const niceSelect = enhanceSelect(el, "reg-hub");
+  const niceSelect = enhanceSelect(el, 'reg-hub');
 
   initHubs();
 
   async function initHubs() {
-    const data = await apiGet("hubs");
+    const data = await apiGet('hubs');
     if (!data?.ok || !Array.isArray(data.hubs)) {
       return showAlert({
-        type: "error",
-        title: "Erro",
-        message: "Falha ao carregar lista de HUBs.",
+        type: 'error',
+        title: 'Erro',
+        message: 'Falha ao carregar lista de HUBs.',
       });
     }
 
     buildHubIndex(data.hubs);
     populateSelect(data.hubs);
 
-    const saved = localStorage.getItem("hubCode");
+    const saved = localStorage.getItem('hubCode');
     if (saved && hubIndex.has(saved)) {
-      el.querySelector("#reg-hub").value = saved;
+      el.querySelector('#reg-hub').value = saved;
       niceSelect.pick(saved, hubIndex.get(saved).label);
     }
   }
@@ -374,13 +380,11 @@ export default function render(_props = {}, api) {
   }
 
   function populateSelect(list) {
-    const sel = el.querySelector("#reg-hub");
+    const sel = el.querySelector('#reg-hub');
 
     sel.innerHTML =
       `<option value="" selected disabled>Selecione uma opção</option>` +
-      list
-        .map((h) => `<option value="${h.code}">${h.label}</option>`)
-        .join("");
+      list.map(h => `<option value="${h.code}">${h.label}</option>`).join('');
 
     niceSelect.refreshOptions();
   }

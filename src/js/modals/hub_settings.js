@@ -8,7 +8,7 @@ export const meta = {
   showClose: true,
   backdropClose: true,
   escToClose: true,
-  initialFocus: '#hub-settings-root'
+  initialFocus: '#hub-settings-root',
 };
 
 export default function render(_props = {}, api) {
@@ -19,7 +19,7 @@ export default function render(_props = {}, api) {
   el.className = 'settings-modal';
   el.innerHTML = loadingView();
 
-  init().catch((e) => {
+  init().catch(e => {
     el.innerHTML = errorView(e?.message || 'Falha ao carregar dados.');
     if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   });
@@ -32,7 +32,9 @@ export default function render(_props = {}, api) {
     const role = String(profile.role || '').toLowerCase();
 
     if (role !== 'admin') {
-      el.innerHTML = errorView('Acesso negado: apenas administradores podem acessar as configurações de HUB.');
+      el.innerHTML = errorView(
+        'Acesso negado: apenas administradores podem acessar as configurações de HUB.'
+      );
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
       return;
     }
@@ -129,22 +131,22 @@ function bindHubSettings(root, api, hub) {
     letter_to: toLetter((hub?.letter_range || '').split('-')[1], 'A'),
     num_from: toInt((hub?.number_range || '').split('-')[0], 1),
     num_to: toInt((hub?.number_range || '').split('-')[1], 1),
-    allow_guests: Boolean(hub?.allow_guests)
+    allow_guests: Boolean(hub?.allow_guests),
   };
   let initial = { ...cfg };
   let dirty = false;
 
-  const $ = (s) => root.querySelector(s);
-  const palletVal   = $('#palletVal');
+  const $ = s => root.querySelector(s);
+  const palletVal = $('#palletVal');
   const letterStart = $('#letterStart');
-  const letterEnd   = $('#letterEnd');
-  const numStart    = $('#numStart');
-  const numEnd      = $('#numEnd');
+  const letterEnd = $('#letterEnd');
+  const numStart = $('#numStart');
+  const numEnd = $('#numEnd');
   const allowGuests = $('#switchOnOff');
 
   renderVals();
 
-  root.addEventListener('click', (e) => {
+  root.addEventListener('click', e => {
     const act = e.target?.dataset?.act;
     if (!act) return;
 
@@ -155,11 +157,45 @@ function bindHubSettings(root, api, hub) {
     if (initial.max_packages !== cfg.max_packages) dirty = true;
   });
 
-  makeEditableLetter(letterStart, () => cfg.letter_from, (v, prev) => { cfg.letter_from = v; renderVals(); if (v !== prev) dirty = true; });
-  makeEditableLetter(letterEnd,   () => cfg.letter_to,   (v, prev) => { cfg.letter_to   = v; renderVals(); if (v !== prev) dirty = true; });
+  makeEditableLetter(
+    letterStart,
+    () => cfg.letter_from,
+    (v, prev) => {
+      cfg.letter_from = v;
+      renderVals();
+      if (v !== prev) dirty = true;
+    }
+  );
+  makeEditableLetter(
+    letterEnd,
+    () => cfg.letter_to,
+    (v, prev) => {
+      cfg.letter_to = v;
+      renderVals();
+      if (v !== prev) dirty = true;
+    }
+  );
 
-  makeEditableNumber(numStart,    () => cfg.num_from,    (v, prev) => { cfg.num_from    = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
-  makeEditableNumber(numEnd,      () => cfg.num_to,      (v, prev) => { cfg.num_to      = v; fixNum(); renderVals(); if (v !== prev) dirty = true; });
+  makeEditableNumber(
+    numStart,
+    () => cfg.num_from,
+    (v, prev) => {
+      cfg.num_from = v;
+      fixNum();
+      renderVals();
+      if (v !== prev) dirty = true;
+    }
+  );
+  makeEditableNumber(
+    numEnd,
+    () => cfg.num_to,
+    (v, prev) => {
+      cfg.num_to = v;
+      fixNum();
+      renderVals();
+      if (v !== prev) dirty = true;
+    }
+  );
 
   if (allowGuests) {
     allowGuests.addEventListener('change', () => {
@@ -175,9 +211,9 @@ function bindHubSettings(root, api, hub) {
   function renderVals() {
     palletVal.textContent = cfg.max_packages;
     letterStart.value = cfg.letter_from;
-    letterEnd.value   = cfg.letter_to;
-    numStart.value    = cfg.num_from;
-    numEnd.value      = cfg.num_to;
+    letterEnd.value = cfg.letter_to;
+    numStart.value = cfg.num_from;
+    numEnd.value = cfg.num_to;
     if (allowGuests) allowGuests.checked = !!cfg.allow_guests;
   }
 
@@ -189,7 +225,7 @@ function bindHubSettings(root, api, hub) {
       title: 'Salvar alterações?',
       message: 'Você fez alterações nas configurações do HUB.',
       okLabel: 'Salvar',
-      cancelLabel: 'Descartar'
+      cancelLabel: 'Descartar',
     });
     if (!wantSave) return true;
 
@@ -198,7 +234,7 @@ function bindHubSettings(root, api, hub) {
         max_packages: cfg.max_packages,
         letter_range: `${cfg.letter_from}-${cfg.letter_to}`,
         number_range: `${cfg.num_from}-${cfg.num_to}`,
-        allow_guests: cfg.allow_guests
+        allow_guests: cfg.allow_guests,
       });
       initial = { ...cfg };
       dirty = false;
@@ -208,7 +244,7 @@ function bindHubSettings(root, api, hub) {
         type: 'error',
         title: 'Falha ao salvar',
         message: e?.message || 'Erro inesperado.',
-        durationMs: 3000
+        durationMs: 3000,
       });
       return false;
     }
@@ -222,16 +258,24 @@ function makeEditableLetter(inputEl, getVal, setVal) {
   inputEl.addEventListener('focus', () => {
     inputEl.dataset.prev = getVal();
     inputEl.value = '';
-    setTimeout(() => { inputEl.focus(); inputEl.select?.(); }, 0);
+    setTimeout(() => {
+      inputEl.focus();
+      inputEl.select?.();
+    }, 0);
   });
   inputEl.addEventListener('input', () => {
     const v = inputEl.value.toUpperCase().replace(/[^A-Z]/g, '');
     inputEl.value = v.slice(0, 1);
   });
-  inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') inputEl.blur(); });
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') inputEl.blur();
+  });
   inputEl.addEventListener('blur', () => {
     const prev = inputEl.dataset.prev ?? getVal();
-    let v = inputEl.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 1);
+    let v = inputEl.value
+      .toUpperCase()
+      .replace(/[^A-Z]/g, '')
+      .slice(0, 1);
     if (!v) v = prev;
     setVal(v, prev);
     delete inputEl.dataset.prev;
@@ -242,13 +286,18 @@ function makeEditableNumber(inputEl, getVal, setVal) {
   inputEl.addEventListener('focus', () => {
     inputEl.dataset.prev = String(getVal());
     inputEl.value = '';
-    setTimeout(() => { inputEl.focus(); inputEl.select?.(); }, 0);
+    setTimeout(() => {
+      inputEl.focus();
+      inputEl.select?.();
+    }, 0);
   });
   inputEl.addEventListener('input', () => {
     const v = inputEl.value.replace(/\D/g, '');
     inputEl.value = v;
   });
-  inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') inputEl.blur(); });
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') inputEl.blur();
+  });
   inputEl.addEventListener('blur', () => {
     const prevStr = inputEl.dataset.prev ?? String(getVal());
     const prevNum = toInt(prevStr, 0);
@@ -266,7 +315,21 @@ function makeEditableNumber(inputEl, getVal, setVal) {
 
 /* ---------------------- UTILS ---------------------- */
 
-function clamp(v, a, b) { return Math.max(a, Math.min(b, Number(v) || 0)); }
-function toInt(v, d) { const n = parseInt(v, 10); return Number.isFinite(n) ? n : d; }
-function toLetter(v, d) { const s = String(v || '').toUpperCase().replace(/[^A-Z]/g, ''); return s ? s[0] : d; }
-function escapeHtml(s) { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; }
+function clamp(v, a, b) {
+  return Math.max(a, Math.min(b, Number(v) || 0));
+}
+function toInt(v, d) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : d;
+}
+function toLetter(v, d) {
+  const s = String(v || '')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '');
+  return s ? s[0] : d;
+}
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s ?? '');
+  return d.innerHTML;
+}

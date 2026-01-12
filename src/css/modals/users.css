@@ -36,7 +36,9 @@
   font-size: var(--text-medium);
 }
 
-.users-btn:hover { background: #dcdcdc; }
+.users-btn:hover {
+  background: #dcdcdc;
+}
 
 .users-btn--primary {
   background: var(--orange);
@@ -64,7 +66,9 @@
   cursor: pointer;
 }
 
-.user-row:hover { background: #dcdcdc; }
+.user-row:hover {
+  background: #dcdcdc;
+}
 
 .user-left {
   display: grid;
@@ -82,7 +86,11 @@
   border: 1.5rem solid var(--orange);
 }
 
-.user-main { display: grid; gap: 6rem; min-width: 0; }
+.user-main {
+  display: grid;
+  gap: 6rem;
+  min-width: 0;
+}
 
 .user-name {
   font-size: var(--text-medium);
@@ -93,7 +101,12 @@
   text-overflow: ellipsis;
 }
 
-.user-meta { display: flex; gap: 10rem; align-items: center; flex-wrap: wrap; }
+.user-meta {
+  display: flex;
+  gap: 10rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
 /* =========================
    BADGES
@@ -105,13 +118,19 @@
   border-radius: 999rem;
   font-size: var(--text-small);
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
   color: var(--white);
 }
 
-.role-badge { background: var(--dark-gray); }
-.role-badge.is-admin { background: var(--orange); }
-.role-badge.is-user { background: var(--dark-gray); }
+.role-badge {
+  background: var(--dark-gray);
+}
+.role-badge.is-admin {
+  background: var(--orange);
+}
+.role-badge.is-user {
+  background: var(--dark-gray);
+}
 
 /* status badge: usa cores suaves (texto escuro p/ legibilidade) */
 .status-badge {
@@ -119,9 +138,15 @@
   background: #eaeaea;
 }
 
-.status-badge.is-active { background: rgba(0, 200, 0, .14); }
-.status-badge.is-pending { background: rgba(255, 170, 0, .18); }
-.status-badge.is-inactive { background: rgba(255, 0, 0, .14); }
+.status-badge.is-active {
+  background: rgba(0, 200, 0, 0.14);
+}
+.status-badge.is-pending {
+  background: rgba(255, 170, 0, 0.18);
+}
+.status-badge.is-inactive {
+  background: rgba(255, 0, 0, 0.14);
+}
 
 /* =========================
    AÇÕES À DIREITA
@@ -148,26 +173,37 @@
 
   font-size: var(--text-small);
   font-weight: var(--text-bold);
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
 
   background: var(--orange-light);
   color: var(--orange);
 }
 
-.user-action svg { width: 30rem; height: 30rem; }
+.user-action svg {
+  width: 30rem;
+  height: 30rem;
+}
 
-.user-action:hover { filter: brightness(.98); }
+.user-action:hover {
+  filter: brightness(0.98);
+}
 
 .user-action:disabled,
 .user-action.is-loading {
-  opacity: .65;
+  opacity: 0.65;
   cursor: default;
   pointer-events: none;
 }
 
 /* variações (se quiser diferenciar) */
-.user-action--allow { background: rgba(255, 170, 0, .20); color: #8a5a00; }
-.user-action--activate { background: rgba(0, 200, 0, .16); color: #066b06; }
+.user-action--allow {
+  background: rgba(255, 170, 0, 0.2);
+  color: #8a5a00;
+}
+.user-action--activate {
+  background: rgba(0, 200, 0, 0.16);
+  color: #066b06;
+}
 
 /* botão chevron (abrir editor) */
 .user-open {
@@ -176,14 +212,19 @@
   border-radius: 50%;
   border: 0;
   cursor: pointer;
-  background: rgba(0, 0, 0, .06);
+  background: rgba(0, 0, 0, 0.06);
   display: grid;
   place-items: center;
 }
 
-.user-open:hover { background: rgba(0, 0, 0, .10); }
+.user-open:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
 
-.user-open .chev { width: 22rem; height: 22rem; }
+.user-open .chev {
+  width: 22rem;
+  height: 22rem;
+}
 
 /* =========================
    EMPTY + SKELETON
@@ -197,9 +238,15 @@
   color: var(--dark-gray);
 }
 
-.users-empty i { width: 28rem; height: 28rem; }
+.users-empty i {
+  width: 28rem;
+  height: 28rem;
+}
 
-.users-skel { display: grid; gap: 12rem; }
+.users-skel {
+  display: grid;
+  gap: 12rem;
+}
 .sk-row {
   height: 116rem;
   border-radius: 60rem;
@@ -209,6 +256,10 @@
 }
 
 @keyframes sk {
-  0% { background-position: 0 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

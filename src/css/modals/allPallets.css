@@ -16,8 +16,8 @@
   align-content: start;
   justify-items: center;
   padding: 8rem 4rem 0;
-  min-height: 0;          /* permite o filho rolar dentro do grid container */
-  overflow: auto;         /* rolagem só na grade */
+  min-height: 0; /* permite o filho rolar dentro do grid container */
+  overflow: auto; /* rolagem só na grade */
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--dark-gray) var(--light-gray);
@@ -25,7 +25,7 @@
 }
 
 .allpallets-item {
-  position: relative;     /* para o ::after */
+  position: relative; /* para o ::after */
   width: 180rem;
   height: 180rem;
   border: 0;
@@ -37,12 +37,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2rem 0 rgba(0,0,0,.04);
+  box-shadow: 0 2rem 0 rgba(0, 0, 0, 0.04);
   cursor: pointer;
-  transition: transform .08s ease, background .12s ease;
+  transition:
+    transform 0.08s ease,
+    background 0.12s ease;
 }
-.allpallets-item:hover { background: #e6e6e6; }
-.allpallets-item:active { transform: translateY(2rem); }
+.allpallets-item:hover {
+  background: #e6e6e6;
+}
+.allpallets-item:active {
+  transform: translateY(2rem);
+}
 
 /* skeleton ao carregar */
 .allpallets-grid--loading .allpallets-item,
@@ -54,7 +60,11 @@
   background-size: 200% 100%;
   animation: ap-skel 1s linear infinite;
 }
-@keyframes ap-skel { to { background-position: -200% 0; } }
+@keyframes ap-skel {
+  to {
+    background-position: -200% 0;
+  }
+}
 
 .allpallets-empty {
   grid-column: 1 / -1;
@@ -75,10 +85,10 @@
   position: relative;
   padding: 6rem 4rem 10rem;
   background: var(--modal-bg, #fff);
-  box-shadow: 0 -6rem 18rem rgba(0,0,0,.06);
+  box-shadow: 0 -6rem 18rem rgba(0, 0, 0, 0.06);
   z-index: 1;
   display: grid;
-  gap: 20rem;  /* três botões */
+  gap: 20rem; /* três botões */
 }
 
 .allpallets-modal-btn {
@@ -99,10 +109,23 @@
   cursor: pointer;
 }
 
-.allpallets-modal-btn i { width: 34rem; height: 34rem; stroke: currentColor; }
-.allpallets-modal-btn[disabled] { cursor: not-allowed; color: var(--gray); background-color: var(--light-gray); }
-.allpallets-modal-btn[disabled] svg { stroke: var(--gray) !important; }
-.allpallets-modal-btn--danger { background: var(--red); color: var(--white); }
+.allpallets-modal-btn i {
+  width: 34rem;
+  height: 34rem;
+  stroke: currentColor;
+}
+.allpallets-modal-btn[disabled] {
+  cursor: not-allowed;
+  color: var(--gray);
+  background-color: var(--light-gray);
+}
+.allpallets-modal-btn[disabled] svg {
+  stroke: var(--gray) !important;
+}
+.allpallets-modal-btn--danger {
+  background: var(--red);
+  color: var(--white);
+}
 
 /* botão “primário” (imprimir) */
 .allpallets-modal-btn--primary {
@@ -147,11 +170,12 @@
   line-height: 1;
   background: var(--orange);
   color: var(--white);
-  box-shadow: 0 2rem 0 rgba(0,0,0,.08);
+  box-shadow: 0 2rem 0 rgba(0, 0, 0, 0.08);
 }
 
 /* Desativa seleção e callouts só dentro do modal dos pallets */
-.allpallets-modal, .allpallets-modal * {
+.allpallets-modal,
+.allpallets-modal * {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -161,7 +185,8 @@
 }
 
 /* Se precisar reativar seleção em algum trecho, envolva com .allow-select */
-.allow-select, .allow-select * {
+.allow-select,
+.allow-select * {
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
   -ms-user-select: text !important;

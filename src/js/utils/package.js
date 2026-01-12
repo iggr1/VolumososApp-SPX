@@ -2,12 +2,16 @@ import { apiDel } from '../api.js';
 import { updateCounts } from './helper.js';
 
 export function verifyBrCode(brCode) {
-  const s = String(brCode || '').trim().toUpperCase();
+  const s = String(brCode || '')
+    .trim()
+    .toUpperCase();
   return /^BR[A-Z0-9]{13}$/.test(s);
 }
 
 export async function deletePackage({ brCode, palletId, all = false }) {
-  const br = String(brCode || '').toUpperCase().trim();
+  const br = String(brCode || '')
+    .toUpperCase()
+    .trim();
   if (!br) throw new Error('brCode obrigatório');
   await apiDel('package', { brCode: br, pallet: palletId, all });
 
@@ -16,11 +20,7 @@ export async function deletePackage({ brCode, palletId, all = false }) {
 
 export async function deletePackagesByBrCodes(brCodes = [], palletId, { all = false } = {}) {
   const uniq = Array.from(
-    new Set(
-      brCodes
-        .filter(Boolean)
-        .map(s => String(s).toUpperCase().trim())
-    )
+    new Set(brCodes.filter(Boolean).map(s => String(s).toUpperCase().trim()))
   );
 
   const results = [];
@@ -44,11 +44,14 @@ export async function deletePackagesByBrCodes(brCodes = [], palletId, { all = fa
   return { ok, total: uniq.length, failed, results };
 }
 
-export async function deletePackagesByIndices(items = [], indices = [], palletId, { all = false } = {}) {
+export async function deletePackagesByIndices(
+  items = [],
+  indices = [],
+  palletId,
+  { all = false } = {}
+) {
   const idxs = Array.isArray(indices) ? indices : Array.from(indices || []);
-  const brs = idxs
-    .map(i => items[i] && (items[i].brCode || items[i].brcode))
-    .filter(Boolean);
+  const brs = idxs.map(i => items[i] && (items[i].brCode || items[i].brcode)).filter(Boolean);
   return deletePackagesByBrCodes(brs, palletId, { all });
 }
 
