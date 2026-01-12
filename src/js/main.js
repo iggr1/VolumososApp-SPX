@@ -11,6 +11,17 @@ import { getPreRoute } from './utils/preroute.js';
 
 setupTypography();
 
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.error('Falha ao registrar Service Worker', err);
+    });
+  });
+}
+
+registerServiceWorker();
+
 const camEl = $('.cam');
 const scanEl = $('.cam .scan');
 const selectBtn = $('.cam-select');
