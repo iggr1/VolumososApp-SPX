@@ -327,7 +327,7 @@ export default function render(_props = {}, api) {
       message: isPending
         ? 'Seu usuário ficou pendente. Peça a liberação com sua liderança/analista e depois faça login.'
         : 'Conta criada com sucesso. Agora faça login.',
-      durationMs: 2200
+      durationMs: 4000
     });
 
     // ✅ troca o modal atual pelo login (sem depender do openModal importado)
