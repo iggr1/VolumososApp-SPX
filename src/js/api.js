@@ -30,7 +30,6 @@ export function getBase() {
   const isGithub = host.endsWith('github.io');
 
   const url = PROD_BASE;
-  const url = DEV_BASE;
   BASE = url;
   return url;
 }
