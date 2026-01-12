@@ -1,15 +1,12 @@
 // register.js
 import {
   publicRegisterUser,
-  setUserInfo,
   normalizeIdentifier,
   saveHubLocal,
   requestEmailVerification
 } from "../utils/auth.js";
 
-import { showAlert, showConfirmAlert } from "../utils/alerts.js";
-import { updateCounts } from "../utils/helper.js";
-import { getConfigs } from "../utils/config.js";
+import { showAlert } from "../utils/alerts.js";
 import { enhanceSelect } from "../utils/uiSelect.js";
 import { apiGet } from "../api.js";
 import { openModal } from "../modal.js";
@@ -319,18 +316,23 @@ export default function render(_props = {}, api) {
       return setLoading(false);
     }
 
-    if (data.status === 'pending') {
-      showAlert({
-        type: 'warning',
-        title: 'Usuário Pendente',
-        message: 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.',
-        durationMs: 5000
-      });
-    }
+    const isPending = String(data.status || '').toLowerCase() === 'pending';
 
     saveHubLocal(hub);
     setLoading(false);
-    openModal({ type: "login" })
+
+    await showAlert({
+      type: isPending ? 'warning' : 'success',
+      title: isPending ? 'Cadastro enviado' : 'Conta criada!',
+      message: isPending
+        ? 'Seu usuário ficou pendente. Peça a liberação com sua liderança/analista e depois faça login.'
+        : 'Conta criada com sucesso. Agora faça login.',
+      durationMs: 2200
+    });
+
+    // ✅ troca o modal atual pelo login (sem depender do openModal importado)
+    api.swap('login', { prefHub: hub.code, prefUser: email });
+    return;
   }
 
   submitButton.onclick = onSubmit;
