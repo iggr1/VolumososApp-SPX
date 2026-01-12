@@ -7,7 +7,7 @@
   "theme_color": "#111111",
   "icons": [
     {
-      "src": "./src/assets/favicons/pallet-icon.svg",
+      "src": "./src/assets/favicons/favicon-light.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }
