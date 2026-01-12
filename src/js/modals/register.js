@@ -326,18 +326,9 @@ export default function render(_props = {}, api) {
         message: 'Seu usuário está pendente. Solicite a liberação com sua liderança ou analista.',
         durationMs: 5000
       });
-      return openModal({ type: "login" })
     }
 
     saveHubLocal(hub);
-
-    showAlert({
-      type: "success",
-      title: "Conta criada!",
-      message: "Agora faça login para acessar o sistema.",
-      durationMs: 2000
-    });
-
     setLoading(false);
     openModal({ type: "login" })
   }
