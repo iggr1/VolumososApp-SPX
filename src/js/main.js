@@ -40,6 +40,29 @@ function focusInputIfAllowed() {
   inputEl?.focus({ preventScroll: true });
 }
 
+/* ============================================================
+   NOVO: limpar campo SEMPRE (evita “grudar” códigos)
+   ============================================================ */
+function clearBrInput({ refocus = true } = {}) {
+  try {
+    if (!inputEl) return;
+
+    inputEl.value = '';
+    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+
+    if (refocus) {
+      setTimeout(() => {
+        focusInputIfAllowed();
+      }, 0);
+    }
+  } catch {}
+}
+
+function clearAfter(ms = 0, opts = undefined) {
+  setTimeout(() => clearBrInput(opts || { refocus: true }), ms);
+}
+/* ============================================================ */
+
 async function stopCameraAndScanner() {
   try {
     scanner?.stop();
@@ -88,6 +111,9 @@ function setupLifecycleEvents() {
         if (event.key === 'Enter' || event.key === ' ' || event.key === 'Tab') {
           event.preventDefault();
           document.querySelector('.btn-add')?.click();
+
+          // NOVO: depois de disparar, limpa para não grudar
+          clearAfter(50);
         }
       });
       inputEl.addEventListener('blur', () => {
@@ -116,6 +142,9 @@ function setupLifecycleEvents() {
         inputEl.value = val;
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         document.querySelector('.btn-add')?.click();
+
+        // NOVO: garante limpar após tentar adicionar (mesmo em erro/duplicado)
+        clearAfter(50);
 
         setTimeout(() => {
           scanLock = false;
@@ -201,6 +230,9 @@ document.addEventListener('click', async e => {
       dismissible: true,
       collapseDelayMs: 150,
     });
+
+    // NOVO: limpa sempre em erro/retorno
+    clearBrInput();
     return;
   }
 
@@ -214,6 +246,8 @@ document.addEventListener('click', async e => {
       dismissible: true,
       collapseDelayMs: 150,
     });
+
+    clearBrInput();
     return;
   }
 
@@ -227,6 +261,8 @@ document.addEventListener('click', async e => {
       dismissible: true,
       collapseDelayMs: 150,
     });
+
+    clearBrInput();
     return;
   }
 
@@ -241,6 +277,9 @@ document.addEventListener('click', async e => {
       dismissible: true,
       collapseDelayMs: 150,
     });
+
+    // NOVO: resolve “grudar” ao duplicar
+    clearBrInput();
     return;
   }
 
@@ -268,16 +307,13 @@ document.addEventListener('click', async e => {
         collapseDelayMs: 120,
       });
 
-      // opcional: limpar input
-      try {
-        brCodeInput.value = '';
-      } catch {}
-
+      // NOVO: limpa também no sucesso
+      clearBrInput();
       return; // IMPORTANTÍSSIMO: não abre o modal
     }
-  } catch (e) {
+  } catch (e2) {
     // se der erro na consulta, só cai pro fluxo normal
-    console.warn('[preroute] falha:', e);
+    console.warn('[preroute] falha:', e2);
   }
 
   showAlert({
@@ -292,6 +328,9 @@ document.addEventListener('click', async e => {
 
   // fallback: modal manual
   openModal({ type: 'routeSelect' });
+
+  // NOVO: mesmo indo pro modal, já limpa pra não colar no próximo
+  clearBrInput({ refocus: false });
 });
 
 /* Botão info */
