@@ -513,43 +513,26 @@ function buildPrintHtmlFast(groups) {
     line-height:.92;
   }
   .list{
-     flex:1 1 auto;
-     border-top:.4mm solid #000;
-     border-bottom:.4mm solid #000;
-     padding:1mm;
-     overflow:hidden;
-   
-     /* 2 colunas */
-     column-count: 2;
-     column-gap: 3mm;
-     column-fill: auto;
-   }
-   
-   .line{
-     /* precisa ser block pra fluir bem nas colunas */
-     display:block;
-   
-     /* mantém BR/ROTA na mesma linha */
-     white-space:nowrap;
-   
-     /* evita quebrar no meio entre colunas/páginas */
-     break-inside: avoid;
-     page-break-inside: avoid;
-   
-     /* layout interno BR / sep / rota */
-     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
-     font-size: var(--list-font, 4.2mm);
-     line-height: 1.05;
-   
-     overflow:hidden;
-     text-overflow:ellipsis;
-   }
-   
-   .line .br{ font-weight:700; }
-   .line .sep{ opacity:.6; }
-   .line .route{ font-weight:500; }
-   
-   .line--empty{ font-style:italic; opacity:.65; }
+    flex:1 1 auto;
+    border-top:.4mm solid #000;
+    border-bottom:.4mm solid #000;
+    padding:1mm;
+    overflow:hidden;
+  }
+  .line{
+    display:inline-grid;
+    grid-auto-flow:column;
+    grid-auto-columns:max-content;
+    column-gap:1mm;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    font-size:4.2mm;
+    line-height:1.05;
+    white-space:nowrap;
+  }
+  .line .br{ font-weight:700; }
+  .line .sep{ opacity:.6; }
+  .line .route{ font-weight:500; }
+  .line--empty{ font-style:italic; opacity:.65; }
   .ftr{ margin-top:2mm; }
   .ftr-title{
     font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
