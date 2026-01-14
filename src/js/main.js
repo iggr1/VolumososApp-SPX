@@ -35,6 +35,12 @@ let scanLock = false;
 let scanner = null;
 let resumeLock = false;
 
+function normalizeBrCode(value) {
+  return String(value || '')
+    .trim()
+    .toUpperCase();
+}
+
 function focusInputIfAllowed() {
   if (isModalOpenOnScreen()) return;
   inputEl?.focus({ preventScroll: true });
@@ -139,7 +145,8 @@ function setupLifecycleEvents() {
         if (scanLock || isModalOpenOnScreen()) return;
         scanLock = true;
 
-        inputEl.value = val;
+        const normalized = normalizeBrCode(val);
+        inputEl.value = normalized;
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         document.querySelector('.btn-add')?.click();
 
@@ -214,7 +221,11 @@ document.addEventListener('click', async e => {
   if (!btn) return;
 
   const brCodeInput = document.querySelector('.brcode-input');
-  const brCode = brCodeInput ? brCodeInput.value : '';
+  const brCode = normalizeBrCode(brCodeInput ? brCodeInput.value : '');
+  if (brCodeInput && brCodeInput.value !== brCode) {
+    brCodeInput.value = brCode;
+    brCodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 
   const items = JSON.parse(localStorage.getItem('currentPallet')) || [];
   const packagesCount = Array.isArray(items) ? items.length : 0;
