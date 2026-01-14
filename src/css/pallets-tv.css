@@ -269,7 +269,7 @@ body {
 /* ===== ROTAS POR LETRA (colunas dentro do painel da direita) ===== */
 .tv-route-grid {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr)); /* como na imagem: 3 colunas visíveis */
+  grid-template-columns: repeat(5, minmax(0, 1fr)); /* como na imagem: 3 colunas visíveis */
   gap: 10px;
 }
 
