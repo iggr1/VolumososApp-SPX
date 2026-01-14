@@ -354,7 +354,19 @@ document.addEventListener('click', async e => {
     collapseDelayMs: 100,
   });
 
-  openModal({ type: 'routeSelect' });
+  openModal({
+    type: 'routeSelect',
+    props: {
+      brCode, // passa o BR certinho pro badge do modal
+      onClose: () => {
+        // espera o modal sair da tela pra não bater no isModalOpenOnScreen()
+        setTimeout(() => {
+          selectBrInput({ refocus: true }); // foca + seleciona pra sobrescrever no próximo scan
+        }, 0);
+      },
+    },
+  });
+
 
   // não limpa; mantém selecionado (útil se o modal falhar, ou pra conferência)
   selectBrInput({ refocus: false });
