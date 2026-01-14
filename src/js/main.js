@@ -36,9 +36,7 @@ let scanner = null;
 let resumeLock = false;
 
 function normalizeBrCode(value) {
-  return String(value || '')
-    .trim()
-    .toUpperCase();
+  return String(value || '').trim().toUpperCase();
 }
 
 function focusInputIfAllowed() {
@@ -47,7 +45,7 @@ function focusInputIfAllowed() {
 }
 
 /* ============================================================
-   NOVO: limpar campo SEMPRE (evita “grudar” códigos)
+   Selecionar / limpar (evita “grudar” códigos sem limpar cedo)
    ============================================================ */
 function clearBrInput({ refocus = true } = {}) {
   try {
@@ -81,8 +79,9 @@ function selectBrInput({ refocus = true } = {}) {
   } catch {}
 }
 
-function clearAfter(ms = 0, opts = undefined) {
-  setTimeout(() => selectBrInput();(opts || { refocus: true }), ms);
+// Mantive o nome "clearAfter", mas agora ele SELECIONA depois de X ms
+function clearAfter(ms = 0, opts = { refocus: true }) {
+  setTimeout(() => selectBrInput(opts || { refocus: true }), ms);
 }
 /* ============================================================ */
 
@@ -135,10 +134,11 @@ function setupLifecycleEvents() {
           event.preventDefault();
           document.querySelector('.btn-add')?.click();
 
-          // NOVO: depois de disparar, limpa para não grudar
-          setTimeout(() => selectBrInput({ refocus: true }), 0);
+          // Depois de disparar, deixa selecionado pra sobrescrever no próximo scan
+          clearAfter(0, { refocus: true });
         }
       });
+
       inputEl.addEventListener('blur', () => {
         setTimeout(() => {
           focusInputIfAllowed();
@@ -161,18 +161,18 @@ function setupLifecycleEvents() {
       onResult: val => {
         if (scanLock || isModalOpenOnScreen()) return;
         scanLock = true;
-      
+
         const normalized = normalizeBrCode(val);
         inputEl.value = normalized;
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         document.querySelector('.btn-add')?.click();
-      
-        // em vez de limpar cedo, só deixa selecionado pro próximo scan sobrescrever
-        setTimeout(() => selectBrInput({ refocus: false }), 0);
-      
+
+        // não limpa cedo; só seleciona pro próximo scan sobrescrever
+        clearAfter(0, { refocus: false });
+
         setTimeout(() => {
           scanLock = false;
-        }, 500);
+        }, 500); // debounce
       },
     });
 
@@ -259,7 +259,7 @@ document.addEventListener('click', async e => {
       collapseDelayMs: 150,
     });
 
-    // NOVO: limpa sempre em erro/retorno
+    // seleciona pra sobrescrever
     selectBrInput();
     return;
   }
@@ -276,7 +276,6 @@ document.addEventListener('click', async e => {
     });
 
     selectBrInput();
-
     return;
   }
 
@@ -292,7 +291,6 @@ document.addEventListener('click', async e => {
     });
 
     selectBrInput();
-
     return;
   }
 
@@ -308,8 +306,7 @@ document.addEventListener('click', async e => {
       collapseDelayMs: 150,
     });
 
-    // NOVO: resolve “grudar” ao duplicar
-    selectBrInput()();
+    selectBrInput();
     return;
   }
 
@@ -337,8 +334,9 @@ document.addEventListener('click', async e => {
         collapseDelayMs: 120,
       });
 
-      // NOVO: limpa também no sucesso
-      selectBrInput()();
+      // aqui você pode escolher: limpar ou só selecionar
+      // se quiser manter padrão "sobrescrever", use select:
+      selectBrInput();
       return; // IMPORTANTÍSSIMO: não abre o modal
     }
   } catch (e2) {
@@ -360,7 +358,6 @@ document.addEventListener('click', async e => {
 
   // não limpa; mantém selecionado (útil se o modal falhar, ou pra conferência)
   selectBrInput({ refocus: false });
-
 });
 
 /* Botão info */
