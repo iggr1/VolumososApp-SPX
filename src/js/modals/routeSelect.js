@@ -39,6 +39,100 @@ export default function render(props = {}, api) {
   el.id = 'route-root';
   el.className = 'route-select-modal';
 
+  // --- teclado --------------------------------------------------------------
+  const onKeyDown = ev => {
+    // não interferir se o usuário estiver digitando em algum input/textarea
+    const t = ev.target;
+    const tag = (t?.tagName || '').toUpperCase();
+    const isTypingField = tag === 'INPUT' || tag === 'TEXTAREA' || t?.isContentEditable;
+
+    if (isTypingField) return;
+
+    // Ignora combinações com Ctrl/Alt/Meta (atalhos do navegador/sistema)
+    if (ev.ctrlKey || ev.altKey || ev.metaKey) return;
+
+    // ESC: deixa o modal lidar (escToClose)
+    if (ev.key === 'Escape') return;
+
+    // ENTER: confirma no passo número se válido
+    if (ev.key === 'Enter' || ev.key === 'NumpadEnter') {
+      if (state.step === 'number') {
+        const canAdd = isValidRoute(state.letter, state.numberStr, ranges);
+        if (canAdd) {
+          ev.preventDefault();
+          onAddClick();
+        }
+      }
+      return;
+    }
+
+    // BACKSPACE / DELETE
+    if (ev.key === 'Backspace' || ev.key === 'Delete') {
+      ev.preventDefault();
+
+      if (state.step === 'number') {
+        if (state.numberStr) {
+          state.numberStr = state.numberStr.slice(0, -1);
+          paint();
+        } else {
+          // se não tem número, volta para letra
+          state.step = 'letter';
+          paint();
+        }
+      } else {
+        // no passo letra: limpa letra
+        if (state.letter) {
+          state.letter = '';
+          paint();
+        }
+      }
+      return;
+    }
+
+    // LETRAS A-Z
+    if (/^[a-zA-Z]$/.test(ev.key)) {
+      const L = ev.key.toUpperCase();
+
+      // Só aceita letra dentro do intervalo do HUB
+      const code = L.charCodeAt(0);
+      const inLetters =
+        code >= ranges.letterFrom.charCodeAt(0) &&
+        code <= ranges.letterTo.charCodeAt(0);
+
+      if (!inLetters) return;
+
+      ev.preventDefault();
+
+      state.letter = L;
+      state.step = 'number';
+      paint();
+      return;
+    }
+
+    // NÚMEROS 0-9
+    if (/^\d$/.test(ev.key)) {
+      if (state.step !== 'number') return;
+
+      const next = (state.numberStr + ev.key).replace(/^0+(?=\d)/, '');
+      if (!withinTypingRange(next, ranges.numMin, ranges.numMax)) return;
+
+      ev.preventDefault();
+      state.numberStr = next;
+      paint();
+      return;
+    }
+  };
+
+  // registra quando abrir
+  window.addEventListener('keydown', onKeyDown, { capture: true });
+
+  // remove ao fechar (pra não acumular listeners)
+  const _close = api.close.bind(api);
+  api.close = reason => {
+    window.removeEventListener('keydown', onKeyDown, { capture: true });
+    return _close(reason);
+  };
+
   paint();
   return el;
 
@@ -57,7 +151,9 @@ export default function render(props = {}, api) {
     return `
       <div class="route-header">
         <div class="route-br-badge">${escapeHtml(brCode || '—')}</div>
-        <div class="route-display ${state.step === 'letter' ? 'is-letter' : 'is-number'}">
+        <div class="route-display ${
+          state.step === 'letter' ? 'is-letter' : 'is-number'
+        }">
           <span class="route-letter">${state.letter || ''}</span>
           <span class="route-dash">−</span>
           <span class="route-number">${state.numberStr || ''}</span>
@@ -73,7 +169,10 @@ export default function render(props = {}, api) {
   function letterKeys() {
     const letters = lettersFromRange(ranges.letterFrom, ranges.letterTo);
     return letters
-      .map(L => `<button class="route-key" data-k="${L}" aria-label="Letra ${L}">${L}</button>`)
+      .map(
+        L =>
+          `<button class="route-key" data-k="${L}" aria-label="Letra ${L}">${L}</button>`
+      )
       .join('');
   }
 
@@ -105,15 +204,9 @@ export default function render(props = {}, api) {
   }
 
   function bind() {
+    // Como re-renderiza o innerHTML, o listener precisa ser re-registrado
     el.querySelector('.route-kbd')?.addEventListener('click', onKeyClick);
-
-    // Enter confirma quando estiver no passo de número e válido
-    el.addEventListener('keydown', ev => {
-      if (state.step === 'number' && (ev.key === 'Enter' || ev.key === 'NumpadEnter')) {
-        const canAdd = isValidRoute(state.letter, state.numberStr, ranges);
-        if (canAdd) onAddClick();
-      }
-    });
+    // (Teclado do notebook está global em window para não depender de foco no modal)
   }
 
   function onKeyClick(e) {
