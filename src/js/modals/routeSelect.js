@@ -39,6 +39,9 @@ export default function render(props = {}, api) {
   el.id = 'route-root';
   el.className = 'route-select-modal';
 
+  // 🔑 torna o root focável (para o initialFocus funcionar e para podermos forçar foco)
+  el.tabIndex = -1;
+
   // --- teclado --------------------------------------------------------------
   const onKeyDown = ev => {
     // não interferir se o usuário estiver digitando em algum input/textarea
@@ -126,14 +129,34 @@ export default function render(props = {}, api) {
   // registra quando abrir
   window.addEventListener('keydown', onKeyDown, { capture: true });
 
+  // guarda o foco anterior, para devolver ao fechar (opcional, mas ajuda UX)
+  const previouslyFocused = document.activeElement;
+
   // remove ao fechar (pra não acumular listeners)
   const _close = api.close.bind(api);
   api.close = reason => {
     window.removeEventListener('keydown', onKeyDown, { capture: true });
+    // devolve o foco anterior (se existir e ainda estiver no DOM)
+    try {
+      previouslyFocused?.focus?.();
+    } catch {}
     return _close(reason);
   };
 
   paint();
+
+  // ✅ força foco no modal (após entrar no DOM)
+  // microtask > evita setTimeout e reduz flicker
+  queueMicrotask(() => {
+    try {
+      el.focus({ preventScroll: true });
+    } catch {
+      try {
+        el.focus();
+      } catch {}
+    }
+  });
+
   return el;
 
   // ===== helpers de render ==================================================
