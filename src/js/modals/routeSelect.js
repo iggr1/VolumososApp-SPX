@@ -19,6 +19,8 @@ export default function render(props = {}, api) {
     props.brCode || document.querySelector('.brcode-input')?.value || ''
   ).trim();
 
+  const onClose = typeof props.onClose === 'function' ? props.onClose : null;
+
   const state = {
     step: 'letter',
     letter: '',
@@ -136,10 +138,9 @@ export default function render(props = {}, api) {
   const _close = api.close.bind(api);
   api.close = reason => {
     window.removeEventListener('keydown', onKeyDown, { capture: true });
-    // devolve o foco anterior (se existir e ainda estiver no DOM)
-    try {
-      previouslyFocused?.focus?.();
-    } catch {}
+
+    try { onClose?.(reason); } catch {}
+
     return _close(reason);
   };
 
