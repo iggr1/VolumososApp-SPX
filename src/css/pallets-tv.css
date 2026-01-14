@@ -298,10 +298,11 @@ body {
   font-weight: 800;
 }
 
-.tv-route-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.tv-route-list{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;            /* mantém seu espaçamento */
+  align-content: start; /* evita “esticar” */
 }
 
 .tv-route-row {
@@ -314,6 +315,7 @@ body {
   font-weight: 600;
   font-size: 14px;
   height: 25px;
+  width: auto;
 }
 
 :root[data-theme='light'] .tv-route-row {
@@ -325,6 +327,7 @@ body {
 }
 .tv-route-count {
   font-weight: 800;
+  color: var(--accent);
 }
 
 .tv-empty {
