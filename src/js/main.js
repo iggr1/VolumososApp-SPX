@@ -64,8 +64,25 @@ function clearBrInput({ refocus = true } = {}) {
   } catch {}
 }
 
+function selectBrInput({ refocus = true } = {}) {
+  try {
+    if (!inputEl) return;
+
+    if (refocus) focusInputIfAllowed();
+
+    // Seleciona tudo (o próximo scan/teclado substitui)
+    inputEl.select?.();
+
+    // Mobile Safari às vezes precisa disso
+    const len = inputEl.value?.length || 0;
+    if (inputEl.setSelectionRange) {
+      inputEl.setSelectionRange(0, len);
+    }
+  } catch {}
+}
+
 function clearAfter(ms = 0, opts = undefined) {
-  setTimeout(() => clearBrInput(opts || { refocus: true }), ms);
+  setTimeout(() => selectBrInput();(opts || { refocus: true }), ms);
 }
 /* ============================================================ */
 
@@ -119,7 +136,7 @@ function setupLifecycleEvents() {
           document.querySelector('.btn-add')?.click();
 
           // NOVO: depois de disparar, limpa para não grudar
-          clearAfter(50);
+          setTimeout(() => selectBrInput({ refocus: true }), 0);
         }
       });
       inputEl.addEventListener('blur', () => {
@@ -144,18 +161,18 @@ function setupLifecycleEvents() {
       onResult: val => {
         if (scanLock || isModalOpenOnScreen()) return;
         scanLock = true;
-
+      
         const normalized = normalizeBrCode(val);
         inputEl.value = normalized;
         inputEl.dispatchEvent(new Event('input', { bubbles: true }));
         document.querySelector('.btn-add')?.click();
-
-        // NOVO: garante limpar após tentar adicionar (mesmo em erro/duplicado)
-        clearAfter(50);
-
+      
+        // em vez de limpar cedo, só deixa selecionado pro próximo scan sobrescrever
+        setTimeout(() => selectBrInput({ refocus: false }), 0);
+      
         setTimeout(() => {
           scanLock = false;
-        }, 500); // debounce
+        }, 500);
       },
     });
 
@@ -243,7 +260,7 @@ document.addEventListener('click', async e => {
     });
 
     // NOVO: limpa sempre em erro/retorno
-    clearBrInput();
+    selectBrInput();
     return;
   }
 
@@ -258,7 +275,8 @@ document.addEventListener('click', async e => {
       collapseDelayMs: 150,
     });
 
-    clearBrInput();
+    selectBrInput();
+
     return;
   }
 
@@ -273,7 +291,8 @@ document.addEventListener('click', async e => {
       collapseDelayMs: 150,
     });
 
-    clearBrInput();
+    selectBrInput();
+
     return;
   }
 
@@ -290,7 +309,7 @@ document.addEventListener('click', async e => {
     });
 
     // NOVO: resolve “grudar” ao duplicar
-    clearBrInput();
+    selectBrInput()();
     return;
   }
 
@@ -319,7 +338,7 @@ document.addEventListener('click', async e => {
       });
 
       // NOVO: limpa também no sucesso
-      clearBrInput();
+      selectBrInput()();
       return; // IMPORTANTÍSSIMO: não abre o modal
     }
   } catch (e2) {
@@ -337,11 +356,11 @@ document.addEventListener('click', async e => {
     collapseDelayMs: 100,
   });
 
-  // fallback: modal manual
   openModal({ type: 'routeSelect' });
 
-  // NOVO: mesmo indo pro modal, já limpa pra não colar no próximo
-  clearBrInput({ refocus: false });
+  // não limpa; mantém selecionado (útil se o modal falhar, ou pra conferência)
+  selectBrInput({ refocus: false });
+
 });
 
 /* Botão info */
