@@ -2,7 +2,7 @@
 let BASE = null;
 
 // URL fixa do backend em produção (Railway)
-const PROD_BASE = 'https://volumososapp-spx-server-side-production.up.railway.app/api';
+const PROD_BASE = 'https://zany-collie-spx-chapeco-dc6ddbc3.koyeb.app/';
 
 // URL local para desenvolvimento
 const DEV_BASE = 'http://localhost:8081/api';
