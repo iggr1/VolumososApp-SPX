@@ -6,6 +6,15 @@ const COL_CORRIDOR = 'Corridor Cage';
 
 const ENDPOINT_IMPORT = 'opdocs/routes/import';
 
+function generateEnvioId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  const rand = Math.random().toString(36).slice(2, 10);
+  return `envio_${Date.now()}_${rand}`;
+}
+
 function stripBOM(s) {
   return s && s.charCodeAt(0) === 0xfeff ? s.slice(1) : s;
 }
@@ -160,6 +169,7 @@ export async function extractRoutesFromCTsCsv(file) {
 export async function importRoutesFromCTsCsv(file, options = {}) {
   const batchSize = Number(options.batchSize || 1000);
   const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
+  const envioId = String(options.envioId || generateEnvioId());
 
   const extracted = await extractRoutesFromCTsCsv(file);
   if (!extracted.ok) throw new Error(extracted.message || 'Falha ao processar CSV.');
@@ -175,6 +185,7 @@ export async function importRoutesFromCTsCsv(file, options = {}) {
 
     const resp = await apiPut(ENDPOINT_IMPORT, {
       source: 'cts_csv',
+      envio_id: envioId,
       total: chunk.length,
       rows: chunk,
     });
@@ -198,6 +209,7 @@ export async function importRoutesFromCTsCsv(file, options = {}) {
     batchSize,
     totalChunks: chunks.length,
     sent,
+    envioId,
     serverResponses,
   };
 }
