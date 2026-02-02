@@ -526,11 +526,28 @@ button {
 
 /* FILTROS */
 
+.filters-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 18px;
+  flex-wrap: wrap;
+}
+
 .filters {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 10px 0 18px;
+}
+
+.export-btn {
+  font-weight: 600;
+}
+
+.export-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .filter-btn {

@@ -7,7 +7,7 @@ const onPalletEl = document.getElementById('tv-onpallet');
 const assignedEl = document.getElementById('tv-assigned');
 const removedEl = document.getElementById('tv-removed');
 
-const lettersEl = document.getElementById('tv-letters');
+const prioritiesEl = document.getElementById('tv-priorities');
 const routesEl = document.getElementById('tv-routes');
 const emptyEl = document.getElementById('tv-empty');
 const themeToggleBtn = document.getElementById('tv-theme-toggle');
@@ -93,7 +93,7 @@ function buildBars(container, items, max) {
     return;
   }
 
-  items.forEach(({ label, value }) => {
+  items.forEach(({ label, value, color }) => {
     const row = document.createElement('div');
     row.className = 'tv-bar-row';
 
@@ -107,6 +107,7 @@ function buildBars(container, items, max) {
     const fill = document.createElement('div');
     fill.className = 'tv-bar-fill';
     fill.style.width = `${Math.max(8, Math.round((value / max) * 100))}%`;
+    if (color) fill.style.background = color;
     track.appendChild(fill);
 
     const valueEl = document.createElement('span');
@@ -116,6 +117,13 @@ function buildBars(container, items, max) {
     row.append(labelEl, track, valueEl);
     container.appendChild(row);
   });
+}
+
+function normalizePriority(priorityValue = '') {
+  const normalized = String(priorityValue).toLowerCase();
+  if (normalized === 'super expedite') return 'max';
+  if (normalized === 'expedite') return 'high';
+  return 'normal';
 }
 
 /* ===== ROTAS POR LETRA ===== */
@@ -196,15 +204,19 @@ function renderCharts() {
 
   if (!state.packages.length) {
     setEmpty(true);
-    if (lettersEl) lettersEl.innerHTML = '';
+    if (prioritiesEl) prioritiesEl.innerHTML = '';
     if (routesEl) routesEl.innerHTML = '';
     return;
   }
 
   setEmpty(false);
 
-  // ===== barras por letra (B/C/D...) =====
-  const lettersCount = new Map();
+  // ===== barras por prioridade =====
+  const priorityCounts = {
+    normal: 0,
+    high: 0,
+    max: 0,
+  };
   // ===== rotas por letra (C-12, D-1...) =====
   const grouped = new Map();
 
@@ -212,20 +224,23 @@ function renderCharts() {
     const routeInfo = parseRoute(pkg.route || '');
     const letter = routeInfo.letter || 'OUTROS';
     const routeLabel = routeLabelFromPkg(pkg);
+    const priority = normalizePriority(pkg.priority);
 
-    lettersCount.set(letter, (lettersCount.get(letter) || 0) + 1);
+    priorityCounts[priority] += 1;
 
     if (!grouped.has(letter)) grouped.set(letter, new Map());
     const routesMap = grouped.get(letter);
     routesMap.set(routeLabel, (routesMap.get(routeLabel) || 0) + 1);
   });
 
-  const letterList = [...lettersCount.entries()]
-    .map(([label, value]) => ({ label, value }))
-    .sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
+  const priorityList = [
+    { label: 'Normal', value: priorityCounts.normal, color: 'var(--priority-normal)' },
+    { label: 'Alta', value: priorityCounts.high, color: 'var(--priority-high)' },
+    { label: 'Máxima', value: priorityCounts.max, color: 'var(--priority-max)' },
+  ];
 
-  const maxLetters = Math.max(...letterList.map(item => item.value));
-  buildBars(lettersEl, letterList, maxLetters || 1);
+  const maxPriority = Math.max(...priorityList.map(item => item.value));
+  buildBars(prioritiesEl, priorityList, maxPriority || 1);
 
   buildRouteColumns(routesEl, grouped);
 }

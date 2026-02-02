@@ -6,6 +6,9 @@
   --accent: #f97316;
   --success: #22c55e;
   --danger: #ef4444;
+  --priority-normal: #38bdf8;
+  --priority-high: #fbbf24;
+  --priority-max: #ef4444;
   --text: #f8fafc;
   --muted: #cbd5f5;
   --shadow: 0 20px 45px rgba(15, 23, 42, 0.45);
@@ -21,6 +24,9 @@
   --accent: #f1681e;
   --success: #16a34a;
   --danger: #dc2626;
+  --priority-normal: #0284c7;
+  --priority-high: #d97706;
+  --priority-max: #dc2626;
   --text: #0f172a;
   --muted: #475569;
   --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
@@ -236,7 +242,7 @@ body {
 
 .tv-bar-row {
   display: grid;
-  grid-template-columns: 60px 1fr 80px;
+  grid-template-columns: 120px 1fr 80px;
   align-items: center;
   gap: 12px;
   font-size: 18px;
