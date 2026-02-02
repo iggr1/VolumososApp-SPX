@@ -13,6 +13,7 @@ const routeSearchInput = document.getElementById('route-search');
 const clearRouteSearchBtn = document.getElementById('clear-route-search');
 const tvModeBtn = document.getElementById('tv-mode-btn');
 const themeToggleBtn = document.getElementById('theme-toggle');
+const exportBtn = document.getElementById('export-btn');
 const emptyState = document.getElementById('empty-state');
 const hubModal = document.getElementById('hub-modal');
 const hubModalClose = document.getElementById('hub-modal-close');
@@ -237,6 +238,7 @@ function renderRows() {
   packagesEl.innerHTML = '';
   const sorted = sortPackages(applyFilters(state.packages));
   updateBadges(hubSelect.options[hubSelect.selectedIndex]?.textContent || '', sorted.length);
+  if (exportBtn) exportBtn.disabled = sorted.length === 0;
 
   if (!sorted.length) {
     emptyState.hidden = false;
@@ -317,6 +319,67 @@ function renderRows() {
     row.append(route, br, pallet, date, user, actions);
     packagesEl.appendChild(row);
   });
+}
+
+function formatCsvValue(value) {
+  if (value === null || value === undefined) return '';
+  const text = String(value);
+  if (/[",\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+function buildExportFilename(hubCode) {
+  const date = new Date();
+  const stamp = date.toISOString().slice(0, 10);
+  const safeHub = hubCode ? hubCode.replace(/[^a-z0-9_-]+/gi, '-') : 'hub';
+  return `pallets_${safeHub}_${stamp}.csv`;
+}
+
+function exportFilteredData() {
+  const filtered = sortPackages(applyFilters(state.packages));
+  if (!filtered.length) {
+    alert('Não há dados filtrados para exportar.');
+    return;
+  }
+
+  const hubLabel = hubSelect.options[hubSelect.selectedIndex]?.textContent || '';
+  const header = [
+    'HUB',
+    'Rota',
+    'BR Code',
+    'Pallet',
+    'Data/Hora',
+    'Operador',
+    'Status',
+    'Prioridade',
+  ];
+
+  const rows = filtered.map(pkg => [
+    hubLabel,
+    pkg.route || '',
+    pkg.brCode || '',
+    pkg.pallet ?? '',
+    formatDate(pkg.dateTime),
+    pkg.userName || '',
+    formatStatus(pkg.status).label,
+    getPriorityInfo(pkg.priority).valueLabel,
+  ]);
+
+  const csvContent = [header, ...rows]
+    .map(row => row.map(formatCsvValue).join(','))
+    .join('\n');
+
+  const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = buildExportFilename(hubSelect.value);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function openHubModal() {
@@ -514,6 +577,8 @@ function registerEvents() {
     handleRouteSearch('');
     routeSearchInput.focus();
   });
+
+  exportBtn?.addEventListener('click', exportFilteredData);
 
   hubModalClose?.addEventListener('click', closeHubModal);
 
