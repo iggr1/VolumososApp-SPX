@@ -468,6 +468,20 @@ button {
   gap: 18px;
 }
 
+.modal-search {
+  display: grid;
+  gap: 8px;
+}
+
+.modal-search label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.modal-search .search-box {
+  background: var(--surface);
+}
+
 .modal-section {
   display: grid;
   gap: 12px;
