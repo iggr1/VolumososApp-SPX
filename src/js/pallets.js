@@ -19,6 +19,8 @@ const hubModal = document.getElementById('hub-modal');
 const hubModalClose = document.getElementById('hub-modal-close');
 const hubModalRecent = document.getElementById('hub-modal-recent');
 const hubModalList = document.getElementById('hub-modal-list');
+const hubModalSearchInput = document.getElementById('hub-modal-search');
+const hubModalClearBtn = document.getElementById('hub-modal-clear');
 const hubSelectNice = enhanceSelect(document, 'hub-select', { searchPlaceholder: 'Buscar HUB...' });
 const hubSelectButton = document.querySelector('.ui-select[data-for="hub-select"] .ui-select-btn');
 
@@ -32,6 +34,7 @@ const state = {
   filterLetter: 'all',
   search: '',
   routeSearch: '',
+  hubSearch: '',
   hubHistory: [],
 };
 
@@ -386,6 +389,10 @@ function openHubModal() {
   if (!hubModal) return;
   hubModal.classList.add('is-open');
   hubModal.setAttribute('aria-hidden', 'false');
+  if (hubModalSearchInput) {
+    hubModalSearchInput.value = state.hubSearch;
+    requestAnimationFrame(() => hubModalSearchInput.focus());
+  }
 }
 
 function closeHubModal() {
@@ -414,6 +421,7 @@ function buildHubModal() {
   hubModalList.innerHTML = '';
 
   const selectedCode = hubSelect.value;
+  const searchTerm = state.hubSearch.trim().toLowerCase();
   const recentHubs = state.hubHistory
     .map(code => state.hubs.find(hub => hub.code === code))
     .filter(Boolean);
@@ -435,7 +443,21 @@ function buildHubModal() {
   }
 
   const sortedHubs = [...state.hubs].sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));
-  sortedHubs.forEach(hub => {
+  const filteredHubs = searchTerm
+    ? sortedHubs.filter(hub =>
+        `${hub.label} ${hub.code || ''}`.toLowerCase().includes(searchTerm)
+      )
+    : sortedHubs;
+
+  if (!filteredHubs.length) {
+    const empty = document.createElement('p');
+    empty.className = 'hub-empty';
+    empty.textContent = 'Nenhum hub encontrado para esta busca.';
+    hubModalList.appendChild(empty);
+    return;
+  }
+
+  filteredHubs.forEach(hub => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `hub-option ${hub.code === selectedCode ? 'active' : ''}`;
@@ -581,6 +603,20 @@ function registerEvents() {
   exportBtn?.addEventListener('click', exportFilteredData);
 
   hubModalClose?.addEventListener('click', closeHubModal);
+
+  hubModalSearchInput?.addEventListener('input', ev => {
+    state.hubSearch = ev.target.value;
+    buildHubModal();
+  });
+
+  hubModalClearBtn?.addEventListener('click', () => {
+    state.hubSearch = '';
+    if (hubModalSearchInput) {
+      hubModalSearchInput.value = '';
+      hubModalSearchInput.focus();
+    }
+    buildHubModal();
+  });
 
   hubModal?.addEventListener('click', ev => {
     if (ev.target?.matches?.('[data-modal-close]')) {
