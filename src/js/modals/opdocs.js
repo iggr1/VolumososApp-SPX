@@ -77,6 +77,7 @@ export default function render(_props = {}, api) {
         await importFile(root, cardState, config, btnImport);
       };
     }
+  }
 
     const btnHow = root.querySelector('#opdocs-how');
     if (btnHow) {
@@ -166,6 +167,7 @@ export default function render(_props = {}, api) {
       if (iconEl) iconEl.setAttribute('data-lucide', 'file-up');
       if (nameEl) nameEl.textContent = 'Clique para fazer upload';
       if (hintEl) hintEl.textContent = 'ou arraste e solte aqui';
+      if (buttonEl) buttonEl.disabled = true;
 
       if (state.activeKey === config.key) state.activeKey = '';
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
@@ -285,11 +287,11 @@ function view(state) {
 
       <button id="opdocs-how" class="opdocs-helpbtn" type="button">
         <span class="opdocs-help-ic">
-          <i data-lucide="help-circle" aria-hidden="true"></i>
+          <i data-lucide="upload" aria-hidden="true"></i>
         </span>
-        <span>COMO IMPORTAR?</span>
+        <span>${escapeHtml(buttonLabel)}</span>
       </button>
-    </div>
+    </section>
   `;
 }
 
