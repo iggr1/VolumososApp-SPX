@@ -8,7 +8,29 @@
 /* container interno (pra espaçar card + botão) */
 .opdocs-wrap {
   display: grid;
-  gap: 36rem;
+  gap: 24rem;
+}
+
+.opdocs-divider {
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+  padding: 0 10rem;
+}
+
+.opdocs-divider-line {
+  flex: 1;
+  height: 3rem;
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 999rem;
+}
+
+.opdocs-divider-label {
+  font-size: 34rem;
+  line-height: 1;
+  font-weight: var(--text-bold);
+  color: rgba(0, 0, 0, 0.45);
+  letter-spacing: 1rem;
 }
 
 /* Card */
