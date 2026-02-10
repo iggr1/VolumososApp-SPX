@@ -166,6 +166,7 @@ export default function render(_props = {}, api) {
       if (iconEl) iconEl.setAttribute('data-lucide', 'file-up');
       if (nameEl) nameEl.textContent = 'Clique para fazer upload';
       if (hintEl) hintEl.textContent = 'ou arraste e solte aqui';
+      if (buttonEl) buttonEl.disabled = true;
 
       if (state.activeKey === config.key) state.activeKey = '';
       if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
@@ -285,11 +286,45 @@ function view(state) {
 
       <button id="opdocs-how" class="opdocs-helpbtn" type="button">
         <span class="opdocs-help-ic">
-          <i data-lucide="help-circle" aria-hidden="true"></i>
+          <i data-lucide="upload" aria-hidden="true"></i>
         </span>
-        <span>COMO IMPORTAR?</span>
+        <span>${escapeHtml(buttonLabel)}</span>
       </button>
-    </div>
+    </section>
+  `;
+}
+
+function uploadCardView({ key, title, state }) {
+  const hasFile = !!state.selectedName;
+
+  return `
+    <section class="opdocs-card" aria-label="Upload de arquivo ${escapeHtml(title)}">
+      <div class="opdocs-card-head">
+        <div class="opdocs-card-head-text">${escapeHtml(title)}</div>
+        <div class="opdocs-card-head-ext">${key === 'romaneio' ? '*.csv|*.zip' : '*.csv'}</div>
+      </div>
+
+      <button id="opdocs-drop-${key}" class="opdocs-dropzone ${hasFile ? 'has-file' : ''}" type="button"
+        aria-label="Clique para fazer upload">
+        <div class="opdocs-dropzone-inner">
+          <div class="opdocs-upload-icon">
+            <i data-lucide="${hasFile ? 'file-check' : 'file-up'}" aria-hidden="true"></i>
+          </div>
+
+          <div class="opdocs-dropzone-text" id="opdocs-filename-${key}">
+            ${hasFile ? escapeHtml(state.selectedName) : 'Clique para fazer upload'}
+          </div>
+
+          <div class="opdocs-dropzone-hint" id="opdocs-hint-${key}">
+            ${hasFile ? 'Arquivo selecionado • pronto para importar' : 'ou arraste e solte aqui'}
+          </div>
+        </div>
+      </button>
+
+      <input id="opdocs-file-${key}" class="opdocs-file" type="file" accept="${
+        key === 'romaneio' ? '.csv,.zip,text/csv,application/zip' : '.csv,text/csv'
+      }" />
+    </section>
   `;
 }
 
