@@ -1,4 +1,5 @@
 // src/js/utils/csvValidation.js
+import { extractCsvTextsFromZip, isZipFile } from './zipCsv.js';
 
 const REQUIRED_HEADERS = [
   'Calculation Task ID',
@@ -37,6 +38,9 @@ const REQUIRED_HEADERS = [
   'Distância total da rota km',
   'Cabeça de CEP',
 ];
+
+
+const REQUIRED_HEADERS_ROMANEIO = ['NÚMERO DO PEDIDO', 'CORREDOR-GAIOLA'];
 
 // Detecta delimitador (vírgula ou ponto-e-vírgula) com base no header
 function detectDelimiter(headerLine) {
@@ -189,6 +193,118 @@ export async function validateCTsCsvFile(file) {
   }
 
   return { ok: true, delimiter, headers };
+}
+
+
+/**
+ * Valida CSV de Romaneio (mínimo necessário para pré-route)
+ * Regras:
+ * 1) é CSV
+ * 2) contém as colunas NÚMERO DO PEDIDO e CORREDOR-GAIOLA
+ * 3) existe pelo menos 1 linha de dados
+ */
+export async function validateRomaneioCsvFile(file) {
+  if (!file) {
+    return { ok: false, error: 'no_file', message: 'Nenhum arquivo selecionado.' };
+  }
+
+  const name = String(file.name || '');
+  const lower = name.toLowerCase();
+  const mime = String(file.type || '').toLowerCase();
+
+  const looksCsv = lower.endsWith('.csv') || mime.includes('csv') || mime === 'text/plain';
+  if (!looksCsv) {
+    return { ok: false, error: 'not_csv', message: 'Arquivo inválido: selecione um CSV (.csv).' };
+  }
+
+  let text = '';
+  try {
+    text = await file.text();
+  } catch {
+    return { ok: false, error: 'read_error', message: 'Não foi possível ler o arquivo.' };
+  }
+
+  const headerLineRaw = stripBOM(firstNonEmptyLine(text));
+  if (!headerLineRaw) {
+    return { ok: false, error: 'empty', message: 'CSV vazio: não há cabeçalho.' };
+  }
+
+  const delimiter = detectDelimiter(headerLineRaw);
+  const headersRaw = splitCsvLine(headerLineRaw, delimiter);
+  const headers = headersRaw.map(normalizeHeader);
+
+  const missing = REQUIRED_HEADERS_ROMANEIO.filter(h => !headers.includes(h));
+  if (missing.length) {
+    return {
+      ok: false,
+      error: 'missing_columns',
+      message: `CSV não contém as colunas obrigatórias: ${missing.join(', ')}.`,
+    };
+  }
+
+  const dataRows = countDataRows(text);
+  if (dataRows <= 0) {
+    return {
+      ok: false,
+      error: 'no_data',
+      message: 'CSV sem dados: é necessário ter linhas abaixo do cabeçalho.',
+    };
+  }
+
+  return { ok: true, delimiter, headers };
+}
+
+export async function validateRomaneioFile(file) {
+  if (!file) {
+    return { ok: false, error: 'no_file', message: 'Nenhum arquivo selecionado.' };
+  }
+
+  const name = String(file.name || '').toLowerCase();
+  const mime = String(file.type || '').toLowerCase();
+  const looksZip = isZipFile(file);
+  const looksCsv = name.endsWith('.csv') || mime.includes('csv') || mime === 'text/plain';
+
+  if (!looksCsv && !looksZip) {
+    return {
+      ok: false,
+      error: 'invalid_ext',
+      message: 'Arquivo inválido: para Romaneio use .csv ou .zip.',
+    };
+  }
+
+  if (!looksZip) return validateRomaneioCsvFile(file);
+
+  try {
+    const csvFiles = await extractCsvTextsFromZip(file);
+
+    if (!csvFiles.length) {
+      return { ok: false, error: 'zip_empty', message: 'ZIP sem CSV válido.' };
+    }
+
+    for (const csv of csvFiles) {
+      const fakeFile = {
+        name: csv.name,
+        type: 'text/csv',
+        text: async () => csv.text,
+      };
+      const valid = await validateRomaneioCsvFile(fakeFile);
+      if (!valid.ok) {
+        return {
+          ok: false,
+          error: 'zip_invalid_csv',
+          message: `CSV inválido no ZIP (${csv.name}): ${valid.message}`,
+        };
+      }
+    }
+
+    return { ok: true, zip: true, files: csvFiles.length };
+  } catch (e) {
+    return {
+      ok: false,
+      error: 'zip_read_error',
+      message: e?.message || 'Não foi possível ler o arquivo ZIP.',
+    };
+  }
 }
 
 /**
