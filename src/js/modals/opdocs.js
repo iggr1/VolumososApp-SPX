@@ -8,14 +8,12 @@ const IMPORT_TYPES = {
   cts: {
     key: 'cts',
     title: 'Calculation Tasks (CTs)',
-    importLabel: 'IMPORTAR ROTAS (CTs)',
     validate: validateCTsCsvFile,
     importFn: importRoutesFromCTsCsv,
   },
   romaneio: {
     key: 'romaneio',
     title: 'Romaneio',
-    importLabel: 'IMPORTAR ROTAS (Romaneio)',
     validate: validateRomaneioFile,
     importFn: importRoutesFromRomaneioCsv,
   },
@@ -42,6 +40,7 @@ export default function render(_props = {}, api) {
   const state = {
     cts: makeUploadState(),
     romaneio: makeUploadState(),
+    activeKey: '',
   };
 
   init().catch(err => {
@@ -64,6 +63,22 @@ export default function render(_props = {}, api) {
     bindUploadCard(root, state.cts, IMPORT_TYPES.cts);
     bindUploadCard(root, state.romaneio, IMPORT_TYPES.romaneio);
 
+    const btnImport = root.querySelector('#opdocs-import');
+    if (btnImport) {
+      btnImport.disabled = true;
+      btnImport.onclick = async () => {
+        const selectedKey = selectImportType(state);
+        if (!selectedKey) return;
+
+        const cardState = state[selectedKey];
+        const config = IMPORT_TYPES[selectedKey];
+        if (!cardState?.isValid || !cardState?.file || !config) return;
+
+        await importFile(root, cardState, config, btnImport);
+      };
+    }
+  }
+
     const btnHow = root.querySelector('#opdocs-how');
     if (btnHow) {
       btnHow.onclick = () => {
@@ -75,7 +90,6 @@ export default function render(_props = {}, api) {
   function bindUploadCard(root, cardState, config) {
     const drop = root.querySelector(`#opdocs-drop-${config.key}`);
     const fileInput = root.querySelector(`#opdocs-file-${config.key}`);
-    const importBtn = root.querySelector(`#opdocs-import-${config.key}`);
 
     if (drop && fileInput) {
       drop.onclick = () => fileInput.click();
@@ -98,14 +112,6 @@ export default function render(_props = {}, api) {
       };
     }
 
-    if (importBtn) {
-      importBtn.disabled = true;
-      importBtn.onclick = async () => {
-        if (!cardState.isValid || !cardState.file) return;
-        await importFile(root, cardState, config, importBtn);
-      };
-    }
-
     async function handleFile(file) {
       const result = await config.validate(file);
 
@@ -117,6 +123,7 @@ export default function render(_props = {}, api) {
           durationMs: 3500,
         });
         resetUpload();
+        updateGlobalImportButton(root, state);
         return;
       }
 
@@ -125,10 +132,10 @@ export default function render(_props = {}, api) {
       cardState.selectedName = String(file.name || '');
       cardState.selectedSize = Number(file.size || 0);
       cardState.selectedType = String(file.type || '');
+      state.activeKey = config.key;
 
       const nameEl = root.querySelector(`#opdocs-filename-${config.key}`);
       const hintEl = root.querySelector(`#opdocs-hint-${config.key}`);
-      const buttonEl = root.querySelector(`#opdocs-import-${config.key}`);
       const dropEl = root.querySelector(`#opdocs-drop-${config.key}`);
       const iconEl = dropEl?.querySelector('[data-lucide]');
 
@@ -136,8 +143,8 @@ export default function render(_props = {}, api) {
       if (iconEl) iconEl.setAttribute('data-lucide', 'file-check');
       if (nameEl) nameEl.textContent = cardState.selectedName || 'Arquivo selecionado';
       if (hintEl) hintEl.textContent = formatFileHint(file);
-      if (buttonEl) buttonEl.disabled = false;
 
+      updateGlobalImportButton(root, state);
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
     }
 
@@ -155,7 +162,6 @@ export default function render(_props = {}, api) {
       const iconEl = dropEl?.querySelector('[data-lucide]');
       const nameEl = root.querySelector(`#opdocs-filename-${config.key}`);
       const hintEl = root.querySelector(`#opdocs-hint-${config.key}`);
-      const buttonEl = root.querySelector(`#opdocs-import-${config.key}`);
 
       if (dropEl) dropEl.classList.remove('has-file');
       if (iconEl) iconEl.setAttribute('data-lucide', 'file-up');
@@ -163,9 +169,27 @@ export default function render(_props = {}, api) {
       if (hintEl) hintEl.textContent = 'ou arraste e solte aqui';
       if (buttonEl) buttonEl.disabled = true;
 
+      if (state.activeKey === config.key) state.activeKey = '';
       if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
     }
   }
+}
+
+function selectImportType(state) {
+  const active = state?.activeKey;
+  if (active && state?.[active]?.isValid && state?.[active]?.file) return active;
+
+  if (state?.cts?.isValid && state?.cts?.file) return 'cts';
+  if (state?.romaneio?.isValid && state?.romaneio?.file) return 'romaneio';
+  return '';
+}
+
+function updateGlobalImportButton(root, state) {
+  const btn = root.querySelector('#opdocs-import');
+  if (!btn) return;
+
+  const selectedKey = selectImportType(state);
+  btn.disabled = !selectedKey;
 }
 
 async function importFile(root, cardState, config, importBtn) {
@@ -214,7 +238,7 @@ async function importFile(root, cardState, config, importBtn) {
       durationMs: 3500,
     });
 
-    importBtn.disabled = !cardState.isValid;
+    importBtn.disabled = false;
   }
 }
 
@@ -246,25 +270,32 @@ function loadingView() {
 function view(state) {
   return `
     <div class="opdocs-wrap">
-      ${uploadCardView({ key: 'cts', title: 'Calculation Tasks (CTs)', state: state.cts, buttonLabel: 'IMPORTAR ROTAS (CTs)' })}
+      ${uploadCardView({ key: 'cts', title: 'Calculation Tasks (CTs)', state: state.cts })}
       <div class="opdocs-divider" aria-hidden="true">
         <span class="opdocs-divider-line"></span>
         <span class="opdocs-divider-label">OU</span>
         <span class="opdocs-divider-line"></span>
       </div>
-      ${uploadCardView({ key: 'romaneio', title: 'Romaneio', state: state.romaneio, buttonLabel: 'IMPORTAR ROTAS (Romaneio)' })}
+      ${uploadCardView({ key: 'romaneio', title: 'Romaneio', state: state.romaneio })}
+
+      <button id="opdocs-import" class="opdocs-helpbtn opdocs-primary" type="button" disabled>
+        <span class="opdocs-help-ic">
+          <i data-lucide="upload" aria-hidden="true"></i>
+        </span>
+        <span>IMPORTAR ROTAS</span>
+      </button>
 
       <button id="opdocs-how" class="opdocs-helpbtn" type="button">
         <span class="opdocs-help-ic">
-          <i data-lucide="help-circle" aria-hidden="true"></i>
+          <i data-lucide="upload" aria-hidden="true"></i>
         </span>
-        <span>COMO IMPORTAR?</span>
+        <span>${escapeHtml(buttonLabel)}</span>
       </button>
-    </div>
+    </section>
   `;
 }
 
-function uploadCardView({ key, title, state, buttonLabel }) {
+function uploadCardView({ key, title, state }) {
   const hasFile = !!state.selectedName;
 
   return `
@@ -294,13 +325,6 @@ function uploadCardView({ key, title, state, buttonLabel }) {
       <input id="opdocs-file-${key}" class="opdocs-file" type="file" accept="${
         key === 'romaneio' ? '.csv,.zip,text/csv,application/zip' : '.csv,text/csv'
       }" />
-
-      <button id="opdocs-import-${key}" class="opdocs-helpbtn opdocs-primary" type="button" disabled>
-        <span class="opdocs-help-ic">
-          <i data-lucide="upload" aria-hidden="true"></i>
-        </span>
-        <span>${escapeHtml(buttonLabel)}</span>
-      </button>
     </section>
   `;
 }
