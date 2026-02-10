@@ -1,4 +1,5 @@
 // src/js/utils/csvValidation.js
+import { extractCsvTextsFromZip, isZipFile } from './zipCsv.js';
 
 const REQUIRED_HEADERS = [
   'Calculation Task ID',
@@ -251,6 +252,59 @@ export async function validateRomaneioCsvFile(file) {
   }
 
   return { ok: true, delimiter, headers };
+}
+
+export async function validateRomaneioFile(file) {
+  if (!file) {
+    return { ok: false, error: 'no_file', message: 'Nenhum arquivo selecionado.' };
+  }
+
+  const name = String(file.name || '').toLowerCase();
+  const mime = String(file.type || '').toLowerCase();
+  const looksZip = isZipFile(file);
+  const looksCsv = name.endsWith('.csv') || mime.includes('csv') || mime === 'text/plain';
+
+  if (!looksCsv && !looksZip) {
+    return {
+      ok: false,
+      error: 'invalid_ext',
+      message: 'Arquivo inválido: para Romaneio use .csv ou .zip.',
+    };
+  }
+
+  if (!looksZip) return validateRomaneioCsvFile(file);
+
+  try {
+    const csvFiles = await extractCsvTextsFromZip(file);
+
+    if (!csvFiles.length) {
+      return { ok: false, error: 'zip_empty', message: 'ZIP sem CSV válido.' };
+    }
+
+    for (const csv of csvFiles) {
+      const fakeFile = {
+        name: csv.name,
+        type: 'text/csv',
+        text: async () => csv.text,
+      };
+      const valid = await validateRomaneioCsvFile(fakeFile);
+      if (!valid.ok) {
+        return {
+          ok: false,
+          error: 'zip_invalid_csv',
+          message: `CSV inválido no ZIP (${csv.name}): ${valid.message}`,
+        };
+      }
+    }
+
+    return { ok: true, zip: true, files: csvFiles.length };
+  } catch (e) {
+    return {
+      ok: false,
+      error: 'zip_read_error',
+      message: e?.message || 'Não foi possível ler o arquivo ZIP.',
+    };
+  }
 }
 
 /**

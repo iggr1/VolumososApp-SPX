@@ -1,13 +1,8 @@
 // src/js/modals/opdocs.js
 import { apiGet } from '../api.js';
 import { showAlert } from '../utils/alerts.js';
-import { validateCTsCsvFile, validateRomaneioCsvFile, resetFileInput } from '../utils/csvValidation.js';
-import {
-  extractRoutesFromCTsCsv,
-  extractRoutesFromRomaneioCsv,
-  importRoutesFromCTsCsv,
-  importRoutesFromRomaneioCsv,
-} from '../utils/routesImport.js';
+import { validateCTsCsvFile, validateRomaneioFile, resetFileInput } from '../utils/csvValidation.js';
+import { importRoutesFromCTsCsv, importRoutesFromRomaneioCsv } from '../utils/routesImport.js';
 
 const IMPORT_TYPES = {
   cts: {
@@ -16,15 +11,13 @@ const IMPORT_TYPES = {
     importLabel: 'IMPORTAR ROTAS (CTs)',
     validate: validateCTsCsvFile,
     importFn: importRoutesFromCTsCsv,
-    extractFn: extractRoutesFromCTsCsv,
   },
   romaneio: {
     key: 'romaneio',
     title: 'Romaneio',
     importLabel: 'IMPORTAR ROTAS (Romaneio)',
-    validate: validateRomaneioCsvFile,
+    validate: validateRomaneioFile,
     importFn: importRoutesFromRomaneioCsv,
-    extractFn: extractRoutesFromRomaneioCsv,
   },
 };
 
@@ -182,11 +175,6 @@ async function importFile(root, cardState, config, importBtn) {
     importBtn.disabled = true;
     importBtn.classList.add('is-loading');
 
-    const extracted = await config.extractFn(cardState.file);
-    if (!extracted.ok) throw new Error(extracted.message || 'Falha ao processar CSV.');
-
-    const uniqueRoutes = countUniqueRoutesFromExtracted(extracted.rows);
-
     const result = await config.importFn(cardState.file, {
       batchSize: 1000,
       onProgress: ({ sent, total }) => {
@@ -199,6 +187,7 @@ async function importFile(root, cardState, config, importBtn) {
     });
 
     const sentCount = Number(result?.sent || result?.total || 0) || 0;
+    const uniqueRoutes = Number(result?.uniqueRoutes || 0) || 0;
 
     root.innerHTML = successView({
       title: config.title,
@@ -258,6 +247,11 @@ function view(state) {
   return `
     <div class="opdocs-wrap">
       ${uploadCardView({ key: 'cts', title: 'Calculation Tasks (CTs)', state: state.cts, buttonLabel: 'IMPORTAR ROTAS (CTs)' })}
+      <div class="opdocs-divider" aria-hidden="true">
+        <span class="opdocs-divider-line"></span>
+        <span class="opdocs-divider-label">OU</span>
+        <span class="opdocs-divider-line"></span>
+      </div>
       ${uploadCardView({ key: 'romaneio', title: 'Romaneio', state: state.romaneio, buttonLabel: 'IMPORTAR ROTAS (Romaneio)' })}
 
       <button id="opdocs-how" class="opdocs-helpbtn" type="button">
@@ -277,7 +271,7 @@ function uploadCardView({ key, title, state, buttonLabel }) {
     <section class="opdocs-card" aria-label="Upload de arquivo ${escapeHtml(title)}">
       <div class="opdocs-card-head">
         <div class="opdocs-card-head-text">${escapeHtml(title)}</div>
-        <div class="opdocs-card-head-ext">*.csv</div>
+        <div class="opdocs-card-head-ext">${key === 'romaneio' ? '*.csv|*.zip' : '*.csv'}</div>
       </div>
 
       <button id="opdocs-drop-${key}" class="opdocs-dropzone ${hasFile ? 'has-file' : ''}" type="button"
@@ -297,7 +291,9 @@ function uploadCardView({ key, title, state, buttonLabel }) {
         </div>
       </button>
 
-      <input id="opdocs-file-${key}" class="opdocs-file" type="file" accept=".csv,text/csv" />
+      <input id="opdocs-file-${key}" class="opdocs-file" type="file" accept="${
+        key === 'romaneio' ? '.csv,.zip,text/csv,application/zip' : '.csv,text/csv'
+      }" />
 
       <button id="opdocs-import-${key}" class="opdocs-helpbtn opdocs-primary" type="button" disabled>
         <span class="opdocs-help-ic">
@@ -367,13 +363,4 @@ function formatFileHint(f) {
   const mb = kb / 1024;
   const sizeStr = mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(kb))} KB`;
   return `${sizeStr} • pronto para importar`;
-}
-
-function countUniqueRoutesFromExtracted(rows) {
-  const set = new Set();
-  for (const row of rows || []) {
-    const v = String(row?.corridor_cage || '').trim();
-    if (v) set.add(v);
-  }
-  return set.size;
 }

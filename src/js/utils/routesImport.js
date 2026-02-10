@@ -1,5 +1,6 @@
 // src/js/utils/routesImport.js
 import { apiPut } from '../api.js';
+import { extractCsvTextsFromZip, isZipFile } from './zipCsv.js';
 
 const COL_SPX_TN = 'SPX TN';
 const COL_CORRIDOR = 'Corridor Cage';
@@ -188,8 +189,46 @@ export async function importRoutesFromCTsCsv(file, options = {}) {
 }
 
 export async function importRoutesFromRomaneioCsv(file, options = {}) {
-  const extracted = await extractRoutesFromRomaneioCsv(file);
-  return importRoutesByExtracted(extracted, options);
+  if (!isZipFile(file)) {
+    const extracted = await extractRoutesFromRomaneioCsv(file);
+    return importRoutesByExtracted(extracted, options);
+  }
+
+  const csvFiles = await extractCsvTextsFromZip(file);
+  let sent = 0;
+  let total = 0;
+  let totalChunks = 0;
+  const allResponses = [];
+  const uniqueRoutes = new Set();
+
+  for (const csv of csvFiles) {
+    const fakeFile = {
+      text: async () => csv.text,
+    };
+
+    const extracted = await extractRoutesFromRomaneioCsv(fakeFile);
+    const partial = await importRoutesByExtracted(extracted, options);
+
+    sent += Number(partial.sent || 0);
+    total += Number(partial.total || 0);
+    totalChunks += Number(partial.totalChunks || 0);
+    for (const row of extracted.rows || []) {
+      const route = String(row?.corridor_cage || '').trim();
+      if (route) uniqueRoutes.add(route);
+    }
+    allResponses.push(...(partial.serverResponses || []));
+  }
+
+  return {
+    ok: true,
+    total,
+    sent,
+    totalChunks,
+    batchSize: Number(options.batchSize || 1000),
+    envioId: null,
+    uniqueRoutes: uniqueRoutes.size,
+    serverResponses: allResponses,
+  };
 }
 
 async function importRoutesByExtracted(extracted, options = {}) {
@@ -235,6 +274,7 @@ async function importRoutesByExtracted(extracted, options = {}) {
     totalChunks: chunks.length,
     sent,
     envioId,
+    uniqueRoutes: new Set(rows.map(r => String(r?.corridor_cage || '').trim()).filter(Boolean)).size,
     serverResponses,
   };
 }
