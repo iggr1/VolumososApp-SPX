@@ -44,8 +44,8 @@ export default function render(_props = {}, api) {
   };
 
   init().catch(err => {
-    el.innerHTML = errorView(err?.message || 'Falha ao carregar.');
-    if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+    el.innerHTML = errorView((err && err.message) || 'Falha ao carregar.');
+    if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   });
 
   return el;
@@ -56,7 +56,7 @@ export default function render(_props = {}, api) {
     el.innerHTML = view(state);
     bind(el);
 
-    if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+    if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
   }
 
   function bind(root) {
@@ -72,12 +72,11 @@ export default function render(_props = {}, api) {
 
         const cardState = state[selectedKey];
         const config = IMPORT_TYPES[selectedKey];
-        if (!cardState?.isValid || !cardState?.file || !config) return;
+        if (!cardState || !cardState.isValid || !cardState.file || !config) return;
 
         await importFile(root, cardState, config, btnImport);
       };
     }
-  }
 
     const btnHow = root.querySelector('#opdocs-how');
     if (btnHow) {
@@ -102,12 +101,12 @@ export default function render(_props = {}, api) {
       drop.addEventListener('drop', async e => {
         e.preventDefault();
         drop.classList.remove('is-drag');
-        const f = e.dataTransfer?.files?.[0];
+        const f = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
         if (f) await handleFile(f);
       });
 
       fileInput.onchange = async () => {
-        const f = fileInput.files?.[0];
+        const f = fileInput.files ? fileInput.files[0] : null;
         if (f) await handleFile(f);
       };
     }
@@ -137,7 +136,7 @@ export default function render(_props = {}, api) {
       const nameEl = root.querySelector(`#opdocs-filename-${config.key}`);
       const hintEl = root.querySelector(`#opdocs-hint-${config.key}`);
       const dropEl = root.querySelector(`#opdocs-drop-${config.key}`);
-      const iconEl = dropEl?.querySelector('[data-lucide]');
+      const iconEl = dropEl ? dropEl.querySelector('[data-lucide]') : null;
 
       if (dropEl) dropEl.classList.add('has-file');
       if (iconEl) iconEl.setAttribute('data-lucide', 'file-check');
@@ -145,7 +144,7 @@ export default function render(_props = {}, api) {
       if (hintEl) hintEl.textContent = formatFileHint(file);
 
       updateGlobalImportButton(root, state);
-      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+      if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
     }
 
     function resetUpload() {
@@ -159,7 +158,7 @@ export default function render(_props = {}, api) {
       resetFileInput(inputEl);
 
       const dropEl = root.querySelector(`#opdocs-drop-${config.key}`);
-      const iconEl = dropEl?.querySelector('[data-lucide]');
+      const iconEl = dropEl ? dropEl.querySelector('[data-lucide]') : null;
       const nameEl = root.querySelector(`#opdocs-filename-${config.key}`);
       const hintEl = root.querySelector(`#opdocs-hint-${config.key}`);
 
@@ -170,17 +169,17 @@ export default function render(_props = {}, api) {
       if (buttonEl) buttonEl.disabled = true;
 
       if (state.activeKey === config.key) state.activeKey = '';
-      if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+      if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
     }
   }
 }
 
 function selectImportType(state) {
-  const active = state?.activeKey;
-  if (active && state?.[active]?.isValid && state?.[active]?.file) return active;
+  const active = state && state.activeKey;
+  if (active && state && state[active] && state[active].isValid && state[active].file) return active;
 
-  if (state?.cts?.isValid && state?.cts?.file) return 'cts';
-  if (state?.romaneio?.isValid && state?.romaneio?.file) return 'romaneio';
+  if (state && state.cts && state.cts.isValid && state.cts.file) return 'cts';
+  if (state && state.romaneio && state.romaneio.isValid && state.romaneio.file) return 'romaneio';
   return '';
 }
 
@@ -206,12 +205,12 @@ async function importFile(root, cardState, config, importBtn) {
           <span class="opdocs-help-ic"><i data-lucide="loader" aria-hidden="true"></i></span>
           <span>Importando... (${sent}/${total})</span>
         `;
-        if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+        if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
       },
     });
 
-    const sentCount = Number(result?.sent || result?.total || 0) || 0;
-    const uniqueRoutes = Number(result?.uniqueRoutes || 0) || 0;
+    const sentCount = Number((result && (result.sent || result.total)) || 0) || 0;
+    const uniqueRoutes = Number((result && result.uniqueRoutes) || 0) || 0;
 
     root.innerHTML = successView({
       title: config.title,
@@ -219,7 +218,7 @@ async function importFile(root, cardState, config, importBtn) {
       uniqueRoutes,
     });
 
-    if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
+    if (window.lucide && window.lucide.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
 
     await showAlert({
       type: 'success',
@@ -234,7 +233,7 @@ async function importFile(root, cardState, config, importBtn) {
     await showAlert({
       type: 'error',
       title: 'Falha ao importar',
-      message: e?.message || 'Erro inesperado.',
+      message: (e && e.message) || 'Erro inesperado.',
       durationMs: 3500,
     });
 
@@ -291,6 +290,40 @@ function view(state) {
         </span>
         <span>${escapeHtml(buttonLabel)}</span>
       </button>
+    </section>
+  `;
+}
+
+function uploadCardView({ key, title, state }) {
+  const hasFile = !!state.selectedName;
+
+  return `
+    <section class="opdocs-card" aria-label="Upload de arquivo ${escapeHtml(title)}">
+      <div class="opdocs-card-head">
+        <div class="opdocs-card-head-text">${escapeHtml(title)}</div>
+        <div class="opdocs-card-head-ext">${key === 'romaneio' ? '*.csv|*.zip' : '*.csv'}</div>
+      </div>
+
+      <button id="opdocs-drop-${key}" class="opdocs-dropzone ${hasFile ? 'has-file' : ''}" type="button"
+        aria-label="Clique para fazer upload">
+        <div class="opdocs-dropzone-inner">
+          <div class="opdocs-upload-icon">
+            <i data-lucide="${hasFile ? 'file-check' : 'file-up'}" aria-hidden="true"></i>
+          </div>
+
+          <div class="opdocs-dropzone-text" id="opdocs-filename-${key}">
+            ${hasFile ? escapeHtml(state.selectedName) : 'Clique para fazer upload'}
+          </div>
+
+          <div class="opdocs-dropzone-hint" id="opdocs-hint-${key}">
+            ${hasFile ? 'Arquivo selecionado • pronto para importar' : 'ou arraste e solte aqui'}
+          </div>
+        </div>
+      </button>
+
+      <input id="opdocs-file-${key}" class="opdocs-file" type="file" accept="${
+        key === 'romaneio' ? '.csv,.zip,text/csv,application/zip' : '.csv,text/csv'
+      }" />
     </section>
   `;
 }
