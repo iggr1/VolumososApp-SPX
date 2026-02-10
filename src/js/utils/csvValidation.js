@@ -38,6 +38,9 @@ const REQUIRED_HEADERS = [
   'Cabeça de CEP',
 ];
 
+
+const REQUIRED_HEADERS_ROMANEIO = ['NÚMERO DO PEDIDO', 'CORREDOR-GAIOLA'];
+
 // Detecta delimitador (vírgula ou ponto-e-vírgula) com base no header
 function detectDelimiter(headerLine) {
   const commas = (headerLine.match(/,/g) || []).length;
@@ -179,6 +182,65 @@ export async function validateCTsCsvFile(file) {
   }
 
   // dados abaixo do header
+  const dataRows = countDataRows(text);
+  if (dataRows <= 0) {
+    return {
+      ok: false,
+      error: 'no_data',
+      message: 'CSV sem dados: é necessário ter linhas abaixo do cabeçalho.',
+    };
+  }
+
+  return { ok: true, delimiter, headers };
+}
+
+
+/**
+ * Valida CSV de Romaneio (mínimo necessário para pré-route)
+ * Regras:
+ * 1) é CSV
+ * 2) contém as colunas NÚMERO DO PEDIDO e CORREDOR-GAIOLA
+ * 3) existe pelo menos 1 linha de dados
+ */
+export async function validateRomaneioCsvFile(file) {
+  if (!file) {
+    return { ok: false, error: 'no_file', message: 'Nenhum arquivo selecionado.' };
+  }
+
+  const name = String(file.name || '');
+  const lower = name.toLowerCase();
+  const mime = String(file.type || '').toLowerCase();
+
+  const looksCsv = lower.endsWith('.csv') || mime.includes('csv') || mime === 'text/plain';
+  if (!looksCsv) {
+    return { ok: false, error: 'not_csv', message: 'Arquivo inválido: selecione um CSV (.csv).' };
+  }
+
+  let text = '';
+  try {
+    text = await file.text();
+  } catch {
+    return { ok: false, error: 'read_error', message: 'Não foi possível ler o arquivo.' };
+  }
+
+  const headerLineRaw = stripBOM(firstNonEmptyLine(text));
+  if (!headerLineRaw) {
+    return { ok: false, error: 'empty', message: 'CSV vazio: não há cabeçalho.' };
+  }
+
+  const delimiter = detectDelimiter(headerLineRaw);
+  const headersRaw = splitCsvLine(headerLineRaw, delimiter);
+  const headers = headersRaw.map(normalizeHeader);
+
+  const missing = REQUIRED_HEADERS_ROMANEIO.filter(h => !headers.includes(h));
+  if (missing.length) {
+    return {
+      ok: false,
+      error: 'missing_columns',
+      message: `CSV não contém as colunas obrigatórias: ${missing.join(', ')}.`,
+    };
+  }
+
   const dataRows = countDataRows(text);
   if (dataRows <= 0) {
     return {

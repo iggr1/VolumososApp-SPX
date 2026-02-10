@@ -3,6 +3,8 @@ import { apiPut } from '../api.js';
 
 const COL_SPX_TN = 'SPX TN';
 const COL_CORRIDOR = 'Corridor Cage';
+const COL_ROMANEIO_ORDER = 'NÚMERO DO PEDIDO';
+const COL_ROMANEIO_CORRIDOR = 'CORREDOR-GAIOLA';
 
 const ENDPOINT_IMPORT = 'opdocs/routes/import';
 
@@ -94,6 +96,20 @@ function chunkArray(arr, size) {
  * - corridor_cage vazio (pra não mandar linhas incompletas)
  */
 export async function extractRoutesFromCTsCsv(file) {
+  return extractRoutesFromCsvByColumns(file, {
+    tnColumn: COL_SPX_TN,
+    corridorColumn: COL_CORRIDOR,
+  });
+}
+
+export async function extractRoutesFromRomaneioCsv(file) {
+  return extractRoutesFromCsvByColumns(file, {
+    tnColumn: COL_ROMANEIO_ORDER,
+    corridorColumn: COL_ROMANEIO_CORRIDOR,
+  });
+}
+
+async function extractRoutesFromCsvByColumns(file, { tnColumn, corridorColumn }) {
   if (!file) return { ok: false, error: 'no_file', message: 'Nenhum arquivo selecionado.' };
 
   const text = await file.text();
@@ -103,13 +119,13 @@ export async function extractRoutesFromCTsCsv(file) {
   const delimiter = detectDelimiter(headerLineRaw);
   const headers = splitCsvLine(headerLineRaw, delimiter).map(normalizeHeader);
 
-  const idxTN = headers.indexOf(COL_SPX_TN);
-  const idxCorridor = headers.indexOf(COL_CORRIDOR);
+  const idxTN = headers.indexOf(tnColumn);
+  const idxCorridor = headers.indexOf(corridorColumn);
   if (idxTN < 0 || idxCorridor < 0) {
     return {
       ok: false,
       error: 'missing_columns',
-      message: `CSV não contém as colunas: "${COL_SPX_TN}" e "${COL_CORRIDOR}".`,
+      message: `CSV não contém as colunas: "${tnColumn}" e "${corridorColumn}".`,
     };
   }
 
@@ -167,11 +183,20 @@ export async function extractRoutesFromCTsCsv(file) {
  * @param {(info:{chunk:number,totalChunks:number,sent:number,total:number})=>void} options.onProgress callback opcional
  */
 export async function importRoutesFromCTsCsv(file, options = {}) {
+  const extracted = await extractRoutesFromCTsCsv(file);
+  return importRoutesByExtracted(extracted, options);
+}
+
+export async function importRoutesFromRomaneioCsv(file, options = {}) {
+  const extracted = await extractRoutesFromRomaneioCsv(file);
+  return importRoutesByExtracted(extracted, options);
+}
+
+async function importRoutesByExtracted(extracted, options = {}) {
   const batchSize = Number(options.batchSize || 1000);
   const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
   const envioId = String(options.envioId || generateEnvioId());
 
-  const extracted = await extractRoutesFromCTsCsv(file);
   if (!extracted.ok) throw new Error(extracted.message || 'Falha ao processar CSV.');
 
   const rows = extracted.rows;
