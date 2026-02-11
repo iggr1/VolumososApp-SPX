@@ -79,9 +79,13 @@ export default function render(_props = {}, api) {
     }
 
     const btnHow = root.querySelector('#opdocs-how');
+    
     if (btnHow) {
       btnHow.onclick = () => {
-        import('../modal.js').then(m => m.openModal({ type: 'tutorial' }));
+        window.open(
+          'https://docs.google.com/presentation/d/1hWo7G6uYQYEJtTLMi4sP7pS28GmTmMH4qcMkvTtEN20/edit?slide=id.g393bd0b70e2_2_11#slide=id.g393bd0b70e2_2_11',
+          '_blank'
+        );
       };
     }
   }
