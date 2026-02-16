@@ -14,6 +14,7 @@
   display: flex;
   gap: 20rem;
   align-items: center;
+  height: 120rem;
 }
 
 .users-search-wrap {
@@ -98,6 +99,7 @@
   font-weight: var(--text-bold);
   cursor: pointer;
   transition: 0.15s ease;
+  height: 120rem;
 }
 
 .users-btn svg {
