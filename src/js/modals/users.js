@@ -19,9 +19,21 @@ export default function render(_props = {}, api) {
   el.innerHTML = `
     <div class="users-toolbar">
       <input id="users-search" class="users-search" type="search" placeholder="Buscar usuário..." />
-      <button id="users-refresh" class="users-btn" aria-label="Atualizar">
-        <i data-lucide="refresh-ccw"></i>
-      </button>
+      <div class="users-toolbar-actions">
+        <div class="users-filter" role="group" aria-label="Filtro de usuários">
+          <button id="users-filter-all" class="users-filter-btn is-active" type="button">Todos</button>
+          <button id="users-filter-ops" class="users-filter-btn" type="button">Apenas Ops</button>
+        </div>
+
+        <button id="users-add-ops" class="users-btn users-btn--primary" type="button">
+          <i data-lucide="user-plus"></i>
+          <span>Adicionar Ops</span>
+        </button>
+
+        <button id="users-refresh" class="users-btn" type="button" aria-label="Atualizar">
+          <i data-lucide="refresh-ccw"></i>
+        </button>
+      </div>
     </div>
 
     <div class="users-list users-list--loading" id="users-list">
@@ -39,9 +51,13 @@ export default function render(_props = {}, api) {
   const $ = s => el.querySelector(s);
   const searchEl = $('#users-search');
   const listEl = $('#users-list');
+  const filterAllBtn = $('#users-filter-all');
+  const filterOpsBtn = $('#users-filter-ops');
+  const addOpsBtn = $('#users-add-ops');
 
   let raw = [];
   let q = '';
+  let onlyOps = false;
 
   init();
 
@@ -51,6 +67,9 @@ export default function render(_props = {}, api) {
   });
 
   $('#users-refresh').addEventListener('click', load);
+  filterAllBtn.addEventListener('click', () => setOnlyOps(false));
+  filterOpsBtn.addEventListener('click', () => setOnlyOps(true));
+  addOpsBtn.addEventListener('click', openCreateOps);
 
   return el;
 
@@ -61,9 +80,11 @@ export default function render(_props = {}, api) {
   async function load() {
     listEl.classList.add('users-list--loading');
     listEl.innerHTML = skeleton();
+    syncFilterUi();
+
     try {
       // espera que o backend tenha GET /users -> [{username, role, created_at, avatar_id}]
-      const data = await apiGet('users');
+      const data = await apiGet('users', onlyOps ? { only_ops: 'true' } : undefined);
       raw = Array.isArray(data) ? data : Array.isArray(data?.users) ? data.users : [];
     } catch (e) {
       raw = [];
@@ -76,6 +97,19 @@ export default function render(_props = {}, api) {
       return;
     }
     renderList();
+  }
+
+  function setOnlyOps(nextOnlyOps) {
+    if (onlyOps === nextOnlyOps) return;
+    onlyOps = nextOnlyOps;
+    load();
+  }
+
+  function syncFilterUi() {
+    filterAllBtn.classList.toggle('is-active', !onlyOps);
+    filterOpsBtn.classList.toggle('is-active', onlyOps);
+    filterAllBtn.setAttribute('aria-pressed', String(!onlyOps));
+    filterOpsBtn.setAttribute('aria-pressed', String(onlyOps));
   }
 
   function renderList() {
@@ -211,6 +245,17 @@ export default function render(_props = {}, api) {
         props: {
           ...props,
           onChanged: () => load(),
+        },
+      })
+    );
+  }
+
+  function openCreateOps() {
+    import('../modal.js').then(m =>
+      m.openModal({
+        type: 'userOpsCreate',
+        props: {
+          onCreated: () => load(),
         },
       })
     );
