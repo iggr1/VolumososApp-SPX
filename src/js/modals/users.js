@@ -26,7 +26,7 @@ export default function render(_props = {}, api) {
 
         <div class="users-filter" role="group" aria-label="Filtro de usuários">
           <button id="users-filter-all" class="users-filter-btn is-active" type="button" aria-pressed="true">Todos</button>
-          <button id="users-filter-ops" class="users-filter-btn" type="button" aria-pressed="false">Somente Ops</button>
+          <button id="users-filter-ops" class="users-filter-btn" type="button" aria-pressed="false">Ops</button>
         </div>
       </div>
 
