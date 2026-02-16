@@ -17,35 +17,47 @@ export default function render(_props = {}, api) {
   const el = document.createElement('div');
   el.className = 'users-modal';
   el.innerHTML = `
-    <div class="users-toolbar">
-      <input id="users-search" class="users-search" type="search" placeholder="Buscar usuário..." />
-      <div class="users-toolbar-actions">
-        <div class="users-filter" role="group" aria-label="Filtro de usuários">
-          <button id="users-filter-all" class="users-filter-btn is-active" type="button">Todos</button>
-          <button id="users-filter-ops" class="users-filter-btn" type="button">Apenas Ops</button>
-        </div>
+    <section class="users-panel users-panel--toolbar">
+      <div class="users-toolbar-main">
+        <label class="users-search-wrap" for="users-search">
+          <i data-lucide="search"></i>
+          <input id="users-search" class="users-search" type="search" placeholder="Buscar por nome, perfil ou status" />
+        </label>
 
+        <div class="users-filter" role="group" aria-label="Filtro de usuários">
+          <button id="users-filter-all" class="users-filter-btn is-active" type="button" aria-pressed="true">Todos</button>
+          <button id="users-filter-ops" class="users-filter-btn" type="button" aria-pressed="false">Somente Ops</button>
+        </div>
+      </div>
+
+      <div class="users-toolbar-actions">
         <button id="users-add-ops" class="users-btn users-btn--primary" type="button">
           <i data-lucide="user-plus"></i>
           <span>Adicionar Ops</span>
         </button>
-      </div>
 
-      <div class="users-toolbar-secondary">
-        <button id="users-refresh" class="users-btn" type="button" aria-label="Atualizar">
+        <button id="users-refresh" class="users-btn users-btn--secondary" type="button" aria-label="Atualizar lista">
           <i data-lucide="refresh-ccw"></i>
+          <span>Atualizar</span>
         </button>
       </div>
-    </div>
+    </section>
 
-    <div class="users-list users-list--loading" id="users-list">
+    <section class="users-panel users-panel--list">
+      <header class="users-list-head">
+        <h3>Contas cadastradas</h3>
+        <span class="users-list-subtitle">Toque em um usuário para editar os dados</span>
+      </header>
+
+      <div class="users-list users-list--loading" id="users-list">
       <div class="users-skel">
         <div class="sk-row"></div>
         <div class="sk-row"></div>
         <div class="sk-row"></div>
         <div class="sk-row"></div>
       </div>
-    </div>
+      </div>
+    </section>
   `;
 
   if (window.lucide?.createIcons) lucide.createIcons({ attrs: { width: 22, height: 22 } });
