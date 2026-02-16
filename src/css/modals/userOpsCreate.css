@@ -1,0 +1,55 @@
+.user-ops-create {
+  display: grid;
+}
+
+.ops-create-form {
+  display: grid;
+  gap: 14rem;
+}
+
+.ops-create-label {
+  font-size: var(--text-small);
+  color: var(--dark-gray);
+}
+
+.ops-create-input {
+  height: 112rem;
+  border-radius: 60rem;
+  border: 0;
+  background: var(--light-gray);
+  color: var(--darker-gray);
+  font-size: var(--text-medium);
+  padding: 0 26rem;
+}
+
+.ops-create-error {
+  color: #9e1111;
+  font-size: var(--text-small);
+  min-height: 1.3em;
+}
+
+.ops-create-submit {
+  margin-top: 8rem;
+  height: 112rem;
+  border-radius: 80rem;
+  border: 0;
+  background: var(--orange);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rem;
+  font-size: var(--text-medium);
+  font-weight: var(--text-bold);
+  cursor: pointer;
+}
+
+.ops-create-submit:hover {
+  filter: brightness(0.98);
+}
+
+.ops-create-submit:disabled,
+.ops-create-submit.is-loading {
+  opacity: 0.7;
+  cursor: default;
+}
