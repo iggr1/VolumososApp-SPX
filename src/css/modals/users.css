@@ -7,7 +7,7 @@
 
 .users-toolbar {
   display: grid;
-  gap: 10rem;
+  gap: 16rem;
 }
 
 .users-toolbar-actions {
@@ -15,6 +15,10 @@
   grid-template-columns: 1fr auto;
   gap: 10rem;
   align-items: center;
+}
+
+.users-toolbar-secondary {
+  display: flex;
 }
 
 .users-toolbar-secondary {
@@ -93,13 +97,9 @@
   color: var(--white);
 }
 
-.users-btn--primary:hover {
-  background: #f04d22;
-}
-
 .users-toolbar-secondary .users-btn {
-  min-width: 92rem;
-  padding: 0 12rem;
+  min-width: 120rem;
+  justify-content: center;
 }
 
 .users-list {
@@ -288,11 +288,15 @@
 
 @media (max-width: 880px) {
   .users-toolbar-actions {
+    width: 100%;
+    display: grid;
     grid-template-columns: 1fr;
+    gap: 10rem;
   }
 
   .users-filter {
     width: 100%;
+    justify-content: space-between;
   }
 
   .users-filter-btn {
@@ -301,5 +305,12 @@
 
   .users-btn--primary {
     width: 100%;
+    justify-content: center;
+  }
+
+  .users-toolbar-secondary .users-btn {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
   }
 }
