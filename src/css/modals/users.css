@@ -5,22 +5,15 @@
   gap: 24rem;
 }
 
-.users-panel {
-  border-radius: 56rem;
-  background: var(--light-gray);
-  border: 1rem solid #d5d5d5;
-}
-
 .users-panel--toolbar {
-  padding: 24rem;
   display: grid;
-  gap: 12rem;
+  gap: 20rem;
 }
 
 .users-toolbar-main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14rem;
+  gap: 20rem;
   align-items: center;
 }
 
@@ -36,8 +29,8 @@
 }
 
 .users-search-wrap svg {
-  width: 34rem;
-  height: 34rem;
+  width: 50rem;
+  height: 50rem;
   color: #989898;
   flex-shrink: 0;
 }
@@ -92,7 +85,7 @@
 .users-toolbar-actions {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12rem;
+  gap: 20rem;
 }
 
 .users-btn {
@@ -111,8 +104,8 @@
 }
 
 .users-btn svg {
-  width: 32rem;
-  height: 32rem;
+  width: 50rem;
+  height: 50rem;
 }
 
 .users-btn--primary {
@@ -134,9 +127,8 @@
 }
 
 .users-panel--list {
-  padding: 22rem;
   display: grid;
-  gap: 14rem;
+  gap: 20rem;
 }
 
 .users-list-head {
@@ -167,8 +159,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 16rem;
-  min-height: 104rem;
-  padding: 14rem 18rem;
+  /* height: 180rem; */
+  padding: 20rem 20rem;
   border-radius: 52rem;
   background: var(--white);
   border: 1rem solid #d2d2d2;
@@ -182,15 +174,15 @@
 
 .user-left {
   display: grid;
-  grid-template-columns: 64rem 1fr;
+  grid-template-columns: 120rem 1fr;
   gap: 14rem;
   align-items: center;
   min-width: 0;
 }
 
 .user-avatar {
-  width: 62rem;
-  height: 62rem;
+  width: 120rem;
+  height: 120rem;
   border-radius: 50%;
   object-fit: cover;
   border: 2rem solid var(--orange);
@@ -214,7 +206,7 @@
 .user-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8rem;
+  gap: 20rem;
 }
 
 .role-badge,
@@ -224,7 +216,6 @@
   font-size: var(--text-medium);
   font-weight: var(--text-bold);
   letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 
 .role-badge {
@@ -259,8 +250,6 @@
 }
 
 .user-right > svg {
-  width: 24rem;
-  height: 24rem;
   color: #444;
 }
 
