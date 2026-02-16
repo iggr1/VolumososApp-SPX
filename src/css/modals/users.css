@@ -7,15 +7,17 @@
 
 .users-toolbar {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 16rem;
-  align-items: center;
 }
 
 .users-toolbar-actions {
   display: inline-flex;
   align-items: center;
   gap: 12rem;
+}
+
+.users-toolbar-secondary {
+  display: flex;
 }
 
 .users-filter {
@@ -74,6 +76,11 @@
 .users-btn--primary {
   background: var(--orange);
   color: var(--white);
+}
+
+.users-toolbar-secondary .users-btn {
+  min-width: 120rem;
+  justify-content: center;
 }
 
 .users-list {
@@ -295,25 +302,31 @@
   }
 }
 
-
 @media (max-width: 880px) {
-  .users-toolbar {
-    grid-template-columns: 1fr;
-  }
-
   .users-toolbar-actions {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr;
     gap: 10rem;
   }
 
   .users-filter {
-    grid-column: span 2;
+    width: 100%;
     justify-content: space-between;
   }
 
   .users-filter-btn {
     flex: 1;
+  }
+
+  .users-btn--primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .users-toolbar-secondary .users-btn {
+    min-width: 0;
+    width: 100%;
+    justify-content: center;
   }
 }

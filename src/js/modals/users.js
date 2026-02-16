@@ -29,7 +29,9 @@ export default function render(_props = {}, api) {
           <i data-lucide="user-plus"></i>
           <span>Adicionar Ops</span>
         </button>
+      </div>
 
+      <div class="users-toolbar-secondary">
         <button id="users-refresh" class="users-btn" type="button" aria-label="Atualizar">
           <i data-lucide="refresh-ccw"></i>
         </button>
