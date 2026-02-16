@@ -77,7 +77,7 @@
   background: transparent;
   color: #707070;
   padding: 0 24rem;
-  font-size: var(--text-small);
+  font-size: var(--text-medium);
   font-weight: var(--text-bold);
   cursor: pointer;
   transition: 0.15s ease;
@@ -148,13 +148,13 @@
 .users-list-head h3 {
   margin: 0;
   color: var(--darker-gray);
-  font-size: var(--text-large);
+  font-size: var(--text-medium);
   font-weight: var(--text-bold);
 }
 
 .users-list-subtitle {
   color: #777777;
-  font-size: var(--text-small);
+  font-size: var(--text-medium);
 }
 
 .users-list {
@@ -221,7 +221,7 @@
 .status-badge {
   border-radius: 999rem;
   padding: 4rem 11rem;
-  font-size: 11rem;
+  font-size: var(--text-medium);
   font-weight: var(--text-bold);
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -272,7 +272,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7rem;
-  font-size: var(--text-small);
+  font-size: var(--text-medium);
   font-weight: var(--text-bold);
   cursor: pointer;
 }
