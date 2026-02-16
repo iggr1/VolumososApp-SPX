@@ -2,7 +2,7 @@
 
 .users-modal {
   display: grid;
-  gap: 36rem;
+  gap: 16rem;
 }
 
 .users-toolbar {
@@ -11,9 +11,14 @@
 }
 
 .users-toolbar-actions {
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10rem;
   align-items: center;
-  gap: 12rem;
+}
+
+.users-toolbar-secondary {
+  display: flex;
 }
 
 .users-toolbar-secondary {
@@ -21,23 +26,26 @@
 }
 
 .users-filter {
-  background: var(--light-gray);
-  border-radius: 85rem;
-  padding: 6rem;
+  background: #d7d7d7;
+  border-radius: 999rem;
+  padding: 4rem;
   display: inline-flex;
   align-items: center;
-  gap: 6rem;
+  gap: 4rem;
+  min-width: 0;
 }
 
 .users-filter-btn {
-  height: 96rem;
-  padding: 0 20rem;
+  height: 38rem;
+  padding: 0 16rem;
   border: 0;
-  border-radius: 70rem;
+  border-radius: 999rem;
   background: transparent;
-  color: var(--dark-gray);
-  font-size: var(--text-small);
+  color: #7a7a7a;
+  font-size: 12rem;
+  font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .users-filter-btn.is-active {
@@ -46,31 +54,42 @@
 }
 
 .users-search {
-  height: 120rem;
-  border-radius: 85rem;
-  background: var(--light-gray);
+  height: 46rem;
+  border-radius: 999rem;
+  background: #d0d0d0;
   border: 0;
-  padding: 0 32rem;
+  padding: 0 16rem;
   font-size: var(--text-medium);
   color: var(--darker-gray);
+}
+
+.users-search::placeholder {
+  color: #7d7d7d;
 }
 
 .users-btn {
-  height: 120rem;
-  padding: 0 28rem;
-  border-radius: 85rem;
-  background: var(--light-gray);
+  height: 40rem;
+  padding: 0 14rem;
+  border-radius: 999rem;
+  background: #d0d0d0;
   color: var(--darker-gray);
   display: inline-flex;
   align-items: center;
-  gap: 10rem;
+  justify-content: center;
+  gap: 8rem;
   cursor: pointer;
   border: 0;
-  font-size: var(--text-medium);
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+
+.users-btn svg {
+  width: 18rem;
+  height: 18rem;
 }
 
 .users-btn:hover {
-  background: #dcdcdc;
+  background: #c8c8c8;
 }
 
 .users-btn--primary {
@@ -85,40 +104,35 @@
 
 .users-list {
   display: grid;
-  gap: 36rem;
+  gap: 10rem;
 }
-
-/* =========================
-   ITEM (linha do usuário)
-   ========================= */
 
 .user-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18rem;
-
-  padding: 16rem 22rem 16rem 18rem;
-  border-radius: 80rem;
-  background: var(--light-gray);
+  gap: 12rem;
+  padding: 10rem 14rem 10rem 10rem;
+  border-radius: 999rem;
+  background: #d0d0d0;
   cursor: pointer;
 }
 
 .user-row:hover {
-  background: #dcdcdc;
+  background: #c6c6c6;
 }
 
 .user-left {
   display: grid;
-  grid-template-columns: 100rem 1fr;
-  gap: 18rem;
+  grid-template-columns: 38rem 1fr;
+  gap: 10rem;
   align-items: center;
   min-width: 0;
 }
 
 .user-avatar {
-  width: 100rem;
-  height: 100rem;
+  width: 36rem;
+  height: 36rem;
   border-radius: 50%;
   object-fit: cover;
   border: 1.5rem solid var(--orange);
@@ -126,14 +140,15 @@
 
 .user-main {
   display: grid;
-  gap: 6rem;
+  gap: 3rem;
   min-width: 0;
 }
 
 .user-name {
-  font-size: var(--text-medium);
-  font-weight: var(--text-bold);
-  color: var(--darker-gray);
+  font-size: 12.5rem;
+  font-weight: 700;
+  color: #2f2f2f;
+  line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -141,89 +156,82 @@
 
 .user-meta {
   display: flex;
-  gap: 10rem;
+  gap: 6rem;
   align-items: center;
   flex-wrap: wrap;
 }
 
-/* =========================
-   BADGES
-   ========================= */
-
 .role-badge,
 .status-badge {
-  padding: 2rem 18rem;
+  padding: 1rem 8rem;
   border-radius: 999rem;
-  font-size: var(--text-small);
+  font-size: 10rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--white);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
 }
 
 .role-badge {
-  background: var(--dark-gray);
+  color: var(--white);
+  background: #666;
 }
+
 .role-badge.is-admin {
   background: var(--orange);
 }
-.role-badge.is-user {
-  background: var(--dark-gray);
-}
 
-/* status badge: usa cores suaves (texto escuro p/ legibilidade) */
 .status-badge {
-  color: var(--darker-gray);
-  background: #eaeaea;
+  color: #3f6947;
+  background: #b8d5be;
 }
 
-.status-badge.is-active {
-  background: rgba(0, 200, 0, 0.14);
-}
 .status-badge.is-pending {
-  background: rgba(255, 170, 0, 0.18);
-}
-.status-badge.is-inactive {
-  background: rgba(255, 0, 0, 0.14);
+  color: #7c5808;
+  background: #e6d39f;
 }
 
-/* =========================
-   AÇÕES À DIREITA
-   ========================= */
+.status-badge.is-inactive {
+  color: #7a2727;
+  background: #e7b6b6;
+}
 
 .user-right {
   display: inline-flex;
   align-items: center;
-  gap: 12rem;
+  gap: 6rem;
   flex-shrink: 0;
 }
 
-/* botão Permitir/Ativar */
+.user-right > svg {
+  width: 18rem;
+  height: 18rem;
+  color: #1f1f1f;
+}
+
 .user-action {
-  height: 92rem;
-  padding: 0 22rem;
-  border-radius: 70rem;
+  height: 32rem;
+  padding: 0 12rem;
+  border-radius: 999rem;
   border: 0;
   cursor: pointer;
-
   display: inline-flex;
   align-items: center;
-  gap: 10rem;
-
-  font-size: var(--text-small);
-  font-weight: var(--text-bold);
-  letter-spacing: 0.02em;
-
+  gap: 6rem;
+  font-size: 11rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   background: var(--orange-light);
   color: var(--orange);
 }
 
 .user-action svg {
-  width: 30rem;
-  height: 30rem;
+  width: 14rem;
+  height: 14rem;
 }
 
 .user-action:hover {
-  filter: brightness(0.98);
+  filter: brightness(0.97);
 }
 
 .user-action:disabled,
@@ -233,62 +241,38 @@
   pointer-events: none;
 }
 
-/* variações (se quiser diferenciar) */
 .user-action--allow {
   background: rgba(255, 170, 0, 0.2);
   color: #8a5a00;
 }
+
 .user-action--activate {
   background: rgba(0, 200, 0, 0.16);
   color: #066b06;
 }
 
-/* botão chevron (abrir editor) */
-.user-open {
-  width: 92rem;
-  height: 92rem;
-  border-radius: 50%;
-  border: 0;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.06);
-  display: grid;
-  place-items: center;
-}
-
-.user-open:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.user-open .chev {
-  width: 22rem;
-  height: 22rem;
-}
-
-/* =========================
-   EMPTY + SKELETON
-   ========================= */
-
 .users-empty {
   display: grid;
   place-items: center;
   gap: 8rem;
-  padding: 40rem 0;
+  padding: 24rem 0;
   color: var(--dark-gray);
 }
 
 .users-empty i {
-  width: 28rem;
-  height: 28rem;
+  width: 24rem;
+  height: 24rem;
 }
 
 .users-skel {
   display: grid;
-  gap: 12rem;
+  gap: 10rem;
 }
+
 .sk-row {
-  height: 116rem;
-  border-radius: 60rem;
-  background: linear-gradient(90deg, #e6e6e6 0%, #f0f0f0 40%, #e6e6e6 80%);
+  height: 58rem;
+  border-radius: 999rem;
+  background: linear-gradient(90deg, #d3d3d3 0%, #dfdfdf 40%, #d3d3d3 80%);
   background-size: 200% 100%;
   animation: sk 1.2s infinite linear;
 }
