@@ -14,7 +14,7 @@
 .users-panel--toolbar {
   padding: 24rem;
   display: grid;
-  gap: 16rem;
+  gap: 12rem;
 }
 
 .users-toolbar-main {
